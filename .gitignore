@@ -30,3 +30,6 @@ npm-debug.log*
 
 # Runtime
 .omo/
+
+# Worktrees (local only)
+.worktrees/
