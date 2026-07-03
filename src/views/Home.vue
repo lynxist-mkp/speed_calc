@@ -7,14 +7,14 @@ import { Edit, DataAnalysis, MagicStick, Grid } from "@element-plus/icons-vue";
 const router = useRouter();
 
 const entries = [
-  { key: "basic", title: "基础计算练习", desc: "训练最基本的加减乘除，打好数资基础", icon: Edit, available: true, level: "L1" },
-  { key: "data", title: "资料分析专项", desc: "提供实际做题中常用公式的专项练习", icon: DataAnalysis, available: true, level: "L2-L3" },
-  { key: "think", title: "思维能力训练", desc: "在潜移默化中提升思维能力或反应能力", icon: MagicStick, available: false, level: "保留入口" },
-  { key: "reason", title: "数字推理训练", desc: "通过大量训练提高数字推理的敏感性", icon: Grid, available: false, level: "保留入口" },
+  { key: "basic", title: "基础计算练习", desc: "训练最基本的加减乘除，打好数资基础", icon: Edit, available: true, level: "L1", route: "/practice" },
+  { key: "data", title: "资料分析专项", desc: "提供实际做题中常用公式的专项练习", icon: DataAnalysis, available: true, level: "L2-L3", route: "/practice/data-analysis" },
+  { key: "think", title: "思维能力训练", desc: "在潜移默化中提升思维能力或反应能力", icon: MagicStick, available: false, level: "保留入口", route: "" },
+  { key: "reason", title: "数字推理训练", desc: "通过大量训练提高数字推理的敏感性", icon: Grid, available: false, level: "保留入口", route: "" },
 ] as const;
 
-function goPractice() {
-  router.push("/practice");
+function goEntry(e: { route: string }) {
+  if (e.route) router.push(e.route);
 }
 </script>
 
@@ -31,7 +31,7 @@ function goPractice() {
         :key="e.key"
         class="entry-card glass-card"
         :class="{ 'is-disabled': !e.available }"
-        @click="e.available && goPractice()"
+        @click="e.available && goEntry(e)"
       >
         <div class="entry-icon">
           <el-icon :size="28"><component :is="e.icon" /></el-icon>

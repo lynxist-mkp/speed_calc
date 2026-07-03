@@ -17,6 +17,12 @@ const router = createRouter({
       meta: { title: "基础计算" },
     },
     {
+      path: "/practice/data-analysis",
+      name: "data-analysis-settings",
+      component: () => import("@/views/DataAnalysisSettings.vue"),
+      meta: { title: "资料分析" },
+    },
+    {
       path: "/practice/session",
       name: "practice-session",
       component: () => import("@/views/PracticeSession.vue"),
