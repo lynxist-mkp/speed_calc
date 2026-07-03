@@ -58,4 +58,15 @@ describe("Numpad.vue", () => {
     expect(wrapper.text()).toContain("左右拖调位置");
     expect(wrapper.text()).toContain("双击恢复");
   });
+
+  it("data variant 不渲染 ± 键", () => {
+    const wrapper = mount(Numpad, { props: { variant: "data", layout: "normal" } });
+    expect(wrapper.find('[data-key="sign"]').exists()).toBe(false);
+  });
+
+  it("data variant 渲染网格内的重开按钮且无重复", () => {
+    const wrapper = mount(Numpad, { props: { variant: "data", layout: "normal" } });
+    const restartButtons = wrapper.findAll('[data-key="restart"]');
+    expect(restartButtons).toHaveLength(1);
+  });
 });

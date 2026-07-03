@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted } from "vue";
 
 interface Props {
   variant?: "basic" | "data";
@@ -28,7 +28,7 @@ let dragStartY = 0;
 let dragStartPosX = 0;
 let dragStartPosY = 0;
 let dragStartScale = 1;
-let isVerticalDrag = false;
+let dragAxis: "h" | "v" | null = null;
 
 const DEFAULT_POS_X = 0;
 const DEFAULT_POS_Y = 0;
@@ -71,7 +71,7 @@ function onPointerDown(e: PointerEvent) {
   dragStartPosY = posY.value;
   dragStartScale = scale.value;
   // 判断方向：首次移动时定
-  isVerticalDrag = false;
+  dragAxis = null;
   (e.target as HTMLElement).setPointerCapture(e.pointerId);
 }
 
@@ -79,14 +79,14 @@ function onPointerMove(e: PointerEvent) {
   if (!dragging.value) return;
   const dx = e.clientX - dragStartX;
   const dy = e.clientY - dragStartY;
-  if (!isVerticalDrag && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-    isVerticalDrag = Math.abs(dy) > Math.abs(dx);
+  if (dragAxis === null && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+    dragAxis = Math.abs(dy) > Math.abs(dx) ? "v" : "h";
   }
-  if (isVerticalDrag) {
+  if (dragAxis === "v") {
     // 垂直拖动调高度（scale）
     const newScale = dragStartScale + dy / 200;
     scale.value = clamp(newScale, MIN_SCALE, MAX_SCALE);
-  } else {
+  } else if (dragAxis === "h") {
     // 水平拖动调位置
     posX.value = dragStartPosX + dx;
     posY.value = dragStartPosY + dy;
@@ -108,9 +108,6 @@ function onDoubleClick() {
 }
 
 onMounted(loadPersistedState);
-onBeforeUnmount(() => {
-  // 组件卸载无需清理 localStorage
-});
 
 // 数字键布局（正序）
 const numberKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
@@ -147,6 +144,7 @@ function onKey(key: string) {
 
     <!-- 重开独立粉色圆形按钮 -->
     <button
+      v-if="props.variant === 'basic'"
       data-key="restart"
       class="key-restart glass-button"
       @click="onKey('restart')"
