@@ -39,19 +39,31 @@ describe("CompareKeypad.vue", () => {
     expect(wrapper.emitted("submit")).toBeTruthy();
   });
 
-  it("selected='>' 时大于按钮高亮（btn-gt-active 类）", () => {
+  it("selected='>' 时大于按钮高亮（active 类）", () => {
     const wrapper = mount(CompareKeypad, { props: { selected: ">" } });
     expect(wrapper.find('[data-testid="btn-gt"]').classes()).toContain("active");
+    expect(wrapper.find('[data-testid="btn-lt"]').classes()).not.toContain("active");
   });
 
-  it("selected='<' 时小于按钮高亮（btn-lt-active 类）", () => {
+  it("selected='<' 时小于按钮高亮（active 类）", () => {
     const wrapper = mount(CompareKeypad, { props: { selected: "<" } });
     expect(wrapper.find('[data-testid="btn-lt"]').classes()).toContain("active");
+    expect(wrapper.find('[data-testid="btn-gt"]').classes()).not.toContain("active");
   });
 
   it("selected=null 时无高亮", () => {
     const wrapper = mount(CompareKeypad, { props: { selected: null } });
     expect(wrapper.find('[data-testid="btn-gt"]').classes()).not.toContain("active");
     expect(wrapper.find('[data-testid="btn-lt"]').classes()).not.toContain("active");
+  });
+
+  it("selected=null 时确定按钮 disabled", () => {
+    const wrapper = mount(CompareKeypad, { props: { selected: null } });
+    expect(wrapper.find('[data-testid="btn-submit"]').attributes("disabled")).toBeDefined();
+  });
+
+  it("selected='>' 时确定按钮可点击（非 disabled）", () => {
+    const wrapper = mount(CompareKeypad, { props: { selected: ">" } });
+    expect(wrapper.find('[data-testid="btn-submit"]').attributes("disabled")).toBeUndefined();
   });
 });
