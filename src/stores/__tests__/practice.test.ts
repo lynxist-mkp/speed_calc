@@ -9,7 +9,26 @@ vi.mock("@/db/index", () => ({
   getTimeStandard: vi.fn().mockResolvedValue({ pass: 28, good: 22, excellent: 18 }),
 }));
 
+// mock 资料分析生成器
+vi.mock("@/generators/dataAnalysis", () => ({
+  generateDataQuestion: vi.fn(() => [
+    {
+      display: "\\frac{1000}{1.1} \\approx",
+      answer: 909.09,
+      tolerance: 0.03,
+      context: "现期: 1000, 增长率: 10%",
+    },
+    {
+      display: "\\frac{2000}{1.2} \\approx",
+      answer: 1666.67,
+      tolerance: 0.03,
+      context: "现期: 2000, 增长率: 20%",
+    },
+  ]),
+}));
+
 import { usePracticeStore } from "@/stores/practice";
+import { generateDataQuestion } from "@/generators/dataAnalysis";
 
 describe("usePracticeStore", () => {
   beforeEach(() => {
@@ -146,5 +165,103 @@ describe("usePracticeStore", () => {
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 10 });
     expect(store.error).toBe("DB down");
     expect(store.phase).toBe("idle");
+  });
+});
+
+describe("L2 store 多题型调度", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it("init 资料分析题型调度 generateDataQuestion", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
+    expect(generateDataQuestion).toHaveBeenCalledWith("estimate_prev", 2);
+    expect(store.phase).toBe("running");
+    expect(store.questions).toHaveLength(2);
+  });
+
+  it("isDataType computed 正确", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
+    expect(store.isDataType).toBe(true);
+  });
+
+  it("基础计算 isDataType=false", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 2 });
+    expect(store.isDataType).toBe(false);
+  });
+
+  it("questionMeta 返回资料分析元数据", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
+    expect(store.questionMeta).not.toBeNull();
+    expect(store.questionMeta?.isData).toBe(true);
+    expect(store.questionMeta?.tolerance).toBe(0.03);
+    expect(store.questionMeta?.context).toContain("现期");
+  });
+
+  it("submit 容差判分——边界内正确", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
+    store.currentAnswer = "930";
+    await store.submit();
+    expect(store.records[0].isCorrect).toBe(true);
+  });
+
+  it("submit 容差判分——边界外错误", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
+    store.currentAnswer = "1000";
+    await store.submit();
+    expect(store.records[0].isCorrect).toBe(false);
+  });
+
+  it("submit 空答案守卫——'-' 不提交", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
+    store.currentAnswer = "-";
+    await store.submit();
+    expect(store.records).toHaveLength(0);
+  });
+
+  it("submit 空答案守卫——'0.' 不提交", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
+    store.currentAnswer = "0.";
+    await store.submit();
+    expect(store.records).toHaveLength(0);
+  });
+
+  it("preset 预填——init 后 currentAnswer 为 preset", async () => {
+    (generateDataQuestion as ReturnType<typeof vi.fn>).mockReturnValueOnce([
+      { display: "test", answer: 0.5, tolerance: 0.02, preset: "0." },
+    ]);
+    const store = usePracticeStore();
+    await store.init({ type: "frac_calc_lt", subtype: "分数计算", count: 1 });
+    expect(store.currentAnswer).toBe("0.");
+  });
+
+  it("推进下一题时预填 next.preset", async () => {
+    (generateDataQuestion as ReturnType<typeof vi.fn>).mockReturnValueOnce([
+      { display: "q1", answer: 1, tolerance: 0.02 },
+      { display: "q2", answer: 2, tolerance: 0.02, preset: "0." },
+    ]);
+    const store = usePracticeStore();
+    await store.init({ type: "frac_calc_lt", subtype: "分数计算", count: 2 });
+    store.currentAnswer = "1";
+    await store.submit();
+    expect(store.currentIndex).toBe(1);
+    expect(store.currentAnswer).toBe("0.");
+  });
+
+  it("records.question 存 KaTeX 源串", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
+    store.currentAnswer = "909";
+    await store.submit();
+    expect(store.records[0].question).toContain("\\frac");
   });
 });
