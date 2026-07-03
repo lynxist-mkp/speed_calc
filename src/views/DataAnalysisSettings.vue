@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { usePracticeStore } from "@/stores/practice";
+import type { CompareType } from "@/generators/compareAnalysis";
 
 const router = useRouter();
 const store = usePracticeStore();
@@ -19,6 +20,15 @@ const questionTypes: { label: string; type: string }[] = [
   { label: "基期比重", type: "base_period_ratio" },
   { label: "年平均量", type: "annual_avg" },
 ];
+
+const compareTypes: { label: string; type: CompareType }[] = [
+  { label: "增量比大小", type: "compare_growth" },
+  { label: "基期比大小", type: "compare_base" },
+  { label: "分数比大小", type: "compare_frac" },
+];
+const selectedCompareType = ref(0);
+const activeTab = ref<"fill" | "compare">("fill");
+
 const selectedType = ref(0);
 
 // 题量：资料分析原版 5/10/15/20/25/自定义5-100
@@ -69,6 +79,24 @@ async function startPractice() {
   }
 }
 
+async function startCompare() {
+  const t = compareTypes[selectedCompareType.value];
+  await store.init({
+    type: t.type,
+    subtype: t.label,
+    count: selectedCount.value,
+  });
+  if (store.phase === "running") {
+    router.push("/practice/session");
+  } else {
+    ElMessage.error(store.error ?? "练习初始化失败");
+  }
+}
+
+function startComposite() {
+  router.push("/practice/composite");
+}
+
 function goHistory() {
   router.push("/history");
 }
@@ -78,30 +106,57 @@ function goHistory() {
   <div class="da-settings">
     <h2 class="title">资料分析</h2>
 
-    <!-- 题型网格 3x3 -->
-    <div class="type-grid">
-      <button
-        v-for="(t, i) in questionTypes"
-        :key="t.type"
-        class="type-cell"
-        :class="{ selected: i === selectedType }"
-        @click="selectedType = i"
-      >{{ t.label }}</button>
+    <el-tabs v-model="activeTab">
+      <el-tab-pane label="填空题" name="fill">
+        <!-- 题型网格 3x3 -->
+        <div class="type-grid">
+          <button
+            v-for="(t, i) in questionTypes"
+            :key="t.type"
+            class="type-cell"
+            :class="{ selected: i === selectedType }"
+            @click="selectedType = i"
+          >{{ t.label }}</button>
+        </div>
+
+        <!-- 题量行 -->
+        <div class="row" @click="openDialog">
+          <span class="label">题量</span>
+          <span class="value">{{ selectedCount }} 题 ›</span>
+        </div>
+
+        <!-- 主按钮 -->
+        <button class="start-btn" @click="startPractice">开始练习</button>
+        <button class="bottom-btn" @click="goHistory">历史记录</button>
+      </el-tab-pane>
+
+      <el-tab-pane label="比较题" name="compare">
+        <div class="type-grid">
+          <button
+            v-for="(t, i) in compareTypes"
+            :key="t.type"
+            class="type-cell"
+            :class="{ selected: i === selectedCompareType }"
+            @click="selectedCompareType = i"
+          >{{ t.label }}</button>
+        </div>
+
+        <div class="row" @click="openDialog">
+          <span class="label">题量</span>
+          <span class="value">{{ selectedCount }} 题 ›</span>
+        </div>
+
+        <button class="start-btn" @click="startCompare">开始练习</button>
+      </el-tab-pane>
+    </el-tabs>
+
+    <!-- 一表通算独立区块 -->
+    <div class="composite-block">
+      <h3 class="section-title">一表通算</h3>
+      <button class="start-btn" @click="startComposite">开始练习</button>
     </div>
 
-    <!-- 题量行 -->
-    <div class="row" @click="openDialog">
-      <span class="label">题量</span>
-      <span class="value">{{ selectedCount }} 题 ›</span>
-    </div>
-
-    <!-- 主按钮 -->
-    <button class="start-btn" @click="startPractice">开始练习</button>
-
-    <!-- 底部 -->
-    <button class="bottom-btn" @click="goHistory">历史记录</button>
-
-    <!-- 题量弹窗 -->
+    <!-- 题量弹窗（复用） -->
     <el-dialog v-model="dialogVisible" title="选择题量" width="320px">
       <div class="count-grid">
         <button
@@ -233,5 +288,17 @@ function goHistory() {
   &.active {
     border-color: var(--app-color-primary, #5faf6f);
   }
+}
+
+.composite-block {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-title {
+  color: var(--app-text-primary, #93a1a1);
+  font-size: 16px;
+  margin-bottom: 12px;
 }
 </style>

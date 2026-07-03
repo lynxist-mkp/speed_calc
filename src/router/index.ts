@@ -29,6 +29,12 @@ const router = createRouter({
       meta: { title: "答题中" },
     },
     {
+      path: "/practice/composite",
+      name: "composite-session",
+      component: () => import("@/views/CompositeSession.vue"),
+      meta: { title: "一表通算" },
+    },
+    {
       path: "/practice/result",
       name: "practice-result",
       component: () => import("@/views/PracticeResult.vue"),

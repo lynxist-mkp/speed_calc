@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { generateBasicAddSub, type Question } from "@/generators/basic";
 import { generateDataQuestion, type DataQuestion, type DataType } from "@/generators/dataAnalysis";
+import { generateCompareQuestion, type CompareQuestion, type CompareType } from "@/generators/compareAnalysis";
 import {
   insertSession,
   insertRecord,
@@ -30,7 +31,7 @@ export const usePracticeStore = defineStore("practice", () => {
   const phase = ref<"idle" | "running" | "finished">("idle");
   const sessionId = ref<number | null>(null);
   const config = ref<SessionConfig | null>(null);
-  type AnyQuestion = Question | DataQuestion;
+  type AnyQuestion = Question | DataQuestion | CompareQuestion;
   const questions = ref<AnyQuestion[]>([]);
   const currentIndex = ref(0);
   const currentAnswer = ref("");
@@ -52,6 +53,16 @@ export const usePracticeStore = defineStore("practice", () => {
   const progress = computed(() => `${currentIndex.value + 1}/${questions.value.length}`);
 
   const isDataType = computed(() => config.value?.type !== "basic_addsub");
+
+  const questionCategory = computed<"numpad" | "compare" | "composite">(() => {
+    const t = config.value?.type;
+    if (!t) return "numpad";
+    if (t.startsWith("compare_")) return "compare";
+    if (t === "composite") return "composite";
+    return "numpad";
+  });
+
+  const compareChoice = ref<">" | "<" | null>(null);
 
   const questionMeta = computed(() => {
     const q = currentQuestion.value;
@@ -91,12 +102,18 @@ export const usePracticeStore = defineStore("practice", () => {
   async function init(cfg: SessionConfig) {
     stopTimer();
     try {
-      const qs = cfg.type === "basic_addsub"
-        ? generateBasicAddSub(cfg.count)
-        : generateDataQuestion(cfg.type as DataType, cfg.count);
+      let qs: AnyQuestion[];
+      if (cfg.type === "basic_addsub") {
+        qs = generateBasicAddSub(cfg.count);
+      } else if (cfg.type.startsWith("compare_")) {
+        qs = generateCompareQuestion(cfg.type as CompareType, cfg.count);
+      } else {
+        qs = generateDataQuestion(cfg.type as DataType, cfg.count);
+      }
       questions.value = qs;
       currentIndex.value = 0;
       currentAnswer.value = qs[0] && "preset" in qs[0] ? (qs[0].preset ?? "") : "";
+      compareChoice.value = null;
       records.value = [];
       elapsedMs.value = 0;
       error.value = null;
@@ -117,6 +134,10 @@ export const usePracticeStore = defineStore("practice", () => {
       error.value = e instanceof Error ? e.message : String(e);
       phase.value = "idle";
     }
+  }
+
+  function selectCompare(choice: ">" | "<") {
+    compareChoice.value = choice;
   }
 
   function inputChar(c: string) {
@@ -142,6 +163,49 @@ export const usePracticeStore = defineStore("practice", () => {
   async function submit() {
     const q = currentQuestion.value;
     if (q === null) return;
+    // compare 模式分支
+    if (questionCategory.value === "compare") {
+      if (compareChoice.value === null) return; // 未选择守卫
+      const cq = q as CompareQuestion;
+      const isCorrect = compareChoice.value === cq.answer;
+      const timeSpentMs =
+        questionStartedAt.value !== null
+          ? Math.floor(performance.now() - questionStartedAt.value)
+          : 0;
+      const record: AnswerRecord = {
+        qIndex: currentIndex.value,
+        question: `${cq.display.leftTex} ? ${cq.display.rightTex}`,
+        userAnswer: compareChoice.value,
+        trueAnswer: cq.answer,
+        isCorrect,
+        timeSpentMs,
+      };
+      records.value.push(record);
+      try {
+        if (sessionId.value !== null) {
+          await insertRecord({
+            sessionId: sessionId.value,
+            qIndex: record.qIndex,
+            question: record.question,
+            userAnswer: record.userAnswer,
+            trueAnswer: record.trueAnswer,
+            isCorrect: record.isCorrect,
+            tolerance: 0,
+            timeSpentMs: record.timeSpentMs,
+          });
+        }
+      } catch (e) {
+        error.value = e instanceof Error ? e.message : String(e);
+      }
+      compareChoice.value = null;
+      if (currentIndex.value + 1 >= questions.value.length) {
+        await finish();
+      } else {
+        currentIndex.value += 1;
+        questionStartedAt.value = performance.now();
+      }
+      return;
+    }
     // 空答案守卫：空串、单负号、单"0." 视为未作答
     if (currentAnswer.value === "" || currentAnswer.value === "-" || currentAnswer.value === "0.") return;
     const userAns = Number(currentAnswer.value);
@@ -160,14 +224,16 @@ export const usePracticeStore = defineStore("practice", () => {
       questionStartedAt.value !== null
         ? Math.floor(performance.now() - questionStartedAt.value)
         : 0;
+    // compare 分支已 return，此处 q 必为 numpad/data 题型，收窄类型以安全访问 display/answer
+    const qd = q as Question | DataQuestion;
     const record: AnswerRecord = {
       qIndex: currentIndex.value,
-      question: q.display,
+      question: qd.display,
       userAnswer: currentAnswer.value,
-      trueAnswer: String(q.answer),
+      trueAnswer: String(qd.answer),
       isCorrect,
       timeSpentMs,
-      unit: "tolerance" in q ? q.unit : undefined,
+      unit: "tolerance" in qd ? qd.unit : undefined,
     };
     records.value.push(record);
     try {
@@ -227,6 +293,7 @@ export const usePracticeStore = defineStore("practice", () => {
     questions.value = [];
     currentIndex.value = 0;
     currentAnswer.value = "";
+    compareChoice.value = null;
     records.value = [];
     startedAt.value = null;
     questionStartedAt.value = null;
@@ -253,9 +320,12 @@ export const usePracticeStore = defineStore("practice", () => {
     currentQuestion,
     progress,
     isDataType,
+    questionCategory,
+    compareChoice,
     questionMeta,
     init,
     inputChar,
+    selectCompare,
     toggleSign,
     clearAnswer,
     backspace,
