@@ -2,8 +2,6 @@ import { describe, it, expect } from "vitest";
 import {
   generateComposite,
   COMPOSITE_FIELDS,
-  type CompositeData,
-  type CompositeAnswers,
 } from "@/generators/compositeAnalysis";
 
 describe("generateComposite", () => {
@@ -94,6 +92,34 @@ describe("generateComposite", () => {
     for (let i = 0; i < 10; i++) {
       const q = generateComposite();
       expect(q.answers.D).toBeCloseTo(q.data.baseA - q.data.baseB, 1);
+    }
+  });
+
+  it("k（比值增长率）= ((currentA/currentB - baseA/baseB) / (baseA/baseB)) × 100", () => {
+    for (let i = 0; i < 10; i++) {
+      const q = generateComposite();
+      const ratioBase = q.data.baseA / q.data.baseB;
+      const expected = ((q.data.currentA / q.data.currentB - ratioBase) / ratioBase) * 100;
+      expect(q.answers.k).toBeCloseTo(expected, 1);
+    }
+  });
+
+  it("r3（AB和增长率）= ((currentA+currentB) / (baseA+baseB) - 1) × 100", () => {
+    for (let i = 0; i < 10; i++) {
+      const q = generateComposite();
+      const expected = ((q.data.currentA + q.data.currentB) / (q.data.baseA + q.data.baseB) - 1) * 100;
+      expect(q.answers.r3).toBeCloseTo(expected, 1);
+    }
+  });
+
+  it("r4（AB差增长率）= ((currentA-currentB) / (baseA-baseB) - 1) × 100（denom≠0 时）", () => {
+    for (let i = 0; i < 10; i++) {
+      const q = generateComposite();
+      const denom = q.data.baseA - q.data.baseB;
+      // denom 理论上极少为 0；若碰到跳过本次（不断言）
+      if (denom === 0) continue;
+      const expected = ((q.data.currentA - q.data.currentB) / denom - 1) * 100;
+      expect(q.answers.r4).toBeCloseTo(expected, 1);
     }
   });
 
