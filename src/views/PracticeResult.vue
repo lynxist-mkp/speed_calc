@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
 import { usePracticeStore } from "@/stores/practice";
 
 const router = useRouter();
@@ -41,6 +42,10 @@ onMounted(() => {
   // 若会话未结束（如直接访问 URL），回设置页
   if (store.phase !== "finished") {
     router.replace("/practice");
+    return;
+  }
+  if (store.error) {
+    ElMessage.warning("会话保存失败，历史记录可能不完整");
   }
 });
 </script>

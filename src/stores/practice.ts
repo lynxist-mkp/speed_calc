@@ -33,6 +33,7 @@ export const usePracticeStore = defineStore("practice", () => {
   const currentAnswer = ref("");
   const records = ref<AnswerRecord[]>([]);
   const startedAt = ref<number | null>(null);
+  const questionStartedAt = ref<number | null>(null);
   const elapsedMs = ref(0);
   const error = ref<string | null>(null);
   const timeStandard = ref<TimeStandard | null>(null);
@@ -86,6 +87,7 @@ export const usePracticeStore = defineStore("practice", () => {
       });
       sessionId.value = id;
       timeStandard.value = await getTimeStandard(cfg.type, cfg.count);
+      questionStartedAt.value = performance.now();
       phase.value = "running";
       startTimer();
     } catch (e) {
@@ -121,7 +123,9 @@ export const usePracticeStore = defineStore("practice", () => {
     const userAns = currentAnswer.value;
     const isCorrect = Number(userAns) === q.answer;
     const timeSpentMs =
-      startedAt.value !== null ? Math.floor(performance.now() - startedAt.value) : 0;
+      questionStartedAt.value !== null
+        ? Math.floor(performance.now() - questionStartedAt.value)
+        : 0;
     const record: AnswerRecord = {
       qIndex: currentIndex.value,
       question: q.display,
@@ -152,6 +156,7 @@ export const usePracticeStore = defineStore("practice", () => {
       await finish();
     } else {
       currentIndex.value += 1;
+      questionStartedAt.value = performance.now();
     }
   }
 
@@ -187,6 +192,7 @@ export const usePracticeStore = defineStore("practice", () => {
     currentAnswer.value = "";
     records.value = [];
     startedAt.value = null;
+    questionStartedAt.value = null;
     elapsedMs.value = 0;
     error.value = null;
     timeStandard.value = null;
