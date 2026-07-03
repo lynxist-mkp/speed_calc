@@ -23,6 +23,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0003_add_data_analysis_standards.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 4,
+            description: "add compare 3 types + composite time standard seeds",
+            sql: include_str!("../migrations/0004_add_compare_composite_standards.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 
