@@ -79,7 +79,7 @@ export async function insertSession(input: SessionInput): Promise<number> {
      VALUES ($1, $2, $3, $4, 0, 0, $5, $6)`,
     [input.type, input.subtype, input.difficulty, input.total, input.nback, Date.now()]
   );
-  return result.lastInsertId;
+  return result.lastInsertId as number;
 }
 
 export interface RecordInput {

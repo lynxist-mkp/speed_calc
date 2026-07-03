@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateBasicAddSub, type Question } from "@/generators/basic";
+import { generateBasicAddSub } from "@/generators/basic";
 
 describe("generateBasicAddSub", () => {
   it("生成指定数量的题", () => {

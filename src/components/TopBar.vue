@@ -10,10 +10,8 @@ const props = defineProps<Props>();
 
 const elapsedDisplay = computed(() => {
   const totalSec = Math.floor(props.elapsedMs / 1000);
-  const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-  void h; // 规格计时格式固定 0:M:S，h 暂未使用
   return `0:${m}:${s}`;
 });
 </script>
