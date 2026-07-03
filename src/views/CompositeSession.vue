@@ -70,9 +70,7 @@ function refreshData() {
   submitted.value = false;
   results.value = {};
   activeField.value = null;
-  if (startedAt.value === null) {
-    startTimer();
-  }
+  startTimer();
 }
 
 function onInput(char: string) {
@@ -94,10 +92,12 @@ function onClear() {
 }
 
 function onSubmit() {
+  if (submitted.value) return;
   if (!trueAnswers || !data.value) return;
   let correctCount = 0;
   for (const f of COMPOSITE_FIELDS) {
-    const userAns = Number(answers.value[f.key] ?? "");
+    const raw = answers.value[f.key];
+    const userAns = raw === undefined || raw === "" ? NaN : Number(raw);
     const trueAns = trueAnswers[f.key];
     const isCorrect =
       !isNaN(userAns) &&
@@ -141,7 +141,7 @@ async function persistSession(correctCount: number) {
 }
 
 function onCustom() {
-  ElMessage.info("自定义功能暂未实现，使用随机");
+  ElMessage.info("自定义功能暂未实现");
 }
 
 function onBack() {
