@@ -1,0 +1,58 @@
+// 行测小助手 - Liquid Glass 玻璃材质
+// 参考：macOS 26 (Tahoe) Liquid Glass — 浮动玻璃导航层、edge-to-edge 内容
+// 实现：backdrop-filter blur + 半透明背景 + 细边框 + 阴影
+
+// 玻璃基础 mixin
+@mixin glass($bg: var(--app-glass-bg), $blur: var(--app-glass-blur)) {
+  background: $bg;
+  backdrop-filter: blur($blur) saturate(1.4);
+  -webkit-backdrop-filter: blur($blur) saturate(1.4);
+  border: 1px solid var(--app-glass-border);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.36),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+// 浮动 sidebar 专用玻璃（更厚）
+.glass-sidebar {
+  @include glass(rgba(7, 54, 66, 0.72), 28px);
+  border-radius: var(--app-radius-window);
+}
+
+// 浮动 toolbar 专用玻璃（更薄）
+.glass-toolbar {
+  @include glass(rgba(10, 66, 82, 0.6), 20px);
+  border-radius: var(--app-radius-card);
+}
+
+// 卡片玻璃
+.glass-card {
+  @include glass(rgba(7, 54, 66, 0.5), 16px);
+  border-radius: var(--app-radius-card);
+}
+
+// 按钮玻璃（hover/active 半透明+模糊）
+.glass-button {
+  background: rgba(147, 161, 161, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--app-glass-border);
+  border-radius: var(--app-radius-button);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+
+  &:hover {
+    background: rgba(95, 175, 111, 0.18);
+    border-color: var(--app-color-primary);
+  }
+
+  &:active {
+    background: rgba(95, 175, 111, 0.28);
+    transform: scale(0.98);
+  }
+
+  &.is-active {
+    background: rgba(95, 175, 111, 0.22);
+    border-color: var(--app-color-primary);
+    color: var(--app-text-bright);
+  }
+}

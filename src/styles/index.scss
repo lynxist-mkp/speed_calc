@@ -1,0 +1,67 @@
+// 行测小助手 - 全局样式入口
+@use "./theme.scss";
+@use "./glass.scss";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--app-font-cn);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--app-text-primary);
+  background: var(--app-bg-page);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// 滚动条（深色适配）
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(147, 161, 161, 0.18);
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(147, 161, 161, 0.28);
+  }
+}
+
+// 通用工具类
+.text-mono {
+  font-family: var(--app-font-mono);
+}
+
+.text-bright {
+  color: var(--app-text-bright);
+}
+
+.text-secondary {
+  color: var(--app-text-secondary);
+}
+
+.text-muted {
+  color: var(--app-text-muted);
+}
+
+.text-primary {
+  color: var(--app-color-primary);
+}
