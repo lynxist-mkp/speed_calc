@@ -117,12 +117,14 @@ function genAnnualGrowthRate(): DataQuestion {
   }
   const n = 5;
   const answer = Math.pow(last / first, 1 / n) - 1;
+  const answerPct = Number((answer * 100).toFixed(2));
   return {
     display: `\\text{2012~2017 年均增长率} \\approx`,
-    answer: Number((answer * 100).toFixed(2)),
+    answer: answerPct,
     tolerance: 0.03,
     context: `2012~2017, 首: ${first}万, 末: ${last}万, n=5`,
     unit: "%",
+    preset: answerPct < 0 ? "-" : undefined,
   };
 }
 

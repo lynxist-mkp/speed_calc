@@ -219,6 +219,23 @@ describe("generateDataQuestion", () => {
         expect(q.answer).not.toBe(0);
       }
     });
+
+    it("答案可正可负（首末值随机）", () => {
+      const qs = generateDataQuestion("annual_growth_rate", 50);
+      const hasNeg = qs.some((q) => q.answer < 0);
+      const hasPos = qs.some((q) => q.answer > 0);
+      expect(hasPos).toBe(true);
+      expect(hasNeg).toBe(true);
+    });
+
+    it("答案为负时 preset='-'（触屏无±键，负号预填）", () => {
+      const qs = generateDataQuestion("annual_growth_rate", 50);
+      const negQs = qs.filter((q) => q.answer < 0);
+      expect(negQs.length).toBeGreaterThan(0);
+      for (const q of negQs) {
+        expect(q.preset).toBe("-");
+      }
+    });
   });
 
   describe("base_period_ratio 基期比重", () => {
