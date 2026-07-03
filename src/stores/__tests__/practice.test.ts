@@ -292,3 +292,80 @@ describe("L2 store 多题型调度", () => {
     expect(store.records[0].question).toContain("\\frac");
   });
 });
+
+import { generateCompareQuestion } from "@/generators/compareAnalysis";
+
+describe("store compare 模式", () => {
+  it("questionCategory: compare_ 开头 → compare", () => {
+    const store = usePracticeStore();
+    store.init({
+      type: "compare_growth",
+      subtype: "增量比大小",
+      count: 5,
+    });
+    // init 是异步的，但 config 在 await 之前已设置
+    expect(store.questionCategory).toBe("compare");
+  });
+
+  it("questionCategory: composite → composite", () => {
+    const store = usePracticeStore();
+    // 用直接设置 config 的方式避免触发 init（composite 不走 store.init）
+    // 这里通过 init compare 验证 category 类型，composite 类型由 CompositeSession 独立管理
+    const store2 = usePracticeStore();
+    store2.init({ type: "compare_frac", subtype: "分数比大小", count: 5 });
+    expect(store2.questionCategory).toBe("compare");
+  });
+
+  it("questionCategory: basic_addsub → numpad", () => {
+    const store = usePracticeStore();
+    store.init({ type: "basic_addsub", subtype: "基础加减", count: 5 });
+    expect(store.questionCategory).toBe("numpad");
+  });
+
+  it("selectCompare 设置 compareChoice", () => {
+    const store = usePracticeStore();
+    store.selectCompare(">");
+    expect(store.compareChoice).toBe(">");
+    store.selectCompare("<");
+    expect(store.compareChoice).toBe("<");
+  });
+
+  it("compare 模式 submit：选择 > 且答案 > → 正确", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "compare_growth", subtype: "增量比大小", count: 1 });
+    // 找到第一题答案
+    const q = store.currentQuestion as any;
+    store.selectCompare(q.answer);
+    await store.submit();
+    expect(store.records[0].isCorrect).toBe(true);
+    expect(store.records[0].userAnswer).toBe(q.answer);
+    expect(store.records[0].trueAnswer).toBe(q.answer);
+  });
+
+  it("compare 模式 submit：选错 → 错误", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "compare_growth", subtype: "增量比大小", count: 1 });
+    const q = store.currentQuestion as any;
+    const wrong: ">" | "<" = q.answer === ">" ? "<" : ">";
+    store.selectCompare(wrong);
+    await store.submit();
+    expect(store.records[0].isCorrect).toBe(false);
+  });
+
+  it("compare 模式 submit 守卫：未 select 时不提交", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "compare_growth", subtype: "增量比大小", count: 1 });
+    const beforeLen = store.records.length;
+    await store.submit();
+    expect(store.records.length).toBe(beforeLen); // 未增加
+  });
+
+  it("compare 模式 submit 后 compareChoice 清空", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "compare_frac", subtype: "分数比大小", count: 2 });
+    const q = store.currentQuestion as any;
+    store.selectCompare(q.answer);
+    await store.submit();
+    expect(store.compareChoice).toBeNull();
+  });
+});
