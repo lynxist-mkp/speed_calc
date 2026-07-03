@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateDataQuestion, type DataType, type DataQuestion } from "@/generators/dataAnalysis";
+import { generateDataQuestion, type DataType } from "@/generators/dataAnalysis";
 
 describe("generateDataQuestion", () => {
   describe("通用", () => {
@@ -122,12 +122,13 @@ describe("generateDataQuestion", () => {
       }
     });
 
-    it("正反向互逆：正向 answer=100/n，反向 answer=n", () => {
+    it("正反向互逆：反向题面百分数 ≈ 100/n", () => {
       const qs = generateDataQuestion("baihua_frac_rev", 50);
       for (const q of qs) {
         const n = q.answer;
         const pct = 100 / n;
         expect(q.display).toContain("%");
+        expect(q.display).toContain(pct.toFixed(1));  // 验证题面含对应百分数
       }
     });
   });
