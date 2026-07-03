@@ -91,11 +91,20 @@ function genCompareGrowth(pattern: "A" | "B"): CompareQuestion {
     );
   }
   // 约束兜底：持续重试直至满足 valueDiffInRange（约束可满足，概率 1 终止）
+  // pattern B 必须保留 A2 = A1 * mult 倍率约束，与主循环一致
   for (let attempt = 0; attempt < 1000; attempt++) {
-    const A1 = randInt(100, 999);
-    const A2 = randInt(100, 999);
-    const r1 = randFloat(5, 30, 1);
-    const r2 = randFloat(5, 30, 1);
+    let A1: number, A2: number, r1: number, r2: number;
+    if (pattern === "A") {
+      A1 = randInt(100, 999);
+      A2 = randInt(100, 999);
+      r1 = randFloat(5, 30, 1);
+      r2 = randFloat(5, 30, 1);
+    } else {
+      A1 = randInt(100, Math.floor(999 / mult));
+      A2 = A1 * mult;
+      r1 = randFloat(5, 30, 1);
+      r2 = randFloat(5, 30, 1);
+    }
     const lv = A1 * r1 / 100;
     const rv = A2 * r2 / 100;
     if (!valueDiffInRange(lv, rv)) continue;
@@ -110,7 +119,19 @@ function genCompareGrowth(pattern: "A" | "B"): CompareQuestion {
     );
   }
   // 极端兜底（理论不可达）：构造确定满足约束的值
-  const A1 = 200, A2 = 206, r1 = 10.0, r2 = 10.0;
+  // pattern B 需保留倍率 A2 = A1 * mult 并满足 valueDiffInRange
+  let A1: number, A2: number, r1: number, r2: number;
+  if (pattern === "A") {
+    A1 = 200; A2 = 206; r1 = 10.0; r2 = 10.0;
+  } else {
+    // mult=2: lv=20, rv=20.6, ratio≈0.0291 ∈ [0.01,0.05] ✅
+    // mult=3: lv=30, rv=31.5, ratio≈0.0476 ∈ [0.01,0.05] ✅
+    if (mult === 2) {
+      A1 = 100; A2 = 200; r1 = 20.0; r2 = 10.3;
+    } else {
+      A1 = 100; A2 = 300; r1 = 30.0; r2 = 10.5;
+    }
+  }
   const lv = A1 * r1 / 100;
   const rv = A2 * r2 / 100;
   return buildQuestion(
@@ -217,11 +238,20 @@ function genCompareFrac(pattern: "A" | "B"): CompareQuestion {
     );
   }
   // 约束兜底：持续重试直至满足 valueDiffInRange（约束可满足，概率 1 终止）
+  // pattern B 必须保留 b2 = b1 * mult 倍率约束，与主循环一致
   for (let attempt = 0; attempt < 1000; attempt++) {
-    const a1 = randInt(100, 999);
-    const b1 = randInt(100, 999);
-    const a2 = randInt(100, 999);
-    const b2 = randInt(100, 999);
+    let a1: number, b1: number, a2: number, b2: number;
+    if (pattern === "A") {
+      a1 = randInt(100, 999);
+      b1 = randInt(100, 999);
+      a2 = randInt(100, 999);
+      b2 = randInt(100, 999);
+    } else {
+      b1 = randInt(100, Math.floor(999 / mult));
+      b2 = b1 * mult;
+      a1 = randInt(100, 999);
+      a2 = randInt(100, 999);
+    }
     const lv = a1 / b1;
     const rv = a2 / b2;
     if (!valueDiffInRange(lv, rv)) continue;
@@ -236,7 +266,19 @@ function genCompareFrac(pattern: "A" | "B"): CompareQuestion {
     );
   }
   // 极端兜底（理论不可达）：构造确定满足约束的值
-  const a1 = 300, b1 = 100, a2 = 309, b2 = 100;
+  // pattern B 需保留倍率 b2 = b1 * mult 并满足 valueDiffInRange
+  let a1: number, b1: number, a2: number, b2: number;
+  if (pattern === "A") {
+    a1 = 300; b1 = 100; a2 = 309; b2 = 100;
+  } else {
+    // mult=2: lv=3, rv=3.09, ratio≈0.0291 ∈ [0.01,0.05] ✅
+    // mult=3: lv=3, rv=3.09, ratio≈0.0291 ∈ [0.01,0.05] ✅
+    if (mult === 2) {
+      a1 = 300; b1 = 100; a2 = 618; b2 = 200;
+    } else {
+      a1 = 300; b1 = 100; a2 = 927; b2 = 300;
+    }
+  }
   const lv = a1 / b1;
   const rv = a2 / b2;
   return buildQuestion(
@@ -261,7 +303,12 @@ export function generateCompareQuestion(type: CompareType, count: number): Compa
   let consecutiveSame = 0;
   let lastAnswer: ">" | "<" | null = null;
   for (let i = 0; i < count; i++) {
-    const pattern: "A" | "B" = Math.random() < 0.5 ? "A" : "B";
+    // compare_base 因 r∈[5,30] 范围限制，pattern B（A2=A1*mult）数学上
+    // 几乎无法满足 valueDiffInRange（rv 永远远大于 lv），故固定用 pattern A；
+    // growth/frac 保持 50/50 pattern 分布
+    const pattern: "A" | "B" = type === "compare_base"
+      ? "A"
+      : (Math.random() < 0.5 ? "A" : "B");
     let q = GENERATORS[type](pattern);
     if (q.answer === lastAnswer) {
       consecutiveSame++;
