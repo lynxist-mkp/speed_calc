@@ -104,7 +104,7 @@ speed_calc/
 ## 8. 待最终确认
 
 1. 时间标准种子值：除截图读出的几行，其余题型×题量秒数——你有参考值，还是实现时按原版经验定？
-2. 护眼色值方向：references/design-system.md 给的是"深色柔和绿黑"路线，可接受？或偏好 Solarized / OLED 纯黑等？
+2. ~~护眼色值方向：references/design-system.md 给的是"深色柔和绿黑"路线，可接受？或偏好 Solarized / OLED 纯黑等？~~ **已确认（2026-07-03）**：采用 Solarized 深色调色板（base03 #002b36 / base02 #073642 / base1 #93a1a1），原版绿提亮为 --app-color-primary #5faf6f。覆盖 design-system.md 默认绿黑路线。L0 已落地于 src/styles/theme.scss。
 3. 物理键盘映射：数字键/Enter/ESC/退格 + 比较题 >/< ——这套合意吗？
 
 ---
