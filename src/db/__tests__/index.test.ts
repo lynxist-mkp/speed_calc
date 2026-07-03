@@ -29,15 +29,14 @@ describe("db/index.ts", () => {
     });
 
     it("未命中题量时降级返回同题型最接近且<=的档", async () => {
-      // 第一次查询 count=7 无结果
+      // 第一次精确查询 count=12 无结果
       mockSelect.mockResolvedValueOnce([]);
-      // 第二次查询同题型所有行（取 count<=7 最近，即无，回退查所有 <= 实际逻辑取最大 count<=target）
+      // 第二次降级查询：SQL 已过滤 question_count <= 12，DESC 排序取最大，仅 count=10 满足
       mockSelect.mockResolvedValueOnce([
         { question_count: 10, pass_s: 28, good_s: 22, excellent_s: 18 },
-        { question_count: 15, pass_s: 42, good_s: 33, excellent_s: 27 },
       ]);
-      const r = await getTimeStandard("basic_addsub", 7);
-      // 7 < 10 < 15，取 10 档降级
+      const r = await getTimeStandard("basic_addsub", 12);
+      // 10 是满足 count<=12 的最大档，取 10 档
       expect(r).toEqual({ pass: 28, good: 22, excellent: 18 });
     });
 
