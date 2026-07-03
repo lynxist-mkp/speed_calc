@@ -14,6 +14,7 @@ import { usePracticeStore } from "@/stores/practice";
 describe("usePracticeStore", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    vi.clearAllMocks();
   });
 
   it("init 后进入 running 态并生成题目", async () => {
@@ -94,17 +95,20 @@ describe("usePracticeStore", () => {
   });
 
   it("restart 清状态并重新 init（新 sessionId）", async () => {
+    const { insertSession } = await import("@/db/index");
+    const mockInsert = insertSession as ReturnType<typeof vi.fn>;
+    mockInsert.mockReturnValueOnce(Promise.resolve(42));
+    mockInsert.mockReturnValueOnce(Promise.resolve(43));
     const store = usePracticeStore();
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 10 });
     store.inputChar("1");
     await store.submit();
-    const oldSessionId = store.sessionId;
-    const oldRecords = store.records.length;
     await store.restart();
-    expect(store.sessionId).toBe(42); // mock 固定返回 42，新会话
+    expect(store.sessionId).toBe(43); // 新 session id
     expect(store.currentIndex).toBe(0);
     expect(store.currentAnswer).toBe("");
     expect(store.records).toHaveLength(0);
+    expect(mockInsert).toHaveBeenCalledTimes(2);
   });
 
   it("正确数统计正确", async () => {
@@ -120,5 +124,27 @@ describe("usePracticeStore", () => {
     expect(store.phase).toBe("finished");
     expect(store.correctCount).toBe(3);
     expect(store.errorCount).toBe(0);
+  });
+
+  it("reset 清空所有状态回到 idle", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 10 });
+    store.inputChar("1");
+    store.reset();
+    expect(store.phase).toBe("idle");
+    expect(store.sessionId).toBeNull();
+    expect(store.questions).toHaveLength(0);
+    expect(store.records).toHaveLength(0);
+    expect(store.currentAnswer).toBe("");
+  });
+
+  it("init 失败时设置 error 并回到 idle", async () => {
+    const { insertSession } = await import("@/db/index");
+    const mockInsert = insertSession as ReturnType<typeof vi.fn>;
+    mockInsert.mockRejectedValueOnce(new Error("DB down"));
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 10 });
+    expect(store.error).toBe("DB down");
+    expect(store.phase).toBe("idle");
   });
 });

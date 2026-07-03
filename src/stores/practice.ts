@@ -67,6 +67,7 @@ export const usePracticeStore = defineStore("practice", () => {
   }
 
   async function init(cfg: SessionConfig) {
+    stopTimer();
     try {
       const qs = generateBasicAddSub(cfg.count);
       questions.value = qs;
@@ -89,6 +90,7 @@ export const usePracticeStore = defineStore("practice", () => {
       startTimer();
     } catch (e) {
       error.value = e instanceof Error ? e.message : String(e);
+      phase.value = "idle";
     }
   }
 
@@ -115,6 +117,7 @@ export const usePracticeStore = defineStore("practice", () => {
   async function submit() {
     const q = currentQuestion.value;
     if (q === null) return;
+    if (currentAnswer.value === "") return;
     const userAns = currentAnswer.value;
     const isCorrect = Number(userAns) === q.answer;
     const timeSpentMs =
