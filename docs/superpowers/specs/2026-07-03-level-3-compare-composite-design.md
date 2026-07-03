@@ -556,7 +556,7 @@ async function persistSession(correctCount: number) {
 - 进入页面首次 refreshData 时启动计时器（复用 setInterval 逻辑）
 - 格式 `0:H:M`（与 L1/L2 一致）
 - 无暂停（速算训练连续性）
-- 提交时不停止计时，点"随机"继续累计（单题循环模式）
+- ~~提交时不停止计时，点"随机"继续累计（单题循环模式）~~ **[2026-07-03 验收决策变更]** 改为：每次 refreshData 重置计时器，反映"单组计时"语义（用户看一组用了多久），入库 durationMs = 单组时长
 - 点返回时停止计时
 
 ---

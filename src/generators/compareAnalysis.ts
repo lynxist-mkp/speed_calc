@@ -146,27 +146,21 @@ function genCompareGrowth(pattern: "A" | "B"): CompareQuestion {
 }
 
 // ===== compare_base: A1/(1+r1%) ? A2/(1+r2%) =====
-function genCompareBase(pattern: "A" | "B"): CompareQuestion {
-  const mult = pick([2, 3]);
+// 注意：compare_base 固定 pattern A。原因：r∈[5,30] 范围下 pattern B（A2=A1*mult）
+// 数学上几乎无法满足 valueDiffInRange（rv 永远远大于 lv）。详见 generateCompareQuestion 注释。
+// 函数签名保留 pattern 参数以统一 GENERATORS 调度，但内部忽略其值（始终按 A 处理）。
+function genCompareBase(_pattern: "A" | "B"): CompareQuestion {
   for (let attempt = 0; attempt < 50; attempt++) {
-    let A1: number, A2: number, r1: number, r2: number;
-    if (pattern === "A") {
-      A1 = randInt(500, 2000);
-      A2 = randInt(Math.floor(A1 * 0.9), Math.floor(A1 * 1.1));
-      r1 = randFloat(5, 30, 1);
-      r2 = randFloat(Math.max(5, r1 - 3), Math.min(30, r1 + 3), 1);
-    } else {
-      A1 = randInt(500, Math.floor(2000 / mult));
-      A2 = A1 * mult;
-      r1 = randFloat(5, 30, 1);
-      r2 = randFloat(5, 30, 1);
-    }
+    const A1 = randInt(500, 2000);
+    const A2 = randInt(Math.floor(A1 * 0.9), Math.floor(A1 * 1.1));
+    const r1 = randFloat(5, 30, 1);
+    const r2 = randFloat(Math.max(5, r1 - 3), Math.min(30, r1 + 3), 1);
     const lv = A1 / (1 + r1 / 100);
     const rv = A2 / (1 + r2 / 100);
     if (!valueDiffInRange(lv, rv)) continue;
     return buildQuestion(
       "compare_base",
-      pattern,
+      "A",
       lv,
       rv,
       `\\frac{${A1}}{${(1 + r1 / 100).toFixed(3)}}`,
@@ -185,7 +179,7 @@ function genCompareBase(pattern: "A" | "B"): CompareQuestion {
     if (!valueDiffInRange(lv, rv)) continue;
     return buildQuestion(
       "compare_base",
-      pattern,
+      "A",
       lv,
       rv,
       `\\frac{${A1}}{${(1 + r1 / 100).toFixed(3)}}`,
@@ -199,7 +193,7 @@ function genCompareBase(pattern: "A" | "B"): CompareQuestion {
   const rv = A2 / (1 + r2 / 100);
   return buildQuestion(
     "compare_base",
-    pattern,
+    "A",
     lv,
     rv,
     `\\frac{${A1}}{${(1 + r1 / 100).toFixed(3)}}`,
