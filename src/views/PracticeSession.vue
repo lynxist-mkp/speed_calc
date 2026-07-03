@@ -5,6 +5,8 @@ import { ElMessageBox } from "element-plus";
 import TopBar from "@/components/TopBar.vue";
 import Numpad from "@/components/Numpad.vue";
 import QuestionDisplay from "@/components/QuestionDisplay.vue";
+import CompareQuestion from "@/components/CompareQuestion.vue";
+import CompareKeypad from "@/components/CompareKeypad.vue";
 import { usePracticeStore } from "@/stores/practice";
 
 const router = useRouter();
@@ -22,6 +24,21 @@ const standardText = computed(() => {
 function handleKeydown(e: KeyboardEvent) {
   if (store.phase !== "running") return;
   const k = e.key;
+  // compare 模式键盘映射：>/1=大于, </2=小于, Enter=确定, Escape=重开
+  if (store.questionCategory === "compare") {
+    if (k === ">" || k === "1") { e.preventDefault(); store.selectCompare(">"); }
+    else if (k === "<" || k === "2") { e.preventDefault(); store.selectCompare("<"); }
+    else if (k === "Enter") {
+      if (e.target instanceof HTMLButtonElement) return;
+      e.preventDefault();
+      void onSubmit();
+    } else if (k === "Escape") {
+      if (e.target instanceof HTMLButtonElement) return;
+      e.preventDefault();
+      void onRestart();
+    }
+    return;
+  }
   // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发（keydown + 派生 click）
   if ((k === "Enter" || k === "Escape") && e.target instanceof HTMLButtonElement) {
     return;
@@ -51,6 +68,25 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 async function onSubmit() {
+  // compare 模式：直接提交（不需 currentAnswer 守卫）
+  if (store.questionCategory === "compare") {
+    if (store.compareChoice === null) return;
+    await store.submit();
+    const lastRecord = store.records[store.records.length - 1];
+    if (lastRecord) {
+      if (flashTimer !== null) clearTimeout(flashTimer);
+      flashState.value = lastRecord.isCorrect ? "correct" : "wrong";
+      flashTimer = window.setTimeout(() => {
+        flashState.value = "none";
+        flashTimer = null;
+      }, 200);
+    }
+    if (store.phase === "finished") {
+      router.push("/practice/result");
+    }
+    return;
+  }
+  // numpad 模式
   if (store.currentAnswer === "") return;
   await store.submit();
   // 判分反馈
@@ -114,7 +150,9 @@ onBeforeUnmount(() => {
       </template>
     </TopBar>
 
+    <!-- 题目区按 category 切换 -->
     <QuestionDisplay
+      v-if="store.questionCategory === 'numpad'"
       :display="(store.currentQuestion as any)?.display ?? ''"
       :is-data="store.isDataType"
       :context="store.questionMeta?.context"
@@ -124,8 +162,18 @@ onBeforeUnmount(() => {
       :standard-text="standardText"
       :answer="store.currentAnswer"
     />
+    <CompareQuestion
+      v-else-if="store.questionCategory === 'compare'"
+      :left-tex="(store.currentQuestion as any)?.display?.leftTex ?? ''"
+      :right-tex="(store.currentQuestion as any)?.display?.rightTex ?? ''"
+      :selected="store.compareChoice"
+      :context="(store.currentQuestion as any)?.context"
+      :standard-text="standardText"
+    />
 
+    <!-- 输入区按 category 切换 -->
     <Numpad
+      v-if="store.questionCategory === 'numpad'"
       :variant="store.isDataType ? 'data' : 'basic'"
       layout="normal"
       @input="store.inputChar($event)"
@@ -134,6 +182,13 @@ onBeforeUnmount(() => {
       @backspace="store.backspace"
       @restart="onRestart"
       @toggle-sign="store.toggleSign"
+    />
+    <CompareKeypad
+      v-else-if="store.questionCategory === 'compare'"
+      :selected="store.compareChoice"
+      @select="store.selectCompare($event)"
+      @submit="onSubmit"
+      @restart="onRestart"
     />
   </div>
 </template>
