@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { usePracticeStore } from "@/stores/practice";
@@ -25,8 +25,25 @@ const countMode = ref<"quick" | "normal" | "custom">("quick");
 const customCount = ref(10);
 const currentCount = ref(10);
 
+const modeLabel = computed(() => {
+  if (countMode.value === "quick") return "快速";
+  if (countMode.value === "normal") return "正常";
+  return "自定义";
+});
+
+let savedCount = 10;
+let savedMode: "quick" | "normal" | "custom" = "quick";
+
 function openCountDialog() {
+  savedCount = currentCount.value;
+  savedMode = countMode.value;
   countDialogVisible.value = true;
+}
+
+function cancelCount() {
+  currentCount.value = savedCount;
+  countMode.value = savedMode;
+  countDialogVisible.value = false;
 }
 
 function selectCountMode(mode: "quick" | "normal" | "custom") {
@@ -68,7 +85,11 @@ async function startPractice() {
     subtype: "两位数加减",
     count: currentCount.value,
   });
-  router.push("/practice/session");
+  if (store.phase === "running") {
+    router.push("/practice/session");
+  } else {
+    ElMessage.error(store.error ?? "练习初始化失败");
+  }
 }
 
 function goHistory() {
@@ -110,7 +131,7 @@ function goHistory() {
     <!-- 题量 -->
     <div class="row" @click="openCountDialog">
       <span class="label">题量</span>
-      <span class="value">快速({{ currentCount }}题) ›</span>
+      <span class="value">{{ modeLabel }}({{ currentCount }}题) ›</span>
     </div>
 
     <!-- N-back 角标 -->
@@ -151,7 +172,7 @@ function goHistory() {
         </div>
       </div>
       <template #footer>
-        <el-button @click="countDialogVisible = false">取消</el-button>
+        <el-button @click="cancelCount">取消</el-button>
         <el-button type="primary" @click="confirmCount">确定</el-button>
       </template>
     </el-dialog>
