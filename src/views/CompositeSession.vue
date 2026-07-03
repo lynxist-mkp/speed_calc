@@ -26,7 +26,7 @@ const results = ref<Partial<Record<keyof CompositeAnswers, boolean>>>({});
 const elapsedMs = ref(0);
 const startedAt = ref<number | null>(null);
 let timerId: number | null = null;
-let trueAnswers: CompositeAnswers | null = null;
+const trueAnswers = ref<CompositeAnswers | null>(null);
 
 const knownFields = computed<{ label: string; value: string }[]>(() => {
   if (!data.value) return [];
@@ -36,10 +36,6 @@ const knownFields = computed<{ label: string; value: string }[]>(() => {
     { label: "现期 B", value: String(d.currentB) },
     { label: "增长率 r1", value: `${d.r1}%` },
     { label: "增长率 r2", value: `${d.r2}%` },
-    { label: "基期 A'", value: String(d.baseA) },
-    { label: "基期 B'", value: String(d.baseB) },
-    { label: "增长量 x1", value: String(d.growthA) },
-    { label: "增长量 x2", value: String(d.growthB) },
   ];
 });
 
@@ -65,7 +61,7 @@ function stopTimer() {
 function refreshData() {
   const q = generateComposite();
   data.value = q.data;
-  trueAnswers = q.answers;
+  trueAnswers.value = q.answers;
   answers.value = {};
   submitted.value = false;
   results.value = {};
@@ -93,12 +89,13 @@ function onClear() {
 
 function onSubmit() {
   if (submitted.value) return;
-  if (!trueAnswers || !data.value) return;
+  if (!trueAnswers.value || !data.value) return;
+  const ta = trueAnswers.value;
   let correctCount = 0;
   for (const f of COMPOSITE_FIELDS) {
     const raw = answers.value[f.key];
     const userAns = raw === undefined || raw === "" ? NaN : Number(raw);
-    const trueAns = trueAnswers[f.key];
+    const trueAns = ta[f.key];
     const isCorrect =
       !isNaN(userAns) &&
       (trueAns === 0 ? userAns === 0 : Math.abs(userAns - trueAns) / Math.abs(trueAns) <= 0.05);
@@ -115,7 +112,7 @@ async function persistSession(correctCount: number) {
       type: "composite",
       subtype: "一表通算",
       difficulty: "normal",
-      total: 9,
+      total: 13,
       nback: 0,
     });
     for (let i = 0; i < COMPOSITE_FIELDS.length; i++) {
@@ -125,7 +122,7 @@ async function persistSession(correctCount: number) {
         qIndex: i,
         question: f.label,
         userAnswer: String(answers.value[f.key] ?? ""),
-        trueAnswer: String(trueAnswers?.[f.key] ?? ""),
+        trueAnswer: String(trueAnswers.value?.[f.key] ?? ""),
         isCorrect: results.value[f.key] ?? false,
         tolerance: 0.05,
         timeSpentMs: 0,
@@ -210,7 +207,7 @@ const correctCount = computed(() =>
       </div>
     </div>
 
-    <!-- 9 项填空区 -->
+    <!-- 13 项填空区 -->
     <div class="answer-grid">
       <div
         v-for="f in COMPOSITE_FIELDS"
@@ -224,26 +221,27 @@ const correctCount = computed(() =>
         @click="activeField = f.key"
       >
         <span class="a-label">{{ f.label }}</span>
-        <span class="a-input">{{ answers[f.key] || (submitted ? '—' : '点击填入') }}</span>
+        <span class="a-input">
+          <template v-if="submitted">
+            <span class="user-ans">{{ answers[f.key] || '—' }}</span>
+            <span class="true-ans">/ {{ trueAnswers?.[f.key] }}</span>
+          </template>
+          <template v-else>{{ answers[f.key] || '点击填入' }}</template>
+        </span>
         <span class="a-unit">{{ f.unit }}</span>
       </div>
     </div>
 
-    <!-- 操作按钮 -->
+    <!-- 操作按钮（一行三按钮：刷新数据/提交答案/自定义） -->
     <div class="ops-row">
       <button class="op-btn refresh-btn" @click="refreshData">刷新数据</button>
       <button class="op-btn submit-btn" @click="onSubmit">提交答案</button>
-    </div>
-
-    <!-- 底部导航 -->
-    <div class="bottom-row">
-      <button class="bottom-btn" @click="refreshData">随机</button>
-      <button class="bottom-btn" @click="onCustom">自定义</button>
+      <button class="op-btn custom-btn" @click="onCustom">自定义</button>
     </div>
 
     <!-- 已提交反馈 -->
     <div v-if="submitted" class="feedback">
-      正确 {{ correctCount }}/9
+      正确 {{ correctCount }}/13
     </div>
 
     <!-- Numpad -->
@@ -284,7 +282,7 @@ const correctCount = computed(() =>
 
 .known-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
   margin-bottom: 16px;
 }
@@ -355,6 +353,17 @@ const correctCount = computed(() =>
   font-variant-numeric: tabular-nums;
 }
 
+.user-ans {
+  color: var(--app-text-primary, #93a1a1);
+}
+
+.true-ans {
+  margin-left: 6px;
+  color: var(--app-color-primary, #5faf6f);
+  font-weight: 500;
+  font-size: 13px;
+}
+
 .a-unit {
   margin-left: 4px;
   font-size: 12px;
@@ -364,7 +373,7 @@ const correctCount = computed(() =>
 .ops-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .op-btn {
@@ -387,20 +396,10 @@ const correctCount = computed(() =>
   color: #fff;
 }
 
-.bottom-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.bottom-btn {
-  flex: 1;
-  padding: 10px;
+.custom-btn {
   background: var(--app-bg-surface, #073642);
   color: var(--app-text-primary, #93a1a1);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  cursor: pointer;
 }
 
 .feedback {

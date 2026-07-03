@@ -40,13 +40,43 @@ describe("generateComposite", () => {
     }
   });
 
-  it("9 项答案无 NaN/Infinity", () => {
+  it("13 项答案无 NaN/Infinity", () => {
     for (let i = 0; i < 50; i++) {
       const q = generateComposite();
       const a = q.answers;
       for (const v of Object.values(a)) {
         expect(Number.isFinite(v)).toBe(true);
       }
+    }
+  });
+
+  it("baseA（基期 A'）= currentA / (1 + r1/100)", () => {
+    for (let i = 0; i < 10; i++) {
+      const q = generateComposite();
+      const expected = q.data.currentA / (1 + q.data.r1 / 100);
+      expect(q.answers.baseA).toBeCloseTo(expected, 1);
+    }
+  });
+
+  it("baseB（基期 B'）= currentB / (1 + r2/100)", () => {
+    for (let i = 0; i < 10; i++) {
+      const q = generateComposite();
+      const expected = q.data.currentB / (1 + q.data.r2 / 100);
+      expect(q.answers.baseB).toBeCloseTo(expected, 1);
+    }
+  });
+
+  it("growthA（增长量 x1）= currentA - baseA", () => {
+    for (let i = 0; i < 10; i++) {
+      const q = generateComposite();
+      expect(q.answers.growthA).toBeCloseTo(q.data.currentA - q.data.baseA, 1);
+    }
+  });
+
+  it("growthB（增长量 x2）= currentB - baseB", () => {
+    for (let i = 0; i < 10; i++) {
+      const q = generateComposite();
+      expect(q.answers.growthB).toBeCloseTo(q.data.currentB - q.data.baseB, 1);
     }
   });
 
@@ -123,8 +153,8 @@ describe("generateComposite", () => {
     }
   });
 
-  it("COMPOSITE_FIELDS 长度为 9", () => {
-    expect(COMPOSITE_FIELDS).toHaveLength(9);
+  it("COMPOSITE_FIELDS 长度为 13", () => {
+    expect(COMPOSITE_FIELDS).toHaveLength(13);
   });
 
   it("COMPOSITE_FIELDS 每项含 key/label/unit", () => {

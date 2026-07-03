@@ -1,5 +1,5 @@
 // L3 一表通算生成器（纯函数）
-// 已知数据 4 项 + 派生 4 项 + 9 项答案计算
+// 已知数据 4 项（现期+增长率）+ 13 项答案（基期/增长量 + 9 项派生指标）
 // 用户填空，±5% 容差判分
 
 export interface CompositeData {
@@ -14,6 +14,10 @@ export interface CompositeData {
 }
 
 export interface CompositeAnswers {
+  baseA: number;    // 基期 A'
+  baseB: number;    // 基期 B'
+  growthA: number;  // 增长量 x1
+  growthB: number;  // 增长量 x2
   P: number;   // 现期比重 %
   Pp: number;  // 基期比重 %
   d: number;   // 两期比重差 个百分点
@@ -31,9 +35,13 @@ export interface CompositeQuestion {
 }
 
 export const COMPOSITE_FIELDS = [
+  { key: "baseA",   label: "基期 A'",     unit: "" },
+  { key: "baseB",   label: "基期 B'",     unit: "" },
+  { key: "growthA", label: "增长量 x1",   unit: "" },
+  { key: "growthB", label: "增长量 x2",   unit: "" },
   { key: "P",  label: "现期比重 P",   unit: "%" },
   { key: "Pp", label: "基期比重 P'",  unit: "%" },
-  { key: "d",  label: "两期比重差 d", unit: "个百分点" },
+  { key: "d",  label: "两期比重差 d", unit: "%" },
   { key: "k",  label: "比值增长率 k", unit: "%" },
   { key: "S",  label: "基期和 S",     unit: "" },
   { key: "D",  label: "基期差 D",     unit: "" },
@@ -87,7 +95,7 @@ export function generateComposite(): CompositeQuestion {
     ? round2(((currentA - currentB) / denom4 - 1) * 100)
     : 0;
 
-  const answers: CompositeAnswers = { P, Pp, d, k, S, D, r, r3, r4 };
+  const answers: CompositeAnswers = { baseA, baseB, growthA, growthB, P, Pp, d, k, S, D, r, r3, r4 };
 
   return { data, answers };
 }

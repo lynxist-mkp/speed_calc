@@ -14,17 +14,17 @@ defineEmits<{
 <template>
   <div class="compare-keypad">
     <button
-      data-testid="btn-gt"
-      class="ck-btn gt-btn"
-      :class="{ active: selected === '>' }"
-      @click="$emit('select', '>')"
-    >大于</button>
-    <button
       data-testid="btn-lt"
       class="ck-btn lt-btn"
       :class="{ active: selected === '<' }"
       @click="$emit('select', '<')"
     >小于</button>
+    <button
+      data-testid="btn-gt"
+      class="ck-btn gt-btn"
+      :class="{ active: selected === '>' }"
+      @click="$emit('select', '>')"
+    >大于</button>
     <button
       data-testid="btn-restart"
       class="ck-btn restart-btn"

@@ -24,10 +24,12 @@ const standardText = computed(() => {
 function handleKeydown(e: KeyboardEvent) {
   if (store.phase !== "running") return;
   const k = e.key;
-  // compare 模式键盘映射：>/1=大于, </2=小于, Enter=确定, Escape=重开
+  // compare 模式键盘映射（按 UI 位置：左=小于，右=大于）：
+  // 小于 = <//《/1/,//，  |  大于 = >//》/2/.//。
+  // 左手键（1/,）→ 小于（UI 左），右手键（2/.) → 大于（UI 右），位置一致
   if (store.questionCategory === "compare") {
-    if (k === ">" || k === "1") { e.preventDefault(); store.selectCompare(">"); }
-    else if (k === "<" || k === "2") { e.preventDefault(); store.selectCompare("<"); }
+    if (k === "<" || k === "《" || k === "1" || k === "," || k === "，") { e.preventDefault(); store.selectCompare("<"); }
+    else if (k === ">" || k === "》" || k === "2" || k === "." || k === "。") { e.preventDefault(); store.selectCompare(">"); }
     else if (k === "Enter") {
       if (e.target instanceof HTMLButtonElement) return;
       e.preventDefault();
