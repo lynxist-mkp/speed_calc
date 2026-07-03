@@ -10,6 +10,7 @@ const router = useRouter();
 const store = usePracticeStore();
 
 const flashState = ref<"none" | "correct" | "wrong">("none");
+let flashTimer: number | null = null;
 
 const standardText = computed(() => {
   const s = store.timeStandard;
@@ -20,6 +21,10 @@ const standardText = computed(() => {
 function handleKeydown(e: KeyboardEvent) {
   if (store.phase !== "running") return;
   const k = e.key;
+  // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发（keydown + 派生 click）
+  if ((k === "Enter" || k === "Escape") && e.target instanceof HTMLButtonElement) {
+    return;
+  }
   if (/^[0-9]$/.test(k)) {
     e.preventDefault();
     store.inputChar(k);
@@ -45,13 +50,16 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 async function onSubmit() {
+  if (store.currentAnswer === "") return;
   await store.submit();
   // 判分反馈
   const lastRecord = store.records[store.records.length - 1];
   if (lastRecord) {
+    if (flashTimer !== null) clearTimeout(flashTimer);
     flashState.value = lastRecord.isCorrect ? "correct" : "wrong";
-    setTimeout(() => {
+    flashTimer = window.setTimeout(() => {
       flashState.value = "none";
+      flashTimer = null;
     }, 200);
   }
   if (store.phase === "finished") {
@@ -88,6 +96,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("keydown", handleKeydown);
+  if (flashTimer !== null) clearTimeout(flashTimer);
 });
 </script>
 
