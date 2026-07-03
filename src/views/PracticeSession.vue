@@ -125,7 +125,7 @@ function onBack() {
 onMounted(() => {
   // 若未初始化（如直接访问 URL），回设置页
   if (store.phase !== "running") {
-    router.replace("/practice");
+    router.replace(store.isDataType ? "/practice/data-analysis" : "/practice");
     return;
   }
   window.addEventListener("keydown", handleKeydown);
