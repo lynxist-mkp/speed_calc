@@ -4,12 +4,20 @@
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 fn migrations() -> Vec<Migration> {
-    vec![Migration {
-        version: 1,
-        description: "initial schema: sessions / records / custom_presets / settings / time_standards",
-        sql: include_str!("../migrations/0001_init.sql"),
-        kind: MigrationKind::Up,
-    }]
+    vec![
+        Migration {
+            version: 1,
+            description: "initial schema: sessions / records / custom_presets / settings / time_standards",
+            sql: include_str!("../migrations/0001_init.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 2,
+            description: "add basic_addsub x15 time standard seed",
+            sql: include_str!("../migrations/0002_add_basic_addsub_15.sql"),
+            kind: MigrationKind::Up,
+        },
+    ]
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
