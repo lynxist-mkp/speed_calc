@@ -115,7 +115,7 @@ onBeforeUnmount(() => {
     </TopBar>
 
     <QuestionDisplay
-      :display="store.currentQuestion?.display ?? ''"
+      :display="(store.currentQuestion as any)?.display ?? ''"
       :is-data="store.isDataType"
       :context="store.questionMeta?.context"
       :hint="store.questionMeta?.hint"

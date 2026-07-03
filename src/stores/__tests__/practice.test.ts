@@ -94,7 +94,7 @@ describe("usePracticeStore", () => {
     const store = usePracticeStore();
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 10 });
     const firstQ = store.questions[0];
-    store.inputChar(String(firstQ.answer + 1));
+    store.inputChar(String(Number(firstQ.answer) + 1));
     await store.submit();
     expect(store.records[0].isCorrect).toBe(false);
     expect(store.currentIndex).toBe(1);
@@ -293,8 +293,6 @@ describe("L2 store 多题型调度", () => {
   });
 });
 
-import { generateCompareQuestion } from "@/generators/compareAnalysis";
-
 describe("store compare 模式", () => {
   it("questionCategory: compare_ 开头 → compare", () => {
     const store = usePracticeStore();
@@ -305,15 +303,6 @@ describe("store compare 模式", () => {
     });
     // init 是异步的，但 config 在 await 之前已设置
     expect(store.questionCategory).toBe("compare");
-  });
-
-  it("questionCategory: composite → composite", () => {
-    const store = usePracticeStore();
-    // 用直接设置 config 的方式避免触发 init（composite 不走 store.init）
-    // 这里通过 init compare 验证 category 类型，composite 类型由 CompositeSession 独立管理
-    const store2 = usePracticeStore();
-    store2.init({ type: "compare_frac", subtype: "分数比大小", count: 5 });
-    expect(store2.questionCategory).toBe("compare");
   });
 
   it("questionCategory: basic_addsub → numpad", () => {

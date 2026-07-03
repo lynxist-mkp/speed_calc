@@ -203,7 +203,6 @@ export const usePracticeStore = defineStore("practice", () => {
       } else {
         currentIndex.value += 1;
         questionStartedAt.value = performance.now();
-        compareChoice.value = null;
       }
       return;
     }
@@ -225,14 +224,16 @@ export const usePracticeStore = defineStore("practice", () => {
       questionStartedAt.value !== null
         ? Math.floor(performance.now() - questionStartedAt.value)
         : 0;
+    // compare 分支已 return，此处 q 必为 numpad/data 题型，收窄类型以安全访问 display/answer
+    const qd = q as Question | DataQuestion;
     const record: AnswerRecord = {
       qIndex: currentIndex.value,
-      question: q.display,
+      question: qd.display,
       userAnswer: currentAnswer.value,
-      trueAnswer: String(q.answer),
+      trueAnswer: String(qd.answer),
       isCorrect,
       timeSpentMs,
-      unit: "tolerance" in q ? q.unit : undefined,
+      unit: "tolerance" in qd ? qd.unit : undefined,
     };
     records.value.push(record);
     try {
