@@ -17,6 +17,12 @@ fn migrations() -> Vec<Migration> {
             sql: include_str!("../migrations/0002_add_basic_addsub_15.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "add data analysis 9 types time standard seeds",
+            sql: include_str!("../migrations/0003_add_data_analysis_standards.sql"),
+            kind: MigrationKind::Up,
+        },
     ]
 }
 

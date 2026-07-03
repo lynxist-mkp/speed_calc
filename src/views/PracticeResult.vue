@@ -3,6 +3,7 @@ import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { usePracticeStore } from "@/stores/practice";
+import Katex from "@/components/Katex.vue";
 
 const router = useRouter();
 const store = usePracticeStore();
@@ -30,8 +31,9 @@ function restart() {
 }
 
 function backToSettings() {
+  const target = store.isDataType ? "/practice/data-analysis" : "/practice";
   store.reset();
-  router.push("/practice");
+  router.push(target);
 }
 
 function goHistory() {
@@ -84,9 +86,9 @@ onMounted(() => {
         :class="{ wrong: !r.isCorrect }"
       >
         <span>{{ r.qIndex + 1 }}</span>
-        <span>{{ r.question }}</span>
-        <span>{{ r.trueAnswer }}</span>
-        <span :class="r.isCorrect ? 'ans-correct' : 'ans-wrong'">{{ r.userAnswer || "（空）" }}</span>
+        <span><Katex :tex="r.question" /></span>
+        <span>{{ r.trueAnswer }}{{ r.unit || "" }}</span>
+        <span :class="r.isCorrect ? 'ans-correct' : 'ans-wrong'">{{ r.userAnswer ? r.userAnswer + (r.unit || "") : "（空）" }}</span>
         <span>{{ formatTime(r.timeSpentMs) }}</span>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { generateBasicAddSub, type Question } from "@/generators/basic";
+import { generateDataQuestion, type DataQuestion, type DataType } from "@/generators/dataAnalysis";
 import {
   insertSession,
   insertRecord,
@@ -16,6 +17,7 @@ export interface AnswerRecord {
   trueAnswer: string;
   isCorrect: boolean;
   timeSpentMs: number;
+  unit?: string;
 }
 
 export interface SessionConfig {
@@ -28,7 +30,8 @@ export const usePracticeStore = defineStore("practice", () => {
   const phase = ref<"idle" | "running" | "finished">("idle");
   const sessionId = ref<number | null>(null);
   const config = ref<SessionConfig | null>(null);
-  const questions = ref<Question[]>([]);
+  type AnyQuestion = Question | DataQuestion;
+  const questions = ref<AnyQuestion[]>([]);
   const currentIndex = ref(0);
   const currentAnswer = ref("");
   const records = ref<AnswerRecord[]>([]);
@@ -47,6 +50,24 @@ export const usePracticeStore = defineStore("practice", () => {
   );
   const currentQuestion = computed(() => questions.value[currentIndex.value] ?? null);
   const progress = computed(() => `${currentIndex.value + 1}/${questions.value.length}`);
+
+  const isDataType = computed(() => config.value?.type !== "basic_addsub");
+
+  const questionMeta = computed(() => {
+    const q = currentQuestion.value;
+    if (!q) return null;
+    if ("tolerance" in q) {
+      return {
+        tolerance: q.tolerance,
+        context: q.context,
+        hint: q.hint,
+        unit: q.unit,
+        isData: true,
+        display: q.display,
+      };
+    }
+    return { isData: false, display: q.display };
+  });
 
   function tick() {
     if (startedAt.value !== null) {
@@ -70,10 +91,12 @@ export const usePracticeStore = defineStore("practice", () => {
   async function init(cfg: SessionConfig) {
     stopTimer();
     try {
-      const qs = generateBasicAddSub(cfg.count);
+      const qs = cfg.type === "basic_addsub"
+        ? generateBasicAddSub(cfg.count)
+        : generateDataQuestion(cfg.type as DataType, cfg.count);
       questions.value = qs;
       currentIndex.value = 0;
-      currentAnswer.value = "";
+      currentAnswer.value = qs[0] && "preset" in qs[0] ? (qs[0].preset ?? "") : "";
       records.value = [];
       elapsedMs.value = 0;
       error.value = null;
@@ -119,9 +142,20 @@ export const usePracticeStore = defineStore("practice", () => {
   async function submit() {
     const q = currentQuestion.value;
     if (q === null) return;
-    if (currentAnswer.value === "") return;
-    const userAns = currentAnswer.value;
-    const isCorrect = Number(userAns) === q.answer;
+    // 空答案守卫：空串、单负号、单"0." 视为未作答
+    if (currentAnswer.value === "" || currentAnswer.value === "-" || currentAnswer.value === "0.") return;
+    const userAns = Number(currentAnswer.value);
+    let isCorrect: boolean;
+    let tolerance: number;
+    if ("tolerance" in q) {
+      tolerance = q.tolerance;
+      isCorrect = q.answer === 0
+        ? userAns === 0
+        : Math.abs(userAns - q.answer) / Math.abs(q.answer) <= tolerance;
+    } else {
+      tolerance = 0;
+      isCorrect = userAns === q.answer;
+    }
     const timeSpentMs =
       questionStartedAt.value !== null
         ? Math.floor(performance.now() - questionStartedAt.value)
@@ -129,10 +163,11 @@ export const usePracticeStore = defineStore("practice", () => {
     const record: AnswerRecord = {
       qIndex: currentIndex.value,
       question: q.display,
-      userAnswer: userAns,
+      userAnswer: currentAnswer.value,
       trueAnswer: String(q.answer),
       isCorrect,
       timeSpentMs,
+      unit: "tolerance" in q ? q.unit : undefined,
     };
     records.value.push(record);
     try {
@@ -144,7 +179,7 @@ export const usePracticeStore = defineStore("practice", () => {
           userAnswer: record.userAnswer,
           trueAnswer: record.trueAnswer,
           isCorrect: record.isCorrect,
-          tolerance: 0,
+          tolerance,
           timeSpentMs: record.timeSpentMs,
         });
       }
@@ -157,6 +192,8 @@ export const usePracticeStore = defineStore("practice", () => {
     } else {
       currentIndex.value += 1;
       questionStartedAt.value = performance.now();
+      const next = questions.value[currentIndex.value];
+      currentAnswer.value = next && "preset" in next ? (next.preset ?? "") : "";
     }
   }
 
@@ -215,6 +252,8 @@ export const usePracticeStore = defineStore("practice", () => {
     accuracy,
     currentQuestion,
     progress,
+    isDataType,
+    questionMeta,
     init,
     inputChar,
     toggleSign,

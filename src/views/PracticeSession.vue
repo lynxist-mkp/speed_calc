@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { ElMessageBox } from "element-plus";
 import TopBar from "@/components/TopBar.vue";
 import Numpad from "@/components/Numpad.vue";
+import QuestionDisplay from "@/components/QuestionDisplay.vue";
 import { usePracticeStore } from "@/stores/practice";
 
 const router = useRouter();
@@ -28,7 +29,7 @@ function handleKeydown(e: KeyboardEvent) {
   if (/^[0-9]$/.test(k)) {
     e.preventDefault();
     store.inputChar(k);
-  } else if (k === ".") {
+  } else if (k === "." || k === "," || k === "，") {
     e.preventDefault();
     store.inputChar(".");
   } else if (k === "-") {
@@ -82,7 +83,7 @@ async function onRestart() {
 }
 
 function onBack() {
-  router.push("/practice");
+  router.push(store.isDataType ? "/practice/data-analysis" : "/practice");
 }
 
 onMounted(() => {
@@ -103,7 +104,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="practice-session" :class="`flash-${flashState}`">
     <TopBar
-      :title="'基础计算'"
+      :title="store.isDataType ? '资料分析' : '基础计算'"
       :progress="store.progress"
       :elapsed-ms="store.elapsedMs"
       @back="onBack"
@@ -113,17 +114,19 @@ onBeforeUnmount(() => {
       </template>
     </TopBar>
 
-    <div class="question-area">
-      <div class="formula">
-        <span class="expr">{{ store.currentQuestion?.display }}</span>
-        <span class="answer-inline">{{ store.currentAnswer }}</span>
-        <span class="cursor">|</span>
-      </div>
-      <div v-if="standardText" class="standard-row">{{ standardText }}</div>
-    </div>
+    <QuestionDisplay
+      :display="store.currentQuestion?.display ?? ''"
+      :is-data="store.isDataType"
+      :context="store.questionMeta?.context"
+      :hint="store.questionMeta?.hint"
+      :tolerance="store.questionMeta?.tolerance"
+      :unit="store.questionMeta?.unit"
+      :standard-text="standardText"
+      :answer="store.currentAnswer"
+    />
 
     <Numpad
-      variant="basic"
+      :variant="store.isDataType ? 'data' : 'basic'"
       layout="normal"
       @input="store.inputChar($event)"
       @submit="onSubmit"
@@ -159,46 +162,5 @@ onBeforeUnmount(() => {
   color: var(--app-text-primary, #93a1a1);
   font-size: 22px;
   cursor: pointer;
-}
-
-.question-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  margin: 48px 0;
-}
-
-.formula {
-  font-size: 48px;
-  font-family: "JetBrains Mono", "SF Mono", monospace;
-  color: var(--app-text-primary, #93a1a1);
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.answer-inline {
-  color: var(--app-color-primary, #5faf6f);
-  font-weight: 600;
-  min-width: 60px;
-  display: inline-block;
-  text-align: left;
-}
-
-.cursor {
-  color: var(--app-color-primary, #5faf6f);
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-.standard-row {
-  font-size: 15px;
-  color: var(--app-text-secondary, #586e75);
-  font-variant-numeric: tabular-nums;
 }
 </style>
