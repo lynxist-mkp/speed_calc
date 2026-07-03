@@ -17,6 +17,7 @@ export interface AnswerRecord {
   trueAnswer: string;
   isCorrect: boolean;
   timeSpentMs: number;
+  unit?: string;
 }
 
 export interface SessionConfig {
@@ -166,6 +167,7 @@ export const usePracticeStore = defineStore("practice", () => {
       trueAnswer: String(q.answer),
       isCorrect,
       timeSpentMs,
+      unit: "tolerance" in q ? q.unit : undefined,
     };
     records.value.push(record);
     try {

@@ -29,7 +29,7 @@ function handleKeydown(e: KeyboardEvent) {
   if (/^[0-9]$/.test(k)) {
     e.preventDefault();
     store.inputChar(k);
-  } else if (k === ".") {
+  } else if (k === "." || k === "," || k === "，") {
     e.preventDefault();
     store.inputChar(".");
   } else if (k === "-") {
@@ -83,7 +83,7 @@ async function onRestart() {
 }
 
 function onBack() {
-  router.push("/practice");
+  router.push(store.isDataType ? "/practice/data-analysis" : "/practice");
 }
 
 onMounted(() => {

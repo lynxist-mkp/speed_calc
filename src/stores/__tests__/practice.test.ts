@@ -233,6 +233,19 @@ describe("L2 store 多题型调度", () => {
     expect(store.records[0].isCorrect).toBe(false);
   });
 
+  it("submit 记录 unit 字段（百分数题型带 unit=%）", async () => {
+    (generateDataQuestion as ReturnType<typeof vi.fn>).mockReturnValueOnce([
+      { display: "\\frac{1}{11} \\approx", answer: 9.09, tolerance: 0.02, hint: "写到小数点后一位即可", unit: "%" },
+      { display: "\\frac{1}{12} \\approx", answer: 8.33, tolerance: 0.02, hint: "写到小数点后一位即可", unit: "%" },
+    ]);
+    const store = usePracticeStore();
+    await store.init({ type: "baihua_frac", subtype: "百化分", count: 2 });
+    store.currentAnswer = "9.1";
+    await store.submit();
+    expect(store.records[0].unit).toBe("%");
+    expect(store.records[0].trueAnswer).toBe("9.09");
+  });
+
   it("submit 空答案守卫——'-' 不提交", async () => {
     const store = usePracticeStore();
     await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
