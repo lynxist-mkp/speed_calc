@@ -55,7 +55,7 @@ export const usePracticeStore = defineStore("practice", () => {
   const questionMeta = computed(() => {
     const q = currentQuestion.value;
     if (!q) return null;
-    if ("context" in q) {
+    if ("tolerance" in q) {
       return {
         tolerance: q.tolerance,
         context: q.context,

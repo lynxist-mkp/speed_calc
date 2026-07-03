@@ -203,6 +203,20 @@ describe("L2 store 多题型调度", () => {
     expect(store.questionMeta?.context).toContain("现期");
   });
 
+  it("questionMeta 对无 context 的资料分析题型也返回 tolerance/unit", async () => {
+    // baihua_frac 无 context 但有 tolerance/unit/hint
+    (generateDataQuestion as ReturnType<typeof vi.fn>).mockReturnValueOnce([
+      { display: "\\frac{1}{11} \\approx", answer: 9.09, tolerance: 0.02, hint: "写到小数点后一位即可", unit: "%" },
+    ]);
+    const store = usePracticeStore();
+    await store.init({ type: "baihua_frac", subtype: "百化分", count: 1 });
+    expect(store.questionMeta).not.toBeNull();
+    expect(store.questionMeta?.isData).toBe(true);
+    expect(store.questionMeta?.tolerance).toBe(0.02);
+    expect(store.questionMeta?.unit).toBe("%");
+    expect(store.questionMeta?.hint).toContain("小数点后一位");
+  });
+
   it("submit 容差判分——边界内正确", async () => {
     const store = usePracticeStore();
     await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
