@@ -8,7 +8,7 @@ import "katex/dist/katex.min.css";
 
 import "./styles/index.scss";
 import App from "./App.vue";
-import { router } from "./router";
+import router from "./router";
 
 const app = createApp(App);
 app.use(createPinia());
