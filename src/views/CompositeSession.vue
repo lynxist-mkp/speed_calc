@@ -168,7 +168,8 @@ function handleKeydown(e: KeyboardEvent) {
     if (r.payload === "backspace") onBackspace();
     else if (r.payload === "submit") onSubmit();
     else if (r.payload === "clear") onClear();
-    // composite 无 toggle-sign / restart（composite 用 onBack 返回，不绑定 Esc）
+    else if (r.payload === "toggle-sign") onInput("-");
+    // composite 用 onInput("-") 追加负号（与旧 e.key==='-' 行为一致）；不处理 restart（用 onBack 返回）
   }
 }
 
