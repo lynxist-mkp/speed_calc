@@ -7,6 +7,7 @@ import Numpad from "@/components/Numpad.vue";
 import QuestionDisplay from "@/components/QuestionDisplay.vue";
 import CompareQuestion from "@/components/CompareQuestion.vue";
 import CompareKeypad from "@/components/CompareKeypad.vue";
+import NbackPrompt from "@/components/NbackPrompt.vue";
 import { usePracticeStore } from "@/stores/practice";
 
 const router = useRouter();
@@ -23,6 +24,7 @@ const standardText = computed(() => {
 
 function handleKeydown(e: KeyboardEvent) {
   if (store.phase !== "running") return;
+  if (store.nbackPrompting) return; // N-back 弹窗显示时，键盘交给 NbackPrompt
   const k = e.key;
   // compare 模式键盘映射（按 UI 位置：左=小于，右=大于）：
   // 小于 = <//《/1/,//，  |  大于 = >//》/2/.//。
@@ -124,6 +126,15 @@ function onBack() {
   router.push(store.isDataType ? "/practice/data-analysis" : "/practice");
 }
 
+async function onNbackSubmit(answer: string) {
+  store.setNbackAnswer(answer);
+  await store.submitNback();
+}
+
+async function onNbackSkip() {
+  await store.skipNback();
+}
+
 onMounted(() => {
   // 若未初始化（如直接访问 URL），回设置页
   if (store.phase !== "running") {
@@ -149,6 +160,10 @@ onBeforeUnmount(() => {
     >
       <template #left>
         <button class="back-btn glass-button" @click="onBack">‹</button>
+      </template>
+      <template #right>
+        <span v-if="store.nback > 0" class="nback-badge">{{ store.nback }}-back</span>
+        <span v-else class="pen-icon" title="待实现">✏</span>
       </template>
     </TopBar>
 
@@ -192,6 +207,13 @@ onBeforeUnmount(() => {
       @submit="onSubmit"
       @restart="onRestart"
     />
+
+    <NbackPrompt
+      :visible="store.nbackPrompting"
+      :target-index="store.nbackTarget?.index ?? 0"
+      @submit="onNbackSubmit"
+      @skip="onNbackSkip"
+    />
   </div>
 </template>
 
@@ -219,5 +241,16 @@ onBeforeUnmount(() => {
   color: var(--app-text-primary, #93a1a1);
   font-size: 22px;
   cursor: pointer;
+}
+
+.nback-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  margin-left: 8px;
+  background: rgba(255, 110, 140, 0.2);
+  color: #ff6e8c;
+  border: 1px solid rgba(255, 110, 140, 0.4);
+  border-radius: 999px;
+  font-size: 11px;
 }
 </style>
