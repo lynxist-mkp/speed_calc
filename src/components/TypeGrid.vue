@@ -68,7 +68,7 @@ function select(key: string) {
     color: var(--app-text-bright);
     margin-bottom: 6px;
     padding-bottom: 4px;
-    border-bottom: 1px solid rgba(95, 175, 111, 0.4);
+    border-bottom: 1px solid var(--type-section-border);
     display: flex;
     align-items: center;
     gap: 4px;
