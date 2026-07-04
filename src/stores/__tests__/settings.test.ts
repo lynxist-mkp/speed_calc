@@ -19,7 +19,6 @@ describe("useSettingsStore", () => {
   it("初始默认值", () => {
     const store = useSettingsStore();
     expect(store.basic.keyboardLayout).toBe("normal");
-    expect(store.basic.touchPen).toBe(false);
     expect(store.basic.selectedType).toBe(0);
     expect(store.basic.countMode).toBe("quick");
     expect(store.basic.count).toBe(10);

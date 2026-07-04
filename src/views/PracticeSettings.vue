@@ -224,10 +224,6 @@ async function onKeyboardLayoutChange(v: string | number | boolean) {
   await settings.saveBasic({ keyboardLayout: v as "normal" | "reverse" | "shuffle" });
 }
 
-async function onTouchPenChange(v: string | number | boolean) {
-  await settings.saveBasic({ touchPen: v as boolean });
-}
-
 onMounted(() => settings.load());
 </script>
 
@@ -243,14 +239,6 @@ onMounted(() => settings.load());
         <el-radio-button value="reverse">倒序</el-radio-button>
         <el-radio-button value="shuffle">乱序</el-radio-button>
       </el-radio-group>
-    </div>
-
-    <div class="row">
-      <span class="label">触控笔</span>
-      <el-switch
-        :model-value="settings.basic.touchPen"
-        @change="onTouchPenChange"
-      />
     </div>
 
     <div class="type-grid">

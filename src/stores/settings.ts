@@ -4,7 +4,6 @@ import { getSetting, setSetting } from "@/db/index";
 
 export interface BasicSettings {
   keyboardLayout: "normal" | "reverse" | "shuffle";
-  touchPen: boolean;
   selectedType: number;
   countMode: "quick" | "normal" | "custom";
   count: number;
@@ -22,7 +21,6 @@ export interface DASettings {
 
 const DEFAULT_BASIC: BasicSettings = {
   keyboardLayout: "normal",
-  touchPen: false,
   selectedType: 0,
   countMode: "quick",
   count: 10,
@@ -40,7 +38,6 @@ const DEFAULT_DA: DASettings = {
 
 const BASIC_KEYS: Record<keyof BasicSettings, string> = {
   keyboardLayout: "basic.keyboardLayout",
-  touchPen: "basic.touchPen",
   selectedType: "basic.selectedType",
   countMode: "basic.countMode",
   count: "basic.count",

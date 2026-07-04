@@ -141,6 +141,154 @@ export async function listSessions(): Promise<SessionRow[]> {
   );
 }
 
+// ===== L5 扩展：分页/筛选/统计聚合 =====
+
+export async function listSessionsPaged(
+  page: number,
+  pageSize: number,
+  typeFilter?: string
+): Promise<{ rows: SessionRow[]; total: number }> {
+  const db = await getDb();
+  const offset = (page - 1) * pageSize;
+  if (typeFilter && typeFilter !== "all") {
+    const countRows = await db.select<{ c: number }[]>(
+      `SELECT COUNT(*) as c FROM sessions WHERE type = $1`,
+      [typeFilter]
+    );
+    const total = countRows[0]?.c ?? 0;
+    const rows = await db.select<SessionRow[]>(
+      `SELECT id, type, subtype, total, correct, duration_ms, created_at
+       FROM sessions WHERE type = $1
+       ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
+      [typeFilter, pageSize, offset]
+    );
+    return { rows, total };
+  }
+  const countRows = await db.select<{ c: number }[]>(
+    `SELECT COUNT(*) as c FROM sessions`
+  );
+  const total = countRows[0]?.c ?? 0;
+  const rows = await db.select<SessionRow[]>(
+    `SELECT id, type, subtype, total, correct, duration_ms, created_at
+     FROM sessions ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+    [pageSize, offset]
+  );
+  return { rows, total };
+}
+
+export async function listSessionTypes(): Promise<string[]> {
+  const db = await getDb();
+  const rows = await db.select<{ type: string }[]>(
+    `SELECT DISTINCT type FROM sessions ORDER BY type`
+  );
+  return rows.map((r) => r.type);
+}
+
+export async function clearAllSessions(): Promise<void> {
+  const db = await getDb();
+  await db.execute(`DELETE FROM records`);
+  await db.execute(`DELETE FROM sessions`);
+}
+
+// 按题型聚合正确率（用于雷达图）
+export interface TypeAccuracy {
+  type: string;
+  total: number;
+  correct: number;
+  accuracy: number;
+}
+export async function getAccuracyByType(): Promise<TypeAccuracy[]> {
+  const db = await getDb();
+  const rows = await db.select<{ type: string; total: number; correct: number }[]>(
+    `SELECT type,
+            SUM(total) as total,
+            SUM(correct) as correct
+     FROM sessions GROUP BY type ORDER BY type`
+  );
+  return rows.map((r) => ({
+    type: r.type,
+    total: r.total,
+    correct: r.correct,
+    accuracy: r.total > 0 ? r.correct / r.total : 0,
+  }));
+}
+
+// 近期趋势（按日期聚合正确率，最近 N 天）
+export interface DailyAccuracy {
+  date: string;
+  total: number;
+  correct: number;
+  accuracy: number;
+}
+export async function getRecentDailyAccuracy(days = 30): Promise<DailyAccuracy[]> {
+  const db = await getDb();
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  const rows = await db.select<
+    { created_at: number; total: number; correct: number }[]
+  >(
+    `SELECT created_at, total, correct FROM sessions
+     WHERE created_at >= $1 ORDER BY created_at ASC`,
+    [cutoff]
+  );
+  // 按日期分组
+  const byDate = new Map<string, { total: number; correct: number }>();
+  for (const r of rows) {
+    const d = new Date(r.created_at);
+    const key = `${d.getMonth() + 1}/${d.getDate()}`;
+    const prev = byDate.get(key) ?? { total: 0, correct: 0 };
+    prev.total += r.total;
+    prev.correct += r.correct;
+    byDate.set(key, prev);
+  }
+  return Array.from(byDate.entries()).map(([date, v]) => ({
+    date,
+    total: v.total,
+    correct: v.correct,
+    accuracy: v.total > 0 ? v.correct / v.total : 0,
+  }));
+}
+
+// 按题型聚合平均用时（ms）
+export interface TypeDuration {
+  type: string;
+  avgDurationMs: number;
+  count: number;
+}
+export async function getAvgDurationByType(): Promise<TypeDuration[]> {
+  const db = await getDb();
+  const rows = await db.select<{ type: string; avg_ms: number; cnt: number }[]>(
+    `SELECT type, AVG(duration_ms) as avg_ms, COUNT(*) as cnt
+     FROM sessions WHERE duration_ms > 0 GROUP BY type ORDER BY type`
+  );
+  return rows.map((r) => ({
+    type: r.type,
+    avgDurationMs: Math.round(r.avg_ms ?? 0),
+    count: r.cnt,
+  }));
+}
+
+// 全局总正确率
+export interface OverallStats {
+  totalSessions: number;
+  totalQuestions: number;
+  totalCorrect: number;
+  accuracy: number;
+}
+export async function getOverallStats(): Promise<OverallStats> {
+  const db = await getDb();
+  const rows = await db.select<{ cnt: number; q: number; c: number }[]>(
+    `SELECT COUNT(*) as cnt, COALESCE(SUM(total), 0) as q, COALESCE(SUM(correct), 0) as c
+     FROM sessions`
+  );
+  const r = rows[0] ?? { cnt: 0, q: 0, c: 0 };
+  return {
+    totalSessions: r.cnt,
+    totalQuestions: r.q,
+    totalCorrect: r.c,
+    accuracy: r.q > 0 ? r.c / r.q : 0,
+  };
+}
+
 // ===== L4 扩展：settings KV + custom_presets =====
 
 export async function getSetting(key: string): Promise<string | null> {
@@ -193,4 +341,71 @@ export async function upsertCustomPreset(name: string, config: string): Promise<
       [name, config, Date.now()]
     );
   }
+}
+
+// ===== L5 扩展：时间标准 CRUD =====
+
+export interface TimeStandardRow {
+  id: number;
+  questionType: string;
+  questionCount: number;
+  passS: number;
+  goodS: number;
+  excellentS: number;
+}
+
+export async function listTimeStandards(): Promise<TimeStandardRow[]> {
+  const db = await getDb();
+  const rows = await db.select<
+    {
+      id: number;
+      question_type: string;
+      question_count: number;
+      pass_s: number;
+      good_s: number;
+      excellent_s: number;
+    }[]
+  >(
+    `SELECT id, question_type, question_count, pass_s, good_s, excellent_s
+     FROM time_standards ORDER BY question_type, question_count`
+  );
+  return rows.map((r) => ({
+    id: r.id,
+    questionType: r.question_type,
+    questionCount: r.question_count,
+    passS: r.pass_s,
+    goodS: r.good_s,
+    excellentS: r.excellent_s,
+  }));
+}
+
+export async function updateTimeStandard(
+  id: number,
+  data: { passS: number; goodS: number; excellentS: number }
+): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `UPDATE time_standards SET pass_s = $1, good_s = $2, excellent_s = $3 WHERE id = $4`,
+    [data.passS, data.goodS, data.excellentS, id]
+  );
+}
+
+export async function insertTimeStandard(data: {
+  questionType: string;
+  questionCount: number;
+  passS: number;
+  goodS: number;
+  excellentS: number;
+}): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `INSERT INTO time_standards (question_type, question_count, pass_s, good_s, excellent_s)
+     VALUES ($1, $2, $3, $4, $5)`,
+    [data.questionType, data.questionCount, data.passS, data.goodS, data.excellentS]
+  );
+}
+
+export async function deleteTimeStandard(id: number): Promise<void> {
+  const db = await getDb();
+  await db.execute(`DELETE FROM time_standards WHERE id = $1`, [id]);
 }
