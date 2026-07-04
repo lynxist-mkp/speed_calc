@@ -18,13 +18,9 @@ const activePath = computed(() => route.path);
 </script>
 
 <template>
-  <nav class="app-sidebar glass-sidebar">
-    <div class="brand">
-      <div class="brand-mark">速</div>
-      <div class="brand-text">
-        <div class="brand-title">行测小助手</div>
-        <div class="brand-sub">资料分析速算训练</div>
-      </div>
+  <nav class="app-sidebar glass-sidebar" aria-label="主导航">
+    <div class="brand" title="行测小助手">
+      <div class="brand-mark" aria-label="行测小助手 logo">速</div>
     </div>
 
     <ul class="nav-list">
@@ -33,6 +29,8 @@ const activePath = computed(() => route.path);
         :key="item.path"
         class="nav-item glass-button"
         :class="{ 'is-active': activePath === item.path }"
+        :aria-label="item.label"
+        :aria-current="activePath === item.path ? 'page' : undefined"
         @click="router.push(item.path)"
       >
         <el-icon :size="18"><component :is="item.icon" /></el-icon>
@@ -67,12 +65,17 @@ const activePath = computed(() => route.path);
   align-items: center;
   gap: 6px;
   padding: 8px 0 16px;
+  cursor: default;
 
   .brand-mark {
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--app-color-primary), var(--app-color-success));
+    background: linear-gradient(
+      135deg,
+      var(--app-color-primary),
+      var(--app-color-success)
+    );
     color: var(--app-bg-page);
     font-size: 20px;
     font-weight: 700;
@@ -80,10 +83,6 @@ const activePath = computed(() => route.path);
     align-items: center;
     justify-content: center;
     box-shadow: 0 4px 12px rgba(95, 175, 111, 0.3);
-  }
-
-  .brand-text {
-    display: none; // L0 sidebar 收起态：只显示图标
   }
 }
 
@@ -103,7 +102,8 @@ const activePath = computed(() => route.path);
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 10px 4px;
+  // 触摸目标提升至 72×56px（原 72×52px）
+  padding: 12px 4px;
   cursor: pointer;
   color: var(--app-text-secondary);
   font-size: 11px;
