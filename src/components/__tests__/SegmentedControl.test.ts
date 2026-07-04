@@ -55,4 +55,30 @@ describe("SegmentedControl.vue", () => {
     const allButtons = wrapper.findAll(".seg-btn");
     expect(allButtons.every((b) => b.classes().includes("disabled"))).toBe(true);
   });
+
+  it("空 options 数组安全渲染不报错", () => {
+    const wrapper = mount(SegmentedControl, {
+      props: { options: [], modelValue: "" },
+    });
+    expect(wrapper.findAll(".seg-btn")).toHaveLength(0);
+  });
+
+  it("切换 modelValue 后 active 正确转移", async () => {
+    const wrapper = mount(SegmentedControl, {
+      props: { options: OPTIONS, modelValue: "easy" },
+    });
+    expect(wrapper.find('[data-seg-value="easy"]').classes()).toContain("active");
+    expect(wrapper.find('[data-seg-value="normal"]').classes()).not.toContain("active");
+
+    await wrapper.setProps({ modelValue: "normal" });
+    expect(wrapper.find('[data-seg-value="easy"]').classes()).not.toContain("active");
+    expect(wrapper.find('[data-seg-value="normal"]').classes()).toContain("active");
+  });
+
+  it("modelValue 不匹配任何 value 时无项被 active", () => {
+    const wrapper = mount(SegmentedControl, {
+      props: { options: OPTIONS, modelValue: "nonexistent" },
+    });
+    expect(wrapper.find(".active").exists()).toBe(false);
+  });
 });

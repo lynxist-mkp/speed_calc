@@ -62,7 +62,6 @@ function select(value: string) {
   color: var(--app-text-primary);
   background: transparent;
   border: none;
-  border-right: 1px solid var(--seg-divider);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 
