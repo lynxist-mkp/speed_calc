@@ -140,3 +140,57 @@ export async function listSessions(): Promise<SessionRow[]> {
      FROM sessions ORDER BY created_at DESC`
   );
 }
+
+// ===== L4 扩展：settings KV + custom_presets =====
+
+export async function getSetting(key: string): Promise<string | null> {
+  const db = await getDb();
+  const rows = await db.select<{ value: string }[]>(
+    `SELECT value FROM settings WHERE key = $1`,
+    [key]
+  );
+  return rows.length > 0 ? rows[0].value : null;
+}
+
+export async function setSetting(key: string, value: string): Promise<void> {
+  const db = await getDb();
+  await db.execute(
+    `INSERT OR REPLACE INTO settings (key, value) VALUES ($1, $2)`,
+    [key, value]
+  );
+}
+
+export interface CustomPreset {
+  id: number;
+  name: string;
+  config: string;
+  usedAt: number;
+}
+
+export async function listCustomPresets(limit = 10): Promise<CustomPreset[]> {
+  const db = await getDb();
+  const rows = await db.select<{ id: number; name: string; config: string; used_at: number }[]>(
+    `SELECT id, name, config, used_at FROM custom_presets ORDER BY used_at DESC LIMIT $1`,
+    [limit]
+  );
+  return rows.map((r) => ({ id: r.id, name: r.name, config: r.config, usedAt: r.used_at }));
+}
+
+export async function upsertCustomPreset(name: string, config: string): Promise<void> {
+  const db = await getDb();
+  const existing = await db.select<{ id: number }[]>(
+    `SELECT id FROM custom_presets WHERE config = $1`,
+    [config]
+  );
+  if (existing.length > 0) {
+    await db.execute(
+      `UPDATE custom_presets SET name = $1, used_at = $2 WHERE id = $3`,
+      [name, Date.now(), existing[0].id]
+    );
+  } else {
+    await db.execute(
+      `INSERT INTO custom_presets (name, config, used_at) VALUES ($1, $2, $3)`,
+      [name, config, Date.now()]
+    );
+  }
+}

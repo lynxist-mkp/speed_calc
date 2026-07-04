@@ -27,8 +27,40 @@ vi.mock("@/generators/dataAnalysis", () => ({
   ]),
 }));
 
+// mock basic 生成器：generateBasicAddSub 按 count 循环返回固定题目（保证 N-back 测试的确定性答案，同时不破坏现有 count-based 测试）
+vi.mock("@/generators/basic", async () => {
+  const actual = await vi.importActual<typeof import("@/generators/basic")>("@/generators/basic");
+  const base = [
+    { a: 12, b: 34, op: "+" as const, answer: 46, display: "12+34=" },
+    { a: 56, b: 78, op: "+" as const, answer: 134, display: "56+78=" },
+    { a: 90, b: 12, op: "-" as const, answer: 78, display: "90-12=" },
+  ];
+  return {
+    ...actual,
+    generateBasicAddSub: vi.fn((count: number) =>
+      Array.from({ length: count }, (_, i) => ({ ...base[i % base.length] }))
+    ),
+    generateBasic: vi.fn(() => [
+      { a: 100, b: 200, op: "+", answer: 300, display: "100+200=" },
+      { a: 300, b: 400, op: "+", answer: 700, display: "300+400=" },
+      { a: 500, b: 600, op: "+", answer: 1100, display: "500+600=" },
+    ]),
+  };
+});
+
+vi.mock("@/generators/custom", () => ({
+  generateCustomStandard: vi.fn(() => [
+    { a: 10, b: 5, op: "+", answer: 15, display: "10+5=" },
+  ]),
+  generateCustomPower: vi.fn(() => [
+    { a: 2, b: 2, op: "×", answer: 4, display: "2²=" },
+  ]),
+}));
+
 import { usePracticeStore } from "@/stores/practice";
 import { generateDataQuestion } from "@/generators/dataAnalysis";
+import { generateBasic } from "@/generators/basic";
+import { insertRecord } from "@/db/index";
 
 describe("usePracticeStore", () => {
   beforeEach(() => {
@@ -177,7 +209,7 @@ describe("L2 store 多题型调度", () => {
   it("init 资料分析题型调度 generateDataQuestion", async () => {
     const store = usePracticeStore();
     await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
-    expect(generateDataQuestion).toHaveBeenCalledWith("estimate_prev", 2);
+    expect(generateDataQuestion).toHaveBeenCalledWith("estimate_prev", 2, undefined);
     expect(store.phase).toBe("running");
     expect(store.questions).toHaveLength(2);
   });
@@ -356,5 +388,231 @@ describe("store compare 模式", () => {
     store.selectCompare(q.answer);
     await store.submit();
     expect(store.compareChoice).toBeNull();
+  });
+});
+
+describe("N-back 状态机", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it("nback=0 行为不变：提交立即入库", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 0 });
+    expect(store.nback).toBe(0);
+    expect(store.pendingRecords).toHaveLength(0);
+
+    store.inputChar("4");
+    store.inputChar("6");
+    await store.submit();
+    expect(store.records).toHaveLength(1);
+    expect(store.pendingRecords).toHaveLength(0);
+    expect(insertRecord).toHaveBeenCalledTimes(1);
+  });
+
+  it("nback=1：前 1 题延迟入库", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
+
+    store.inputChar("4");
+    store.inputChar("6");
+    await store.submit();
+    expect(store.records).toHaveLength(0);
+    expect(store.pendingRecords).toHaveLength(1);
+    expect(store.nbackPrompting).toBe(false);
+    expect(insertRecord).not.toHaveBeenCalled();
+
+    store.inputChar("1");
+    store.inputChar("3");
+    store.inputChar("4");
+    await store.submit();
+    expect(store.nbackPrompting).toBe(true);
+    expect(store.nbackTarget).not.toBeNull();
+    expect(store.nbackTarget!.index).toBe(0);
+  });
+
+  it("nback=1：回忆正确则前题判对入库", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
+
+    store.inputChar("4");
+    store.inputChar("6");
+    await store.submit();
+
+    store.inputChar("1");
+    store.inputChar("3");
+    store.inputChar("4");
+    await store.submit();
+    expect(store.nbackPrompting).toBe(true);
+
+    store.setNbackAnswer("46");
+    await store.submitNback();
+    expect(store.nbackPrompting).toBe(false);
+    expect(store.records).toHaveLength(1);
+    expect(store.records[0].isCorrect).toBe(true);
+    expect(store.records[0].qIndex).toBe(0);
+    expect(insertRecord).toHaveBeenCalledWith(expect.objectContaining({ qIndex: 0, isCorrect: true }));
+  });
+
+  it("nback=1：回忆错误则前题判错入库", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
+
+    store.inputChar("4");
+    store.inputChar("6");
+    await store.submit();
+
+    store.inputChar("1");
+    store.inputChar("3");
+    store.inputChar("4");
+    await store.submit();
+
+    store.setNbackAnswer("99");
+    await store.submitNback();
+    expect(store.records[0].isCorrect).toBe(false);
+  });
+
+  it("nback=1 末尾收尾：最后一题答完回收剩余 pending", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
+
+    // 题 0
+    store.inputChar("4");
+    store.inputChar("6");
+    await store.submit();
+
+    // 题 1 → 回忆题 0
+    store.inputChar("1");
+    store.inputChar("3");
+    store.inputChar("4");
+    await store.submit();
+    store.setNbackAnswer("46");
+    await store.submitNback();
+
+    // 题 2 → 回忆题 1
+    store.inputChar("7");
+    store.inputChar("8");
+    await store.submit();
+    expect(store.nbackPrompting).toBe(true);
+    store.setNbackAnswer("134");
+    await store.submitNback();
+
+    // 末尾：还剩题 2 待回忆
+    expect(store.nbackPrompting).toBe(true);
+    expect(store.nbackTarget!.index).toBe(2);
+    store.setNbackAnswer("78");
+    await store.submitNback();
+
+    expect(store.phase).toBe("finished");
+    expect(store.records).toHaveLength(3);
+    expect(store.pendingRecords).toHaveLength(0);
+  });
+
+  it("skipNback 视为答错", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
+
+    store.inputChar("4");
+    store.inputChar("6");
+    await store.submit();
+
+    store.inputChar("1");
+    store.inputChar("3");
+    store.inputChar("4");
+    await store.submit();
+
+    await store.skipNback();
+    expect(store.records[0].isCorrect).toBe(false);
+    expect(store.nbackPrompting).toBe(false);
+  });
+
+  it("nback=2 端到端：题2答完才第一次弹窗，末尾连环回收剩余3题", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 4, nback: 2 });
+    expect(store.nback).toBe(2);
+    expect(store.pendingRecords).toHaveLength(0);
+    expect(store.nbackPrompting).toBe(false);
+    // mock 答案循环：题0=46, 题1=134, 题2=78, 题3=46（循环回题0）
+
+    // 题 0：pending 累积到 1，1 > 2 为 false，不弹窗
+    store.currentAnswer = "46";
+    await store.submit();
+    expect(store.pendingRecords).toHaveLength(1);
+    expect(store.nbackPrompting).toBe(false);
+    expect(store.currentIndex).toBe(1);
+
+    // 题 1：pending 累积到 2，2 > 2 为 false，不弹窗
+    store.currentAnswer = "134";
+    await store.submit();
+    expect(store.pendingRecords).toHaveLength(2);
+    expect(store.nbackPrompting).toBe(false);
+    expect(store.currentIndex).toBe(2);
+
+    // 题 2：pending 累积到 3，3 > 2 触发回收题 0
+    store.currentAnswer = "78";
+    await store.submit();
+    expect(store.nbackPrompting).toBe(true);
+    expect(store.nbackTarget!.index).toBe(0);
+    expect(store.pendingRecords).toHaveLength(2); // shift 后剩 [1, 2]
+    expect(store.currentIndex).toBe(3);
+
+    // 回忆题 0（答 46）：题 2 不是最后一题，nbackEndGame=false，不连环
+    store.setNbackAnswer("46");
+    await store.submitNback();
+    expect(store.nbackPrompting).toBe(false);
+    expect(store.nbackTarget).toBeNull();
+
+    // 题 3（最后一题）：pending 累积到 3，3 > 2 触发回收题 1，isLast=true → nbackEndGame=true
+    store.currentAnswer = "46";
+    await store.submit();
+    expect(store.nbackPrompting).toBe(true);
+    expect(store.nbackTarget!.index).toBe(1);
+    expect(store.pendingRecords).toHaveLength(2); // 剩 [2, 3]
+
+    // 回忆题 1（答 134）：nbackEndGame=true 连环回收题 2
+    store.setNbackAnswer("134");
+    await store.submitNback();
+    expect(store.nbackPrompting).toBe(true);
+    expect(store.nbackTarget!.index).toBe(2);
+    expect(store.pendingRecords).toHaveLength(1); // 剩 [3]
+
+    // 回忆题 2（答 78）：连环回收题 3
+    store.setNbackAnswer("78");
+    await store.submitNback();
+    expect(store.nbackPrompting).toBe(true);
+    expect(store.nbackTarget!.index).toBe(3);
+    expect(store.pendingRecords).toHaveLength(0);
+
+    // 回忆题 3（答 46）：pending 空，触发 finish
+    store.setNbackAnswer("46");
+    await store.submitNback();
+    expect(store.nbackPrompting).toBe(false);
+    expect(store.nbackTarget).toBeNull();
+    expect(store.pendingRecords).toHaveLength(0);
+    expect(store.phase).toBe("finished");
+    expect(store.records).toHaveLength(4);
+    expect(store.records.map((r) => r.qIndex)).toEqual([0, 1, 2, 3]);
+  });
+});
+
+describe("init 支持 basic 类型调度", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it("init 用 addsub_2d 走 generateBasic", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "addsub_2d", subtype: "两位数加减", count: 3 });
+    expect(store.phase).toBe("running");
+    expect(store.questions).toHaveLength(3);
+    expect(generateBasic).toHaveBeenCalledWith("addsub_2d", 3);
+  });
+
+  it("init 用 add_3d 走 generateBasic", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "add_3d", subtype: "三位数加法", count: 5 });
+    expect(generateBasic).toHaveBeenCalledWith("add_3d", 5);
   });
 });
