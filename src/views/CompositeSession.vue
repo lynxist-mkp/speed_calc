@@ -15,6 +15,7 @@ import {
   insertRecord,
   updateSession,
 } from "@/db/index";
+import { resolveNumpadKey } from "@/utils/keymap";
 
 const router = useRouter();
 
@@ -152,26 +153,22 @@ onBeforeUnmount(() => {
 });
 
 function handleKeydown(e: KeyboardEvent) {
-  const k = e.key;
-  if (/^[0-9]$/.test(k)) {
+  // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发，以及 Space 在按钮上触发点击
+  if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space")
+      && e.target instanceof HTMLButtonElement) {
+    return;
+  }
+
+  const r = resolveNumpadKey(e);
+  if (r.type === "input") {
     e.preventDefault();
-    onInput(k);
-  } else if (k === "." || k === "," || k === "，") {
+    onInput(r.payload);
+  } else if (r.type === "function") {
     e.preventDefault();
-    onInput(".");
-  } else if (k === "-") {
-    e.preventDefault();
-    onInput("-");
-  } else if (k === "Backspace") {
-    e.preventDefault();
-    onBackspace();
-  } else if (k === "Enter") {
-    if (e.target instanceof HTMLButtonElement) return;
-    e.preventDefault();
-    onSubmit();
-  } else if (k === "Delete") {
-    e.preventDefault();
-    onClear();
+    if (r.payload === "backspace") onBackspace();
+    else if (r.payload === "submit") onSubmit();
+    else if (r.payload === "clear") onClear();
+    // composite 无 toggle-sign / restart（composite 用 onBack 返回，不绑定 Esc）
   }
 }
 
