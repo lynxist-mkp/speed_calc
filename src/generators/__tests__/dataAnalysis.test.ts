@@ -236,6 +236,23 @@ describe("generateDataQuestion", () => {
         expect(q.preset).toBe("-");
       }
     });
+
+    it("chartData 含 6 年 labels/values/unit，首末值与 context 一致", () => {
+      const qs = generateDataQuestion("annual_growth_rate", 20);
+      for (const q of qs) {
+        expect(q.chartData).toBeDefined();
+        expect(q.chartData!.labels).toEqual(["2012", "2013", "2014", "2015", "2016", "2017"]);
+        expect(q.chartData!.values).toHaveLength(6);
+        expect(q.chartData!.unit).toBe("万");
+        // 首末值与 context 一致
+        const mFirst = q.context?.match(/首: (\d+)万/);
+        const mLast = q.context?.match(/末: (\d+)万/);
+        if (mFirst && mLast) {
+          expect(q.chartData!.values[0]).toBe(Number(mFirst[1]));
+          expect(q.chartData!.values[5]).toBe(Number(mLast[1]));
+        }
+      }
+    });
   });
 
   describe("base_period_ratio 基期比重", () => {
@@ -298,6 +315,22 @@ describe("generateDataQuestion", () => {
       const qs = generateDataQuestion("annual_avg", 5);
       for (const q of qs) {
         expect(q.unit).toBe("万");
+      }
+    });
+
+    it("chartData 含 5 年 labels/values/unit，values 与 context 一致", () => {
+      const qs = generateDataQuestion("annual_avg", 20);
+      for (const q of qs) {
+        expect(q.chartData).toBeDefined();
+        expect(q.chartData!.labels).toEqual(["2012", "2013", "2014", "2015", "2016"]);
+        expect(q.chartData!.values).toHaveLength(5);
+        expect(q.chartData!.unit).toBe("万");
+        // values 与 context 中的"各年: a, b, c, d, e 万"一致
+        const m = q.context?.match(/各年: ([\d, ]+) 万/);
+        if (m) {
+          const ctxValues = m[1].split(", ").map(Number);
+          expect(q.chartData!.values).toEqual(ctxValues);
+        }
       }
     });
   });

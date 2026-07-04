@@ -8,10 +8,13 @@ import QuestionDisplay from "@/components/QuestionDisplay.vue";
 import CompareQuestion from "@/components/CompareQuestion.vue";
 import CompareKeypad from "@/components/CompareKeypad.vue";
 import NbackPrompt from "@/components/NbackPrompt.vue";
+import BarChart from "@/components/BarChart.vue";
 import { usePracticeStore } from "@/stores/practice";
+import { useSettingsStore } from "@/stores/settings";
 
 const router = useRouter();
 const store = usePracticeStore();
+const settings = useSettingsStore();
 
 const flashState = ref<"none" | "correct" | "wrong">("none");
 let flashTimer: number | null = null;
@@ -20,6 +23,15 @@ const standardText = computed(() => {
   const s = store.timeStandard;
   if (s === null) return null;
   return `合格 ${s.pass}s  良好 ${s.good}s  优秀 ${s.excellent}s`;
+});
+
+// chart 呈现模式：仅 annual_growth_rate / annual_avg 在 displayMode=chart 时启用
+const CHART_TYPES = new Set(["annual_growth_rate", "annual_avg"]);
+const useChart = computed(() => {
+  if (settings.dataAnalysis.displayMode !== "chart") return false;
+  const q = store.currentQuestion;
+  if (!q || !("chartData" in q)) return false;
+  return CHART_TYPES.has(store.config?.type ?? "");
 });
 
 function handleKeydown(e: KeyboardEvent) {
@@ -168,17 +180,24 @@ onBeforeUnmount(() => {
     </TopBar>
 
     <!-- 题目区按 category 切换 -->
-    <QuestionDisplay
-      v-if="store.questionCategory === 'numpad'"
-      :display="(store.currentQuestion as any)?.display ?? ''"
-      :is-data="store.isDataType"
-      :context="store.questionMeta?.context"
-      :hint="store.questionMeta?.hint"
-      :tolerance="store.questionMeta?.tolerance"
-      :unit="store.questionMeta?.unit"
-      :standard-text="standardText"
-      :answer="store.currentAnswer"
-    />
+    <template v-if="store.questionCategory === 'numpad'">
+      <BarChart
+        v-if="useChart"
+        :labels="((store.currentQuestion as any)?.chartData?.labels) ?? []"
+        :values="((store.currentQuestion as any)?.chartData?.values) ?? []"
+        :unit="((store.currentQuestion as any)?.chartData?.unit)"
+      />
+      <QuestionDisplay
+        :display="(store.currentQuestion as any)?.display ?? ''"
+        :is-data="store.isDataType"
+        :context="store.questionMeta?.context"
+        :hint="store.questionMeta?.hint"
+        :tolerance="store.questionMeta?.tolerance"
+        :unit="store.questionMeta?.unit"
+        :standard-text="standardText"
+        :answer="store.currentAnswer"
+      />
+    </template>
     <CompareQuestion
       v-else-if="store.questionCategory === 'compare'"
       :left-tex="(store.currentQuestion as any)?.display?.leftTex ?? ''"

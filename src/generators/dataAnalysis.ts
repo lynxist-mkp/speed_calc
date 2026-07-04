@@ -14,6 +14,7 @@ export interface DataQuestion {
   hint?: string;          // 附加提示
   preset?: string;        // 预填
   unit?: string;          // 单位
+  chartData?: { labels: string[]; values: number[]; unit?: string };
 }
 
 function randInt(min: number, max: number): number {
@@ -162,6 +163,15 @@ function genAnnualGrowthRate(difficulty: Difficulty = "normal"): DataQuestion {
   const n = 5;
   const answer = Math.pow(last / first, 1 / n) - 1;
   const answerPct = Number((answer * 100).toFixed(2));
+  // chartData：首末值已知，中间 4 年在 first~last 范围内随机填充
+  const labels = ["2012", "2013", "2014", "2015", "2016", "2017"];
+  const lo = Math.min(first, last);
+  const hi = Math.max(first, last);
+  const values = [first];
+  for (let i = 1; i < 5; i++) {
+    values.push(randInt(lo, hi));
+  }
+  values.push(last);
   return {
     display: `\\text{2012~2017 年均增长率} \\approx`,
     answer: answerPct,
@@ -169,6 +179,7 @@ function genAnnualGrowthRate(difficulty: Difficulty = "normal"): DataQuestion {
     context: `2012~2017, 首: ${first}万, 末: ${last}万, n=5`,
     unit: "%",
     preset: answerPct < 0 ? "-" : undefined,
+    chartData: { labels, values, unit: "万" },
   };
 }
 
@@ -208,12 +219,14 @@ function genAnnualAvg(difficulty: Difficulty = "normal"): DataQuestion {
   }
   const sum = values.reduce((a, b) => a + b, 0);
   const answer = sum / 5;
+  const labels = ["2012", "2013", "2014", "2015", "2016"];
   return {
     display: `\\text{2012~2016 年平均成交量} \\approx`,
     answer: Number(answer.toFixed(2)),
     tolerance: 0.01,
     context: `各年: ${values.join(", ")} 万`,
     unit: "万",
+    chartData: { labels, values: [...values], unit: "万" },
   };
 }
 
