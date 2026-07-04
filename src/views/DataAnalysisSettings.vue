@@ -1,71 +1,156 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
 import type { CompareType } from "@/generators/compareAnalysis";
+import TypeGrid from "@/components/TypeGrid.vue";
+import SegmentedControl from "@/components/SegmentedControl.vue";
+import SettingRow from "@/components/SettingRow.vue";
 
 const router = useRouter();
 const store = usePracticeStore();
 const settings = useSettingsStore();
 
-const questionTypes: { label: string; type: string }[] = [
-  { label: "估算前期量", type: "estimate_prev" },
-  { label: "估算增长量", type: "estimate_growth" },
-  { label: "百化分", type: "baihua_frac" },
-  { label: "百化分反向", type: "baihua_frac_rev" },
-  { label: "分数计算(＜)", type: "frac_calc_lt" },
-  { label: "分数计算(＞)", type: "frac_calc_gt" },
-  { label: "年均增长率", type: "annual_growth_rate" },
-  { label: "基期比重", type: "base_period_ratio" },
-  { label: "年平均量", type: "annual_avg" },
+// 填空题题型（key 与 store 的 type 字段一致，供 TypeGrid 使用）
+const fillSections = [
+  {
+    title: "填空题",
+    types: [
+      { key: "estimate_prev", label: "估算前期量" },
+      { key: "estimate_growth", label: "估算增长量" },
+      { key: "baihua_frac", label: "百化分" },
+      { key: "baihua_frac_rev", label: "百化分反向" },
+      { key: "frac_calc_lt", label: "分数计算(＜)" },
+      { key: "frac_calc_gt", label: "分数计算(＞)" },
+      { key: "annual_growth_rate", label: "年均增长率" },
+      { key: "base_period_ratio", label: "基期比重" },
+      { key: "annual_avg", label: "年平均量" },
+    ],
+  },
 ];
+const fillFlatTypes: string[] = fillSections.flatMap((s) => s.types.map((t) => t.key));
+const fillLabels: Record<string, string> = Object.fromEntries(
+  fillSections.flatMap((s) => s.types.map((t) => [t.key, t.label])),
+);
 
-const compareTypes: { label: string; type: CompareType }[] = [
-  { label: "增量比大小", type: "compare_growth" },
-  { label: "基期比大小", type: "compare_base" },
-  { label: "分数比大小", type: "compare_frac" },
+// 比较题题型
+const compareSections = [
+  {
+    title: "比较题",
+    types: [
+      { key: "compare_growth", label: "增量比大小" },
+      { key: "compare_base", label: "基期比大小" },
+      { key: "compare_frac", label: "分数比大小" },
+    ],
+  },
 ];
+const compareFlatTypes: CompareType[] = compareSections.flatMap((s) =>
+  s.types.map((t) => t.key as CompareType),
+);
+const compareLabels: Record<string, string> = Object.fromEntries(
+  compareSections.flatMap((s) => s.types.map((t) => [t.key, t.label])),
+);
 
-const countOptions = [5, 10, 15, 20, 25];
-const customCount = ref(10);
-const dialogVisible = ref(false);
+// 当前选中题型（字符串 key，供 TypeGrid 使用）
+const selectedFillType = ref<string>("estimate_prev");
+const selectedCompareType = ref<string>("compare_growth");
 
-function openDialog() {
-  customCount.value = settings.dataAnalysis.count;
-  dialogVisible.value = true;
+function onFillTypeChange(key: string) {
+  selectedFillType.value = key;
+  const idx = fillFlatTypes.indexOf(key);
+  if (idx >= 0) {
+    void settings.saveDataAnalysis({ selectedFillType: idx });
+  }
 }
 
-async function selectPreset(n: number) {
-  await settings.saveDataAnalysis({ count: n });
-  dialogVisible.value = false;
+function onCompareTypeChange(key: string) {
+  selectedCompareType.value = key;
+  const idx = compareFlatTypes.indexOf(key as CompareType);
+  if (idx >= 0) {
+    void settings.saveDataAnalysis({ selectedCompareType: idx });
+  }
 }
 
-async function confirmCustom() {
-  const count = Math.max(5, Math.min(100, customCount.value));
-  await settings.saveDataAnalysis({ count });
-  dialogVisible.value = false;
+// 难度
+const difficultyOptions = [
+  { label: "简单", value: "easy" },
+  { label: "一般", value: "normal" },
+  { label: "困难", value: "hard" },
+];
+const difficulty = computed(() => settings.dataAnalysis.difficulty);
+
+async function onDifficultyChange(v: string) {
+  await settings.saveDataAnalysis({ difficulty: v as "easy" | "normal" | "hard" });
 }
 
-const nbackDialogVisible = ref(false);
-const nbackChoice = ref<0 | 1 | 2>(0);
+// 呈现方式
+const displayOptions = [
+  { label: "生成文字图表", value: "chart" },
+  { label: "直接显示公式", value: "formula" },
+];
+const displayMode = computed(() => settings.dataAnalysis.displayMode);
 
-function openNbackDialog() {
-  nbackChoice.value = settings.dataAnalysis.nback;
-  nbackDialogVisible.value = true;
+async function onDisplayChange(v: string) {
+  await settings.saveDataAnalysis({ displayMode: v as "chart" | "formula" });
 }
 
-async function confirmNback() {
-  await settings.saveDataAnalysis({ nback: nbackChoice.value });
-  nbackDialogVisible.value = false;
+// 题量
+const countSegOptions = [
+  { label: "5", value: "5" },
+  { label: "10", value: "10" },
+  { label: "15", value: "15" },
+  { label: "20", value: "20" },
+  { label: "25", value: "25" },
+  { label: "自定", value: "custom" },
+];
+const countMode = computed(() => {
+  const c = settings.dataAnalysis.count;
+  // 预设值 5/10/15/20/25 显示对应数字，否则显示 custom
+  if ([5, 10, 15, 20, 25].includes(c) && c === settings.dataAnalysis.count) {
+    // 仅当 count 等于某个预设且非 custom 模式时显示数字
+    // 这里简化：只要 count 在预设列表中就显示数字
+    return String(c);
+  }
+  return "custom";
+});
+const customCount = ref(settings.dataAnalysis.count);
+const showCustomExpand = computed(() => countMode.value === "custom");
+
+async function onCountChange(v: string) {
+  if (v === "custom") {
+    await settings.saveDataAnalysis({ count: customCount.value });
+  } else {
+    await settings.saveDataAnalysis({ count: Number(v) });
+  }
 }
 
+async function onCustomCountInput(e: Event) {
+  const v = Number((e.target as HTMLInputElement).value);
+  customCount.value = Math.max(5, Math.min(100, v));
+  await settings.saveDataAnalysis({ count: customCount.value });
+}
+
+// N-back
+const nbackOptions = [
+  { label: "关闭", value: "0" },
+  { label: "1-back", value: "1" },
+  { label: "2-back", value: "2" },
+];
+const nback = computed(() => String(settings.dataAnalysis.nback));
+
+async function onNbackChange(v: string) {
+  await settings.saveDataAnalysis({ nback: Number(v) as 0 | 1 | 2 });
+}
+
+// 开始练习
 async function startPractice() {
-  const t = questionTypes[settings.dataAnalysis.selectedFillType];
+  const key = selectedFillType.value;
+  const label = fillLabels[key];
   await store.init({
-    type: t.type,
-    subtype: t.label,
+    type: key,
+    subtype: label,
     count: settings.dataAnalysis.count,
     difficulty: settings.dataAnalysis.difficulty,
     nback: settings.dataAnalysis.nback,
@@ -78,10 +163,11 @@ async function startPractice() {
 }
 
 async function startCompare() {
-  const t = compareTypes[settings.dataAnalysis.selectedCompareType];
+  const key = selectedCompareType.value as CompareType;
+  const label = compareLabels[key];
   await store.init({
-    type: t.type,
-    subtype: t.label,
+    type: key,
+    subtype: label,
     count: settings.dataAnalysis.count,
     difficulty: settings.dataAnalysis.difficulty,
   });
@@ -100,185 +186,225 @@ function goHistory() {
   router.push("/history");
 }
 
-onMounted(() => settings.load());
+onMounted(async () => {
+  await settings.load();
+  const fillIdx = settings.dataAnalysis.selectedFillType;
+  if (fillIdx >= 0 && fillIdx < fillFlatTypes.length) {
+    selectedFillType.value = fillFlatTypes[fillIdx];
+  }
+  const cmpIdx = settings.dataAnalysis.selectedCompareType;
+  if (cmpIdx >= 0 && cmpIdx < compareFlatTypes.length) {
+    selectedCompareType.value = compareFlatTypes[cmpIdx];
+  }
+  customCount.value = settings.dataAnalysis.count;
+});
 </script>
 
 <template>
   <div class="da-settings">
-    <h2 class="title">资料分析</h2>
+    <h2 class="page-title">资料分析</h2>
 
     <!-- 填空题区 -->
     <section class="block">
       <h3 class="section-title">填空题</h3>
 
-      <div class="row">
-        <span class="label">选择难度</span>
-        <div class="triple-buttons">
-          <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'easy' }"
-            @click="settings.saveDataAnalysis({ difficulty: 'easy' })">简单</button>
-          <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'normal' }"
-            @click="settings.saveDataAnalysis({ difficulty: 'normal' })">一般</button>
-          <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'hard' }"
-            @click="settings.saveDataAnalysis({ difficulty: 'hard' })">困难</button>
-        </div>
-      </div>
+      <SettingRow label="选择难度">
+        <SegmentedControl
+          :options="difficultyOptions"
+          :model-value="difficulty"
+          @update:model-value="onDifficultyChange"
+        />
+      </SettingRow>
 
-      <div class="row">
-        <span class="label">题目呈现方式</span>
-        <div class="triple-buttons">
-          <button class="triple-btn" :class="{ active: settings.dataAnalysis.displayMode === 'chart' }"
-            @click="settings.saveDataAnalysis({ displayMode: 'chart' })">生成文字图表</button>
-          <button class="triple-btn" :class="{ active: settings.dataAnalysis.displayMode === 'formula' }"
-            @click="settings.saveDataAnalysis({ displayMode: 'formula' })">直接显示公式</button>
-        </div>
-      </div>
+      <SettingRow label="题目呈现方式">
+        <SegmentedControl
+          :options="displayOptions"
+          :model-value="displayMode"
+          @update:model-value="onDisplayChange"
+        />
+      </SettingRow>
 
-      <div class="type-grid">
-        <button
-          v-for="(t, i) in questionTypes"
-          :key="t.type"
-          class="type-cell"
-          :class="{ selected: i === settings.dataAnalysis.selectedFillType }"
-          @click="settings.saveDataAnalysis({ selectedFillType: i })"
-        >{{ t.label }}</button>
-      </div>
+      <SettingRow label="题型选择">
+        <TypeGrid
+          :sections="fillSections"
+          :show-title="false"
+          :model-value="selectedFillType"
+          @update:model-value="onFillTypeChange"
+        />
+      </SettingRow>
 
-      <div class="row" @click="openDialog">
-        <span class="label">题量</span>
-        <span class="value">{{ settings.dataAnalysis.count }} 题 ›</span>
-      </div>
+      <SettingRow label="题量" :expandable="showCustomExpand" :expanded="showCustomExpand">
+        <SegmentedControl
+          :options="countSegOptions"
+          :model-value="countMode"
+          @update:model-value="onCountChange"
+        />
+        <template #expand>
+          <div class="custom-count">
+            <label>自定义题量（5-100）</label>
+            <input
+              type="range"
+              min="5"
+              max="100"
+              :value="customCount"
+              @input="onCustomCountInput"
+            />
+            <span class="count-value">{{ customCount }} 题</span>
+          </div>
+        </template>
+      </SettingRow>
 
-      <div class="row" @click="openNbackDialog">
-        <span class="label">N-back</span>
-        <span class="value">{{ settings.dataAnalysis.nback === 0 ? "关闭" : `${settings.dataAnalysis.nback}-back` }} ›</span>
-      </div>
+      <SettingRow label="N-back 工作记忆训练">
+        <SegmentedControl
+          :options="nbackOptions"
+          :model-value="nback"
+          @update:model-value="onNbackChange"
+        />
+      </SettingRow>
 
-      <button class="start-btn" @click="startPractice">开始练习</button>
+      <div class="actions">
+        <button class="btn-primary" @click="startPractice">开始练习</button>
+      </div>
     </section>
 
     <!-- 比较题区 -->
     <section class="block">
       <h3 class="section-title">比较题</h3>
 
-      <div class="type-grid">
-        <button
-          v-for="(t, i) in compareTypes"
-          :key="t.type"
-          class="type-cell"
-          :class="{ selected: i === settings.dataAnalysis.selectedCompareType }"
-          @click="settings.saveDataAnalysis({ selectedCompareType: i })"
-        >{{ t.label }}</button>
-      </div>
+      <SettingRow label="题型选择">
+        <TypeGrid
+          :sections="compareSections"
+          :show-title="false"
+          :model-value="selectedCompareType"
+          @update:model-value="onCompareTypeChange"
+        />
+      </SettingRow>
 
-      <div class="row" @click="openDialog">
-        <span class="label">题量</span>
-        <span class="value">{{ settings.dataAnalysis.count }} 题 ›</span>
-      </div>
+      <SettingRow label="题量" :expandable="showCustomExpand" :expanded="showCustomExpand">
+        <SegmentedControl
+          :options="countSegOptions"
+          :model-value="countMode"
+          @update:model-value="onCountChange"
+        />
+        <template #expand>
+          <div class="custom-count">
+            <label>自定义题量（5-100）</label>
+            <input
+              type="range"
+              min="5"
+              max="100"
+              :value="customCount"
+              @input="onCustomCountInput"
+            />
+            <span class="count-value">{{ customCount }} 题</span>
+          </div>
+        </template>
+      </SettingRow>
 
-      <button class="start-btn" @click="startCompare">开始练习</button>
+      <div class="actions">
+        <button class="btn-primary" @click="startCompare">开始练习</button>
+      </div>
     </section>
 
     <!-- 一表通算区 -->
     <section class="block">
       <h3 class="section-title">一表通算</h3>
-      <button class="start-btn" @click="startComposite">开始练习</button>
+      <div class="actions">
+        <button class="btn-primary" @click="startComposite">开始练习</button>
+      </div>
     </section>
 
-    <button class="bottom-btn" @click="goHistory">历史记录</button>
-
-    <el-dialog v-model="dialogVisible" title="选择题量" width="320px">
-      <div class="count-grid">
-        <button
-          v-for="n in countOptions"
-          :key="n"
-          class="count-opt"
-          :class="{ active: settings.dataAnalysis.count === n }"
-          @click="selectPreset(n)"
-        >{{ n }} 题</button>
-        <div class="count-custom">
-          <div>自定义</div>
-          <el-slider v-model="customCount" :min="5" :max="100" :step="1" />
-          <div>{{ customCount }} 题</div>
-          <el-button type="primary" size="small" @click="confirmCustom">确定</el-button>
-        </div>
-      </div>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-      </template>
-    </el-dialog>
-
-    <el-dialog v-model="nbackDialogVisible" title="N-back 设置" width="320px">
-      <div class="nback-options">
-        <button class="nback-opt" :class="{ active: nbackChoice === 0 }" @click="nbackChoice = 0">关闭</button>
-        <button class="nback-opt" :class="{ active: nbackChoice === 1 }" @click="nbackChoice = 1">1-back</button>
-        <button class="nback-opt" :class="{ active: nbackChoice === 2 }" @click="nbackChoice = 2">2-back</button>
-      </div>
-      <template #footer>
-        <el-button @click="nbackDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmNback">确定</el-button>
-      </template>
-    </el-dialog>
+    <div class="actions">
+      <button class="btn-secondary" @click="goHistory">历史记录</button>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-.da-settings { max-width: 720px; margin: 0 auto; padding: 24px; }
-.title { color: var(--app-text-primary, #93a1a1); margin-bottom: 16px; }
-.type-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;
+.da-settings {
+  max-width: 720px;
+  margin: 0 auto;
 }
-.type-cell {
-  padding: 14px 8px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;
-  background: rgba(133, 200, 142, 0.15); color: var(--app-text-primary, #93a1a1);
-  font-size: 14px; cursor: pointer;
-  &.selected {
-    background: rgba(46, 80, 56, 0.9); color: #fff;
-    border-color: var(--app-color-primary, #5faf6f);
-  }
+
+.page-title {
+  font-size: 22px;
+  color: var(--app-text-bright);
+  margin-bottom: 16px;
 }
-.row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px; margin-bottom: 12px;
-  background: var(--app-bg-surface, #073642); border-radius: 10px; cursor: pointer;
-}
-.label { color: var(--app-text-primary, #93a1a1); }
-.value { color: var(--app-text-secondary, #586e75); }
-.triple-buttons { display: flex; gap: 8px; }
-.triple-btn {
-  padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;
-  background: var(--app-bg-surface, #073642); color: var(--app-text-primary, #93a1a1); cursor: pointer;
-  &.active {
-    border-color: var(--app-color-primary, #5faf6f);
-    background: rgba(95, 175, 111, 0.2); color: var(--app-color-primary, #5faf6f);
-  }
-}
-.start-btn {
-  width: 100%; padding: 14px; margin: 16px 0 12px;
-  background: var(--app-color-primary, #5faf6f); color: #fff;
-  border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
-  &:hover { background: #6fbf7f; }
-}
-.bottom-btn {
-  width: 100%; padding: 10px;
-  background: var(--app-bg-surface, #073642); color: var(--app-text-primary, #93a1a1);
-  border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; cursor: pointer;
-}
-.count-grid, .nback-options { display: flex; flex-direction: column; gap: 10px; }
-.count-opt, .nback-opt {
-  padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
-  background: var(--app-bg-surface, #073642); color: var(--app-text-primary, #93a1a1); cursor: pointer;
-  &.active {
-    border-color: var(--app-color-primary, #5faf6f);
-    background: rgba(95, 175, 111, 0.2);
-  }
-}
-.count-custom {
-  padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
-}
+
 .block {
-  margin-bottom: 24px; padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  &:last-of-type { border-bottom: none; }
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--app-glass-border);
+
+  &:last-of-type {
+    border-bottom: none;
+  }
 }
-.section-title { color: var(--app-text-primary, #93a1a1); font-size: 16px; margin-bottom: 12px; }
+
+.section-title {
+  color: var(--app-text-bright);
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 12px 20px;
+  background: var(--app-color-primary);
+  color: var(--app-bg-page);
+  border: none;
+  border-radius: var(--app-radius-button);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--app-color-primary-hover);
+  }
+}
+
+.btn-secondary {
+  flex: 1;
+  padding: 12px 20px;
+  background: var(--button-bg);
+  color: var(--app-text-bright);
+  border: 1px solid var(--button-border);
+  border-radius: var(--app-radius-button);
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--button-bg-hover);
+    border-color: var(--app-color-primary);
+  }
+}
+
+.custom-count {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+
+  label {
+    color: var(--app-text-secondary);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--app-color-primary);
+  }
+
+  .count-value {
+    color: var(--app-color-primary);
+    font-weight: 600;
+    text-align: right;
+  }
+}
 </style>
