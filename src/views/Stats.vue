@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from "vue";
-import * as echarts from "echarts";
+import * as echarts from "echarts/core";
+import { BarChart, LineChart, RadarChart } from "echarts/charts";
+import { TooltipComponent, GridComponent, RadarComponent } from "echarts/components";
+import { CanvasRenderer } from "echarts/renderers";
 import {
   getOverallStats,
   getAccuracyByType,
@@ -12,6 +15,16 @@ import {
   type TypeDuration,
 } from "@/db/index";
 import { typeLabel } from "@/constants/typeLabels";
+
+echarts.use([
+  BarChart,
+  LineChart,
+  RadarChart,
+  TooltipComponent,
+  GridComponent,
+  RadarComponent,
+  CanvasRenderer,
+]);
 
 const overall = ref<OverallStats | null>(null);
 const typeAccuracy = ref<TypeAccuracy[]>([]);
@@ -26,9 +39,26 @@ let radarChart: echarts.ECharts | null = null;
 let trendChart: echarts.ECharts | null = null;
 let durationChart: echarts.ECharts | null = null;
 
-const TEXT_PRIMARY = "#93a1a1";
-const COLOR_PRIMARY = "#5faf6f";
-const COLOR_SPLIT = "#073642";
+// Solarized 主题色板（ECharts 在 canvas 中渲染，无法读取 CSS 变量，故硬编码色值统一管理于此）
+const SOLARIZED_COLORS = {
+  primary: "#2aa198",    // cyan
+  secondary: "#b58900",  // yellow
+  success: "#859900",    // green
+  danger: "#dc322f",     // red
+  info: "#268bd2",       // blue
+  text: "#93a1a1",       // base1
+  textBright: "#eee8d5", // base3
+  bg: "#073642",         // base02
+  bgDeep: "#002b36",     // base03
+  muted: "#586e75",      // base01
+} as const;
+
+// 系列主色（Solarized green #859900 = rgb(133, 153, 0)）及其透明变体
+const TEXT_PRIMARY = SOLARIZED_COLORS.text;
+const COLOR_PRIMARY = SOLARIZED_COLORS.success;
+const COLOR_SPLIT = SOLARIZED_COLORS.bg;
+const AREA_FILL_STRONG = "rgba(133, 153, 0, 0.3)";
+const AREA_FILL_LIGHT = "rgba(133, 153, 0, 0.15)";
 
 function formatDuration(ms: number) {
   const totalSec = Math.floor(ms / 1000);
@@ -63,7 +93,7 @@ function renderRadar() {
           {
             value: values,
             name: "正确率",
-            areaStyle: { color: "rgba(95, 175, 111, 0.3)" },
+            areaStyle: { color: AREA_FILL_STRONG },
             lineStyle: { color: COLOR_PRIMARY, width: 2 },
             itemStyle: { color: COLOR_PRIMARY },
           },
@@ -104,7 +134,7 @@ function renderTrend() {
         symbolSize: 6,
         lineStyle: { color: COLOR_PRIMARY, width: 2 },
         itemStyle: { color: COLOR_PRIMARY },
-        areaStyle: { color: "rgba(95, 175, 111, 0.15)" },
+        areaStyle: { color: AREA_FILL_LIGHT },
       },
     ],
   });
