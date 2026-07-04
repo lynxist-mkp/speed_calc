@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// 数字键盘 - 可拖拽浮窗，icon-only 手柄，内联重开，边界 clamp
 import { ref, onMounted } from "vue";
 
 interface Props {
@@ -30,11 +31,15 @@ let dragStartPosY = 0;
 let dragStartScale = 1;
 let dragAxis: "h" | "v" | null = null;
 
+// 视口边界 clamp 用：numpad 容器实际尺寸
+const containerEl = ref<HTMLElement | null>(null);
+
 const DEFAULT_POS_X = 0;
 const DEFAULT_POS_Y = 0;
 const DEFAULT_SCALE = 1;
 const MIN_SCALE = 0.7;
 const MAX_SCALE = 1.5;
+const VIEWPORT_MARGIN = 12; // px，距视口边距
 
 function loadPersistedState() {
   try {
@@ -63,6 +68,29 @@ function clamp(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, v));
 }
 
+// 计算 clamp 范围（基于父容器与 numpad 实际尺寸）
+function getClampBounds() {
+  const parent = containerEl.value?.parentElement;
+  if (!parent || !containerEl.value) {
+    return { minX: -1000, maxX: 1000, minY: -1000, maxY: 1000 };
+  }
+  const parentRect = parent.getBoundingClientRect();
+  const selfRect = containerEl.value.getBoundingClientRect();
+  // 实际显示尺寸 = selfRect * scale
+  const scaledW = selfRect.width * scale.value;
+  const scaledH = selfRect.height * scale.value;
+  // Numpad 默认布局在父容器右下（由父容器 flex/position 决定），translate(0,0) 即默认位置
+  // clamp 范围：让 numpad 不超出父容器
+  const maxX = Math.max(0, parentRect.width - scaledW - VIEWPORT_MARGIN);
+  const maxY = Math.max(0, parentRect.height - scaledH - VIEWPORT_MARGIN);
+  return {
+    minX: -scaledW + VIEWPORT_MARGIN, // 允许向左拖到只剩 margin 宽度可见
+    maxX,
+    minY: -scaledH + VIEWPORT_MARGIN,
+    maxY,
+  };
+}
+
 function onPointerDown(e: PointerEvent) {
   dragging.value = true;
   dragStartX = e.clientX;
@@ -70,7 +98,6 @@ function onPointerDown(e: PointerEvent) {
   dragStartPosX = posX.value;
   dragStartPosY = posY.value;
   dragStartScale = scale.value;
-  // 判断方向：首次移动时定
   dragAxis = null;
   (e.target as HTMLElement).setPointerCapture(e.pointerId);
 }
@@ -82,14 +109,13 @@ function onPointerMove(e: PointerEvent) {
   if (dragAxis === null && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
     dragAxis = Math.abs(dy) > Math.abs(dx) ? "v" : "h";
   }
+  const bounds = getClampBounds();
   if (dragAxis === "v") {
-    // 垂直拖动调高度（scale）
     const newScale = dragStartScale + dy / 200;
     scale.value = clamp(newScale, MIN_SCALE, MAX_SCALE);
   } else if (dragAxis === "h") {
-    // 水平拖动调位置
-    posX.value = dragStartPosX + dx;
-    posY.value = dragStartPosY + dy;
+    posX.value = clamp(dragStartPosX + dx, bounds.minX, bounds.maxX);
+    posY.value = clamp(dragStartPosY + dy, bounds.minY, bounds.maxY);
   }
 }
 
@@ -109,7 +135,6 @@ function onDoubleClick() {
 
 onMounted(loadPersistedState);
 
-// 数字键布局（正序）
 const numberKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 function onKey(key: string) {
@@ -124,45 +149,74 @@ function onKey(key: string) {
 
 <template>
   <div
+    ref="containerEl"
     class="numpad-container glass-card"
     :style="{
       transform: `translate(${posX}px, ${posY}px) scale(${scale})`,
     }"
   >
-    <!-- 拖拽手柄 -->
+    <!-- 手柄：icon-only + 内联重开按钮 -->
     <div
       data-handle="drag"
       class="drag-handle"
+      title="拖动移动 · 双击复位"
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"
       @pointerup="onPointerUp"
       @dblclick="onDoubleClick"
     >
-      <span class="handle-icon">⠿</span>
-      <span class="drag-hint">上下拖调大小 左右拖调位置 双击恢复</span>
+      <span class="handle-icon" aria-hidden="true">⋮⋮</span>
+      <!-- basic variant 重开按钮内联到手柄右侧 -->
+      <button
+        v-if="props.variant === 'basic'"
+        data-key="restart"
+        class="handle-restart"
+        aria-label="重开"
+        @click.stop="onKey('restart')"
+      >
+        重开
+      </button>
     </div>
-
-    <!-- 重开独立粉色圆形按钮 -->
-    <button
-      v-if="props.variant === 'basic'"
-      data-key="restart"
-      class="key-restart glass-button"
-      @click="onKey('restart')"
-    >
-      重开
-    </button>
 
     <!-- 键盘网格 3列5行 -->
     <div class="keypad-grid">
       <!-- 行1：±/清空/退格（basic）或 重开/清空/退格（data）-->
       <template v-if="props.variant === 'basic'">
-        <button data-key="sign" class="key-cell glass-button" @click="onKey('sign')">±</button>
+        <button
+          data-key="sign"
+          class="key-cell glass-button"
+          aria-label="切换正负号"
+          @click="onKey('sign')"
+        >
+          ±
+        </button>
       </template>
       <template v-else>
-        <button data-key="restart" class="key-cell glass-button" @click="onKey('restart')">重开</button>
+        <button
+          data-key="restart"
+          class="key-cell glass-button"
+          aria-label="重开"
+          @click="onKey('restart')"
+        >
+          重开
+        </button>
       </template>
-      <button data-key="clear" class="key-cell glass-button" @click="onKey('clear')">清空</button>
-      <button data-key="backspace" class="key-cell glass-button" @click="onKey('backspace')">退格</button>
+      <button
+        data-key="clear"
+        class="key-cell glass-button"
+        aria-label="清空"
+        @click="onKey('clear')"
+      >
+        清空
+      </button>
+      <button
+        data-key="backspace"
+        class="key-cell glass-button"
+        aria-label="退格"
+        @click="onKey('backspace')"
+      >
+        退格
+      </button>
 
       <!-- 行2-4：1-9 -->
       <button
@@ -170,15 +224,37 @@ function onKey(key: string) {
         :key="k"
         :data-key="k"
         class="key-cell glass-button"
+        :aria-label="k"
         @click="onKey(k)"
       >
         {{ k }}
       </button>
 
       <!-- 行5：./0/确定 -->
-      <button data-key="." class="key-cell glass-button" @click="onKey('.')">.</button>
-      <button data-key="0" class="key-cell glass-button" @click="onKey('0')">0</button>
-      <button data-key="submit" class="key-cell key-submit" @click="onKey('submit')">确定</button>
+      <button
+        data-key="."
+        class="key-cell glass-button"
+        aria-label="小数点"
+        @click="onKey('.')"
+      >
+        .
+      </button>
+      <button
+        data-key="0"
+        class="key-cell glass-button"
+        aria-label="0"
+        @click="onKey('0')"
+      >
+        0
+      </button>
+      <button
+        data-key="submit"
+        class="key-cell key-submit"
+        aria-label="提交"
+        @click="onKey('submit')"
+      >
+        确定
+      </button>
     </div>
   </div>
 </template>
@@ -187,7 +263,7 @@ function onKey(key: string) {
 .numpad-container {
   display: inline-block;
   padding: 12px;
-  border-radius: var(--app-radius-card, 12px);
+  border-radius: var(--app-radius-card);
   user-select: none;
   position: relative;
 }
@@ -195,41 +271,35 @@ function onKey(key: string) {
 .drag-handle {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 6px 10px;
   cursor: grab;
   font-size: 12px;
-  color: var(--app-text-secondary, #9ba89b);
+  color: var(--app-text-secondary);
   border-radius: 8px;
+
   &:active {
     cursor: grabbing;
   }
 }
 
 .handle-icon {
-  font-size: 16px;
+  font-size: 14px;
+  letter-spacing: 1px;
 }
 
-.drag-hint {
-  flex: 1;
-}
-
-.key-restart {
-  position: absolute;
-  top: -28px;
-  right: 12px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(255, 110, 140, 0.85);
-  color: #fff;
-  border: none;
-  font-size: 13px;
-  font-weight: 600;
+.handle-restart {
+  background: rgba(42, 161, 152, 0.3);
+  color: var(--app-color-info);
+  border: 1px solid rgba(42, 161, 152, 0.4);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 110, 140, 0.4);
+
   &:hover {
-    background: rgba(255, 110, 140, 0.95);
+    background: rgba(42, 161, 152, 0.5);
   }
 }
 
@@ -241,16 +311,17 @@ function onKey(key: string) {
 }
 
 .key-cell {
-  border: 1px solid var(--app-glass-border, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--app-glass-border);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--app-text-primary, #e8ece8);
+  background: var(--key-bg);
+  color: var(--key-text);
   font-size: 20px;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s, transform 0.05s;
+
   &:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--key-bg-hover);
   }
   &:active {
     transform: scale(0.96);
@@ -258,8 +329,9 @@ function onKey(key: string) {
 }
 
 .key-submit {
-  background: rgba(95, 175, 111, 0.85);
+  background: var(--key-submit-bg);
   color: #fff;
+
   &:hover {
     background: rgba(95, 175, 111, 0.95);
   }
