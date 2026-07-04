@@ -1,5 +1,5 @@
 // 物理键 → 数字题输入字符（数字或小数点）
-export const NUMPAD_KEYMAP: Record<string, string> = {
+export const NUMPAD_KEYMAP: Record<string, "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "."> = {
   // 右手小键盘区（方案 A 核心）
   KeyU: "7", KeyI: "8", KeyO: "9",
   KeyJ: "4", KeyK: "5", KeyL: "6",
@@ -19,7 +19,7 @@ export const COMPARE_KEYMAP: Record<string, ">" | "<"> = {
 };
 
 // 功能键 → 功能名
-export const FUNCTION_KEYS: Record<string, string> = {
+export const FUNCTION_KEYS: Record<string, "backspace" | "submit" | "restart" | "clear" | "toggle-sign"> = {
   Backspace: "backspace",
   Enter: "submit",
   Escape: "restart",
@@ -28,8 +28,8 @@ export const FUNCTION_KEYS: Record<string, string> = {
 };
 
 export type NumpadResolveResult =
-  | { type: "input"; payload: string }
-  | { type: "function"; payload: string }
+  | { type: "input"; payload: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "." }
+  | { type: "function"; payload: "backspace" | "submit" | "restart" | "clear" | "toggle-sign" }
   | { type: "ignore" };
 
 export type CompareResolveResult =
@@ -58,8 +58,8 @@ export function resolveNumpadKey(e: KeyboardEvent): NumpadResolveResult {
 /**
  * compare 题模式按键解析。
  * - type="select"：payload 为 ">" 或 "<"，调用 store.selectCompare(payload)
- * - type="submit"：调用 onSubmit
- * - type="restart"：调用 onRestart
+ * - type="submit"：调用 store.submit()
+ * - type="restart"：调用 store.restart()
  * - type="ignore"：未识别的键
  *
  * 注：同时保留 e.key 字符检测（< > 《 》）作为兼容，因为这些字符键的物理位置随布局变化。
