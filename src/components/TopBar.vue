@@ -20,7 +20,7 @@ const elapsedDisplay = computed(() => {
   <div class="topbar glass-toolbar">
     <div class="topbar-left">
       <slot name="left">
-        <button class="back-btn glass-button" @click="$emit('back')">‹</button>
+        <button class="back-btn glass-button" aria-label="返回" @click="$emit('back')">‹</button>
       </slot>
     </div>
     <div class="topbar-title">{{ props.title }}</div>

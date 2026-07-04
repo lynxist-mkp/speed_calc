@@ -148,9 +148,9 @@ onMounted(async () => {
     </div>
 
     <div v-if="totalPages > 1" class="pagination">
-      <button class="page-btn" :disabled="page === 1" @click="prevPage">‹ 上一页</button>
+      <button class="page-btn" aria-label="上一页" :disabled="page === 1" @click="prevPage">‹ 上一页</button>
       <span class="page-info">{{ page }} / {{ totalPages }}</span>
-      <button class="page-btn" :disabled="page === totalPages" @click="nextPage">下一页 ›</button>
+      <button class="page-btn" aria-label="下一页" :disabled="page === totalPages" @click="nextPage">下一页 ›</button>
     </div>
   </div>
 </template>
