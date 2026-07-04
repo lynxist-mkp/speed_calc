@@ -11,7 +11,7 @@ vi.mock("@tauri-apps/plugin-sql", () => ({
   },
 }));
 
-import { getTimeStandard, insertSession, insertRecord, updateSession, listSessions } from "@/db/index";
+import { getTimeStandard, insertSession, insertRecord, updateSession, listSessions, getSetting, setSetting, listCustomPresets, upsertCustomPreset } from "@/db/index";
 
 describe("db/index.ts", () => {
   beforeEach(() => {
@@ -97,5 +97,70 @@ describe("db/index.ts", () => {
       expect(list).toHaveLength(2);
       expect(list[0].id).toBe(2);
     });
+  });
+});
+
+describe("settings KV CRUD", () => {
+  beforeEach(() => {
+    mockSelect.mockReset();
+    mockExecute.mockReset();
+  });
+
+  it("getSetting 命中返回 value", async () => {
+    mockSelect.mockResolvedValueOnce([{ value: "v1" }]);
+    const v = await getSetting("test.key1");
+    expect(v).toBe("v1");
+    expect(mockSelect).toHaveBeenCalledOnce();
+  });
+
+  it("getSetting 未命中返回 null", async () => {
+    mockSelect.mockResolvedValueOnce([]);
+    const v = await getSetting("not.exist.key");
+    expect(v).toBeNull();
+  });
+
+  it("setSetting 调用 execute INSERT OR REPLACE", async () => {
+    await setSetting("test.key2", "v2");
+    expect(mockExecute).toHaveBeenCalledOnce();
+    // 验证 SQL 包含 INSERT OR REPLACE INTO settings
+    const sql = mockExecute.mock.calls[0][0];
+    expect(sql).toContain("INSERT OR REPLACE INTO settings");
+    expect(sql).toContain("settings");
+  });
+});
+
+describe("custom_presets CRUD", () => {
+  beforeEach(() => {
+    mockSelect.mockReset();
+    mockExecute.mockReset();
+  });
+
+  it("listCustomPresets 映射行到 CustomPreset 并按 used_at DESC", async () => {
+    mockSelect.mockResolvedValueOnce([
+      { id: 2, name: "p2", config: '{"x":2}', used_at: 200 },
+      { id: 1, name: "p1", config: '{"x":1}', used_at: 100 },
+    ]);
+    const list = await listCustomPresets();
+    expect(list).toHaveLength(2);
+    expect(list[0]).toEqual({ id: 2, name: "p2", config: '{"x":2}', usedAt: 200 });
+    expect(list[1]).toEqual({ id: 1, name: "p1", config: '{"x":1}', usedAt: 100 });
+  });
+
+  it("upsertCustomPreset config 不存在时 INSERT", async () => {
+    // existing 查询返回空数组
+    mockSelect.mockResolvedValueOnce([]);
+    await upsertCustomPreset("new-preset", '{"a":1}');
+    expect(mockExecute).toHaveBeenCalledOnce();
+    const sql = mockExecute.mock.calls[0][0];
+    expect(sql).toContain("INSERT INTO custom_presets");
+  });
+
+  it("upsertCustomPreset config 已存在时 UPDATE", async () => {
+    // existing 查询返回已有 id
+    mockSelect.mockResolvedValueOnce([{ id: 42 }]);
+    await upsertCustomPreset("dup-preset", '{"a":1}');
+    expect(mockExecute).toHaveBeenCalledOnce();
+    const sql = mockExecute.mock.calls[0][0];
+    expect(sql).toContain("UPDATE custom_presets");
   });
 });
