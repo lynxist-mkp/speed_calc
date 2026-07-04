@@ -4,6 +4,8 @@ export type DataType =
   | "frac_calc_lt" | "frac_calc_gt"
   | "annual_growth_rate" | "base_period_ratio" | "annual_avg";
 
+export type Difficulty = "easy" | "normal" | "hard";
+
 export interface DataQuestion {
   display: string;        // KaTeX 源串
   answer: number;         // 数值答案
@@ -24,9 +26,15 @@ function randFloat(min: number, max: number, decimals: number): number {
 }
 
 // ===== estimate_prev 估算前期量 =====
-function genEstimatePrev(): DataQuestion {
-  const A = randInt(1000, 9999);
-  const r = randFloat(0.05, 0.30, 3);
+function genEstimatePrev(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { A: [500, 5000] as const, r: [0.05, 0.20] as const },
+    normal: { A: [1000, 9999] as const, r: [0.05, 0.30] as const },
+    hard:   { A: [2000, 99999] as const, r: [0.05, 0.50] as const },
+  };
+  const range = ranges[difficulty];
+  const A = randInt(range.A[0], range.A[1]);
+  const r = randFloat(range.r[0], range.r[1], 3);
   const answer = A / (1 + r);
   return {
     display: `\\frac{${A}}{${(1 + r).toFixed(3)}} \\approx`,
@@ -37,12 +45,18 @@ function genEstimatePrev(): DataQuestion {
 }
 
 // ===== estimate_growth 估算增长量 =====
-function genEstimateGrowth(): DataQuestion {
+function genEstimateGrowth(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { A: [500, 5000] as const, r: [-0.20, 0.20] as const },
+    normal: { A: [1000, 9999] as const, r: [-0.30, 0.30] as const },
+    hard:   { A: [2000, 99999] as const, r: [-0.50, 0.50] as const },
+  };
+  const range = ranges[difficulty];
   let r = 0;
   let A = 0;
   while (r === 0) {
-    A = randInt(1000, 9999);
-    r = randFloat(-0.30, 0.30, 3);
+    A = randInt(range.A[0], range.A[1]);
+    r = randFloat(range.r[0], range.r[1], 3);
   }
   const answer = (A * r) / (1 + r);
   return {
@@ -56,8 +70,14 @@ function genEstimateGrowth(): DataQuestion {
 }
 
 // ===== baihua_frac 百化分 =====
-function genBaihuaFrac(): DataQuestion {
-  const n = randInt(2, 20);
+function genBaihuaFrac(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { n: [2, 10] as const },
+    normal: { n: [2, 20] as const },
+    hard:   { n: [2, 50] as const },
+  };
+  const range = ranges[difficulty];
+  const n = randInt(range.n[0], range.n[1]);
   const answer = 100 / n;
   return {
     display: `\\frac{1}{${n}} \\approx`,
@@ -69,8 +89,14 @@ function genBaihuaFrac(): DataQuestion {
 }
 
 // ===== baihua_frac_rev 百化分反向 =====
-function genBaihuaFracRev(): DataQuestion {
-  const n = randInt(2, 20);
+function genBaihuaFracRev(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { n: [2, 10] as const },
+    normal: { n: [2, 20] as const },
+    hard:   { n: [2, 50] as const },
+  };
+  const range = ranges[difficulty];
+  const n = randInt(range.n[0], range.n[1]);
   const pct = 100 / n;
   return {
     display: `${pct.toFixed(1)}\\% \\approx \\frac{1}{?} \\approx`,
@@ -81,9 +107,15 @@ function genBaihuaFracRev(): DataQuestion {
 }
 
 // ===== frac_calc_lt 分数计算(分子<分母) =====
-function genFracCalcLt(): DataQuestion {
-  const a = randInt(100, 999);
-  const b = randInt(a + 1, 9999);
+function genFracCalcLt(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { a: [100, 499] as const, bMax: 999 as const },
+    normal: { a: [100, 999] as const, bMax: 9999 as const },
+    hard:   { a: [500, 9999] as const, bMax: 99999 as const },
+  };
+  const range = ranges[difficulty];
+  const a = randInt(range.a[0], range.a[1]);
+  const b = randInt(a + 1, range.bMax);
   const answer = a / b;
   return {
     display: `\\frac{${a}}{${b}} \\approx`,
@@ -95,8 +127,14 @@ function genFracCalcLt(): DataQuestion {
 }
 
 // ===== frac_calc_gt 分数计算(分子>分母) =====
-function genFracCalcGt(): DataQuestion {
-  const a = randInt(101, 9999);
+function genFracCalcGt(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { a: [101, 999] as const },
+    normal: { a: [101, 9999] as const },
+    hard:   { a: [101, 99999] as const },
+  };
+  const range = ranges[difficulty];
+  const a = randInt(range.a[0], range.a[1]);
   const b = randInt(100, a - 1);
   const answer = a / b;
   return {
@@ -108,12 +146,18 @@ function genFracCalcGt(): DataQuestion {
 }
 
 // ===== annual_growth_rate 年均增长率 =====
-function genAnnualGrowthRate(): DataQuestion {
+function genAnnualGrowthRate(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { v: [10, 50] as const },
+    normal: { v: [10, 99] as const },
+    hard:   { v: [10, 999] as const },
+  };
+  const range = ranges[difficulty];
   let first = 0;
   let last = 0;
   while (first === last) {
-    first = randInt(10, 99);
-    last = randInt(10, 99);
+    first = randInt(range.v[0], range.v[1]);
+    last = randInt(range.v[0], range.v[1]);
   }
   const n = 5;
   const answer = Math.pow(last / first, 1 / n) - 1;
@@ -129,9 +173,15 @@ function genAnnualGrowthRate(): DataQuestion {
 }
 
 // ===== base_period_ratio 基期比重 =====
-function genBasePeriodRatio(): DataQuestion {
-  const A = randInt(100, 999);
-  const B = randInt(100, 999);
+function genBasePeriodRatio(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { AB: [50, 499] as const },
+    normal: { AB: [100, 999] as const },
+    hard:   { AB: [200, 9999] as const },
+  };
+  const range = ranges[difficulty];
+  const A = randInt(range.AB[0], range.AB[1]);
+  const B = randInt(range.AB[0], range.AB[1]);
   const rA = randFloat(0.05, 0.30, 3);
   const rB = randFloat(0.05, 0.30, 3);
   const answer = (A / (1 + rA)) / (A / (1 + rA) + B / (1 + rB));
@@ -145,10 +195,16 @@ function genBasePeriodRatio(): DataQuestion {
 }
 
 // ===== annual_avg 年平均量 =====
-function genAnnualAvg(): DataQuestion {
+function genAnnualAvg(difficulty: Difficulty = "normal"): DataQuestion {
+  const ranges = {
+    easy:   { v: [10, 50] as const },
+    normal: { v: [10, 99] as const },
+    hard:   { v: [10, 999] as const },
+  };
+  const range = ranges[difficulty];
   const values: number[] = [];
   for (let i = 0; i < 5; i++) {
-    values.push(randInt(10, 99));
+    values.push(randInt(range.v[0], range.v[1]));
   }
   const sum = values.reduce((a, b) => a + b, 0);
   const answer = sum / 5;
@@ -161,7 +217,7 @@ function genAnnualAvg(): DataQuestion {
   };
 }
 
-const GENERATORS: Record<DataType, () => DataQuestion> = {
+const GENERATORS: Record<DataType, (difficulty: Difficulty) => DataQuestion> = {
   estimate_prev: genEstimatePrev,
   estimate_growth: genEstimateGrowth,
   baihua_frac: genBaihuaFrac,
@@ -176,12 +232,12 @@ const GENERATORS: Record<DataType, () => DataQuestion> = {
 export function generateDataQuestion(
   type: DataType,
   count: number,
-  _difficulty?: "easy" | "normal" | "hard"
+  difficulty: Difficulty = "normal"
 ): DataQuestion[] {
   const gen = GENERATORS[type];
   const questions: DataQuestion[] = [];
   for (let i = 0; i < count; i++) {
-    questions.push(gen());
+    questions.push(gen(difficulty));
   }
   return questions;
 }

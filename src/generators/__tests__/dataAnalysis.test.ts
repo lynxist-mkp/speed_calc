@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { generateDataQuestion, type DataType } from "@/generators/dataAnalysis";
+import { generateDataQuestion, type DataType, type DataQuestion } from "@/generators/dataAnalysis";
 
 describe("generateDataQuestion", () => {
   describe("通用", () => {
@@ -329,4 +329,147 @@ describe("generateDataQuestion", () => {
       }
     });
   });
+});
+
+describe("difficulty 参数影响数值范围", () => {
+  it("estimate_prev easy 模式 A 范围更小", () => {
+    const qsEasy = generateDataQuestion("estimate_prev", 50, "easy");
+    const qsHard = generateDataQuestion("estimate_prev", 50, "hard");
+    const maxA_Easy = Math.max(...qsEasy.map((q) => {
+      const m = q.context?.match(/现期: (\d+)/);
+      return m ? Number(m[1]) : 0;
+    }));
+    const maxA_Hard = Math.max(...qsHard.map((q) => {
+      const m = q.context?.match(/现期: (\d+)/);
+      return m ? Number(m[1]) : 0;
+    }));
+    expect(maxA_Hard).toBeGreaterThan(maxA_Easy);
+  });
+
+  it("baihua_frac hard 模式 n 范围更大", () => {
+    const qsEasy = generateDataQuestion("baihua_frac", 50, "easy");
+    const qsHard = generateDataQuestion("baihua_frac", 50, "hard");
+    // ⚠️ 注意：display 是 `\frac{1}{n} \approx`（模板字符串 \\frac 渲染为 \frac）
+    // 计划原 regex `/1\\\{(\d+)\\\}/` 有误，应改为 `/\\frac\{1\}\{(\d+)\}/`
+    const ns_easy = qsEasy.map((q) => Number(q.display.match(/\\frac\{1\}\{(\d+)\}/)?.[1] ?? 0));
+    const ns_hard = qsHard.map((q) => Number(q.display.match(/\\frac\{1\}\{(\d+)\}/)?.[1] ?? 0));
+    expect(Math.max(...ns_hard)).toBeGreaterThanOrEqual(Math.max(...ns_easy));
+  });
+
+  it("默认 normal 与显式 normal 行为一致（A 范围在 [1000,9999]）", () => {
+    const qs = generateDataQuestion("estimate_prev", 50);
+    const qsNormal = generateDataQuestion("estimate_prev", 50, "normal");
+    expect(qs).toHaveLength(50);
+    expect(qsNormal).toHaveLength(50);
+    // 验证 normal 档 A 范围
+    for (const q of qsNormal) {
+      const m = q.context?.match(/现期: (\d+)/);
+      if (m) {
+        const A = Number(m[1]);
+        expect(A).toBeGreaterThanOrEqual(1000);
+        expect(A).toBeLessThanOrEqual(9999);
+      }
+    }
+  });
+
+  // 参数化测试：9 个生成器 hard 档数值规模 > easy 档
+  const DIFFICULTY_CASES: Array<{
+    name: string;
+    type: DataType;
+    extractMax: (q: DataQuestion) => number;
+  }> = [
+    {
+      name: "estimate_prev",
+      type: "estimate_prev",
+      extractMax: (q) => {
+        const m = q.context?.match(/现期: (\d+)/);
+        return m ? Number(m[1]) : 0;
+      },
+    },
+    {
+      name: "estimate_growth",
+      type: "estimate_growth",
+      // display: `\text{求增长量：} ${A} \times \frac{...}{...} \approx`
+      extractMax: (q) => {
+        const m = q.display.match(/(\d+) \\times/);
+        return m ? Number(m[1]) : 0;
+      },
+    },
+    {
+      name: "baihua_frac",
+      type: "baihua_frac",
+      // display: `\frac{1}{${n}} \approx`
+      extractMax: (q) => Number(q.display.match(/\\frac\{1\}\{(\d+)\}/)?.[1] ?? 0),
+    },
+    {
+      name: "baihua_frac_rev",
+      type: "baihua_frac_rev",
+      // answer 是 n（百化分反向：百分数 → 1/n）
+      extractMax: (q) => q.answer,
+    },
+    {
+      name: "frac_calc_lt",
+      type: "frac_calc_lt",
+      // display: `\frac{${a}}{${b}} \approx`
+      extractMax: (q) => {
+        const m = q.display.match(/\\frac\{(\d+)\}\{(\d+)\}/);
+        return m ? Math.max(Number(m[1]), Number(m[2])) : 0;
+      },
+    },
+    {
+      name: "frac_calc_gt",
+      type: "frac_calc_gt",
+      // display: `\frac{${a}}{${b}} \approx`
+      extractMax: (q) => {
+        const m = q.display.match(/\\frac\{(\d+)\}\{(\d+)\}/);
+        return m ? Math.max(Number(m[1]), Number(m[2])) : 0;
+      },
+    },
+    {
+      name: "annual_growth_rate",
+      type: "annual_growth_rate",
+      // context: `2012~2017, 首: ${first}万, 末: ${last}万, n=5`
+      extractMax: (q) => {
+        const mFirst = q.context?.match(/首: (\d+)万/);
+        const mLast = q.context?.match(/末: (\d+)万/);
+        const first = mFirst ? Number(mFirst[1]) : 0;
+        const last = mLast ? Number(mLast[1]) : 0;
+        return Math.max(first, last);
+      },
+    },
+    {
+      name: "base_period_ratio",
+      type: "base_period_ratio",
+      // context: `A: ${A}, rA: ...%; B: ${B}, rB: ...%`
+      extractMax: (q) => {
+        const mA = q.context?.match(/\bA: (\d+)/);
+        const mB = q.context?.match(/\bB: (\d+)/);
+        const A = mA ? Number(mA[1]) : 0;
+        const B = mB ? Number(mB[1]) : 0;
+        return Math.max(A, B);
+      },
+    },
+    {
+      name: "annual_avg",
+      type: "annual_avg",
+      // context: `各年: ${values.join(", ")} 万`
+      extractMax: (q) => {
+        const m = q.context?.match(/各年: ([\d, ]+) 万/);
+        if (!m) return 0;
+        const nums = m[1].split(", ").map(Number);
+        return Math.max(...nums);
+      },
+    },
+  ];
+
+  it.each(DIFFICULTY_CASES)(
+    "hard 档 $name 数值规模大于 easy 档",
+    ({ type, extractMax }) => {
+      const qsEasy = generateDataQuestion(type, 50, "easy");
+      const qsHard = generateDataQuestion(type, 50, "hard");
+      const maxEasy = Math.max(...qsEasy.map(extractMax));
+      const maxHard = Math.max(...qsHard.map(extractMax));
+      expect(maxHard).toBeGreaterThan(maxEasy);
+    }
+  );
 });
