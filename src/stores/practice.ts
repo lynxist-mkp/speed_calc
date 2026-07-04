@@ -152,7 +152,7 @@ export const usePracticeStore = defineStore("practice", () => {
       } else if (cfg.type.startsWith("compare_")) {
         qs = generateCompareQuestion(cfg.type as CompareType, cfg.count);
       } else {
-        qs = generateDataQuestion(cfg.type as DataType, cfg.count);
+        qs = generateDataQuestion(cfg.type as DataType, cfg.count, cfg.difficulty);
       }
       questions.value = qs;
       currentIndex.value = 0;

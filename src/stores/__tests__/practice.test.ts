@@ -209,7 +209,7 @@ describe("L2 store 多题型调度", () => {
   it("init 资料分析题型调度 generateDataQuestion", async () => {
     const store = usePracticeStore();
     await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
-    expect(generateDataQuestion).toHaveBeenCalledWith("estimate_prev", 2);
+    expect(generateDataQuestion).toHaveBeenCalledWith("estimate_prev", 2, undefined);
     expect(store.phase).toBe("running");
     expect(store.questions).toHaveLength(2);
   });
