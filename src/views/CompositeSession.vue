@@ -137,10 +137,6 @@ async function persistSession(correctCount: number) {
   }
 }
 
-function onCustom() {
-  ElMessage.info("自定义功能暂未实现");
-}
-
 function onBack() {
   router.push("/practice/data-analysis");
 }
@@ -232,11 +228,10 @@ const correctCount = computed(() =>
       </div>
     </div>
 
-    <!-- 操作按钮（一行三按钮：刷新数据/提交答案/自定义） -->
+    <!-- 操作按钮（一行两按钮：刷新数据/提交答案） -->
     <div class="ops-row">
       <button class="op-btn refresh-btn" @click="refreshData">刷新数据</button>
       <button class="op-btn submit-btn" @click="onSubmit">提交答案</button>
-      <button class="op-btn custom-btn" @click="onCustom">自定义</button>
     </div>
 
     <!-- 已提交反馈 -->
@@ -394,12 +389,6 @@ const correctCount = computed(() =>
 .submit-btn {
   background: var(--app-color-primary, #5faf6f);
   color: #fff;
-}
-
-.custom-btn {
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-primary, #93a1a1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .feedback {

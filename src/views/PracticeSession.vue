@@ -166,7 +166,6 @@ onBeforeUnmount(() => {
       </template>
       <template #right>
         <span v-if="store.nback > 0" class="nback-badge">{{ store.nback }}-back</span>
-        <span v-else class="pen-icon" title="待实现">✏</span>
       </template>
     </TopBar>
 

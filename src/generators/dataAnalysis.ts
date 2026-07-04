@@ -27,16 +27,19 @@ function randFloat(min: number, max: number, decimals: number): number {
 }
 
 // ===== estimate_prev 估算前期量 =====
-// 难度递进：现期量位数 + 增长率幅度（实际资料分析常见 A∈[200,9999], r∈[5%,40%]）
+// 难度递进：现期量位数 + 增长率幅度
+// 困难档 r 为两个区间并集：[-0.29, 0] ∪ [0.095, 1.20]，生成时随机选其一
 function genEstimatePrev(difficulty: Difficulty = "normal"): DataQuestion {
   const ranges = {
-    easy:   { A: [200, 2000] as const, r: [0.05, 0.15] as const },
-    normal: { A: [500, 5000] as const, r: [0.05, 0.25] as const },
-    hard:   { A: [1000, 9999] as const, r: [0.05, 0.40] as const },
+    easy:   { A: [200, 2000] as const, r: [0, 0.29] as const },
+    normal: { A: [200, 5000] as const, r: [-0.29, 0.75] as const },
+    hard:   { A: [1000, 9999] as const, r: [[-0.29, 0], [0.095, 1.20]] as const },
   };
   const range = ranges[difficulty];
   const A = randInt(range.A[0], range.A[1]);
-  const r = randFloat(range.r[0], range.r[1], 3);
+  const r = Array.isArray(range.r[0])
+    ? randFloatFromRanges(range.r as readonly (readonly [number, number])[])
+    : randFloat(range.r[0] as number, range.r[1] as number, 3);
   const answer = A / (1 + r);
   return {
     display: `\\frac{${A}}{${(1 + r).toFixed(3)}} \\approx`,
@@ -50,16 +53,18 @@ function genEstimatePrev(difficulty: Difficulty = "normal"): DataQuestion {
 // 难度递进：同 estimate_prev，含负增长（符号判断）
 function genEstimateGrowth(difficulty: Difficulty = "normal"): DataQuestion {
   const ranges = {
-    easy:   { A: [200, 2000] as const, r: [-0.15, 0.15] as const },
-    normal: { A: [500, 5000] as const, r: [-0.25, 0.25] as const },
-    hard:   { A: [1000, 9999] as const, r: [-0.40, 0.40] as const },
+    easy:   { A: [200, 2000] as const, r: [0, 0.29] as const },
+    normal: { A: [200, 5000] as const, r: [-0.29, 0.75] as const },
+    hard:   { A: [1000, 9999] as const, r: [[-0.29, 0], [0.095, 1.20]] as const },
   };
   const range = ranges[difficulty];
   let r = 0;
   let A = 0;
   while (r === 0) {
     A = randInt(range.A[0], range.A[1]);
-    r = randFloat(range.r[0], range.r[1], 3);
+    r = Array.isArray(range.r[0])
+      ? randFloatFromRanges(range.r as readonly (readonly [number, number])[])
+      : randFloat(range.r[0] as number, range.r[1] as number, 3);
   }
   const answer = (A * r) / (1 + r);
   return {
@@ -70,6 +75,13 @@ function genEstimateGrowth(difficulty: Difficulty = "normal"): DataQuestion {
     hint: "需要负号时会自动生成",
     preset: answer < 0 ? "-" : undefined,
   };
+}
+
+// 从多个区间中随机选一个，再在该区间内生成随机浮点（保留 3 位小数）
+function randFloatFromRanges(ranges: readonly (readonly [number, number])[]): number {
+  const idx = randInt(0, ranges.length - 1);
+  const [lo, hi] = ranges[idx];
+  return randFloat(lo, hi, 3);
 }
 
 // ===== baihua_frac 百化分 =====

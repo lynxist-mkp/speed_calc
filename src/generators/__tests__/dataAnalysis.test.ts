@@ -389,18 +389,91 @@ describe("difficulty 参数影响数值范围", () => {
     expect(Math.max(...ns_hard)).toBeGreaterThanOrEqual(Math.max(...ns_easy));
   });
 
-  it("默认 normal 与显式 normal 行为一致（A 范围在 [500,5000]）", () => {
+  it("默认 normal 与显式 normal 行为一致（A 范围在 [200,5000]）", () => {
     const qs = generateDataQuestion("estimate_prev", 50);
     const qsNormal = generateDataQuestion("estimate_prev", 50, "normal");
     expect(qs).toHaveLength(50);
     expect(qsNormal).toHaveLength(50);
-    // 验证 normal 档 A 范围
+    // 验证 normal 档 A 范围（新标准：[200, 5000]）
     for (const q of qsNormal) {
       const m = q.context?.match(/现期: (\d+)/);
       if (m) {
         const A = Number(m[1]);
-        expect(A).toBeGreaterThanOrEqual(500);
+        expect(A).toBeGreaterThanOrEqual(200);
         expect(A).toBeLessThanOrEqual(5000);
+      }
+    }
+  });
+
+  it("estimate_prev easy 档 r 范围在 [0, 0.29]", () => {
+    const qs = generateDataQuestion("estimate_prev", 50, "easy");
+    for (const q of qs) {
+      const m = q.context?.match(/增长率: ([\-\d.]+)%/);
+      if (m) {
+        const rPct = Number(m[1]);
+        expect(rPct).toBeGreaterThanOrEqual(0);
+        expect(rPct).toBeLessThanOrEqual(29);
+      }
+    }
+  });
+
+  it("estimate_prev normal 档 r 范围在 [-29, 75]", () => {
+    const qs = generateDataQuestion("estimate_prev", 50, "normal");
+    for (const q of qs) {
+      const m = q.context?.match(/增长率: ([\-\d.]+)%/);
+      if (m) {
+        const rPct = Number(m[1]);
+        expect(rPct).toBeGreaterThanOrEqual(-29);
+        expect(rPct).toBeLessThanOrEqual(75);
+      }
+    }
+  });
+
+  it("estimate_prev hard 档 r 范围在 [-29, 0] ∪ [9.5, 120]", () => {
+    const qs = generateDataQuestion("estimate_prev", 100, "hard");
+    for (const q of qs) {
+      const m = q.context?.match(/增长率: ([\-\d.]+)%/);
+      if (m) {
+        const rPct = Number(m[1]);
+        const inNeg = rPct >= -29 && rPct <= 0;
+        const inHigh = rPct >= 9.5 && rPct <= 120;
+        expect(inNeg || inHigh).toBe(true);
+      }
+    }
+  });
+
+  it("estimate_prev hard 档两区间都被采样到（100 题）", () => {
+    const qs = generateDataQuestion("estimate_prev", 200, "hard");
+    const rPcts = qs
+      .map((q) => q.context?.match(/增长率: ([\-\d.]+)%/)?.[1])
+      .filter(Boolean)
+      .map(Number);
+    const hasNeg = rPcts.some((r) => r <= 0);
+    const hasHigh = rPcts.some((r) => r >= 9.5);
+    expect(hasNeg).toBe(true);
+    expect(hasHigh).toBe(true);
+  });
+
+  it("estimate_growth 难度档与 estimate_prev 一致（同 r 范围）", () => {
+    // easy 档 r∈[0, 29]
+    const qsEasy = generateDataQuestion("estimate_growth", 50, "easy");
+    for (const q of qsEasy) {
+      const m = q.context?.match(/增长率: ([\-\d.]+)%/);
+      if (m) {
+        const rPct = Number(m[1]);
+        expect(rPct).toBeGreaterThanOrEqual(0);
+        expect(rPct).toBeLessThanOrEqual(29);
+      }
+    }
+    // hard 档 r∈[-29,0] ∪ [9.5,120]
+    const qsHard = generateDataQuestion("estimate_growth", 100, "hard");
+    for (const q of qsHard) {
+      const m = q.context?.match(/增长率: ([\-\d.]+)%/);
+      if (m) {
+        const rPct = Number(m[1]);
+        const inNeg = rPct >= -29 && rPct <= 0;
+        const inHigh = rPct >= 9.5 && rPct <= 120;
+        expect(inNeg || inHigh).toBe(true);
       }
     }
   });

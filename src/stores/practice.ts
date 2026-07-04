@@ -140,19 +140,27 @@ export const usePracticeStore = defineStore("practice", () => {
       nback.value = cfg.nback ?? 0;
       pendingRecords.value = [];
 
+      // N-back 模式下额外生成 nback 道题，使判分题数 = cfg.count
+      // （前 nback 题不输入不判分，最后 nback 题不判分，中间 cfg.count 题判分）
+      // compare 题型不启用 N-back，无需扩展
+      const actualCount =
+        nback.value > 0 && !cfg.type.startsWith("compare_")
+          ? cfg.count + nback.value
+          : cfg.count;
+
       let qs: AnyQuestion[];
       if (cfg.type === "custom_standard") {
-        qs = generateCustomStandard(cfg.customConfig as CustomStandardConfig, cfg.count);
+        qs = generateCustomStandard(cfg.customConfig as CustomStandardConfig, actualCount);
       } else if (cfg.type === "custom_power") {
-        qs = generateCustomPower(cfg.customConfig as CustomPowerConfig, cfg.count);
+        qs = generateCustomPower(cfg.customConfig as CustomPowerConfig, actualCount);
       } else if (BASIC_TYPES.has(cfg.type)) {
-        qs = generateBasic(cfg.type as BasicType, cfg.count);
+        qs = generateBasic(cfg.type as BasicType, actualCount);
       } else if (cfg.type === "basic_addsub") {
-        qs = generateBasicAddSub(cfg.count);
+        qs = generateBasicAddSub(actualCount);
       } else if (cfg.type.startsWith("compare_")) {
-        qs = generateCompareQuestion(cfg.type as CompareType, cfg.count);
+        qs = generateCompareQuestion(cfg.type as CompareType, actualCount);
       } else {
-        qs = generateDataQuestion(cfg.type as DataType, cfg.count, cfg.difficulty);
+        qs = generateDataQuestion(cfg.type as DataType, actualCount, cfg.difficulty);
       }
       questions.value = qs;
       currentIndex.value = 0;

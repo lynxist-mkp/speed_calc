@@ -25,10 +25,8 @@ const elapsedDisplay = computed(() => {
     </div>
     <div class="topbar-title">{{ props.title }}</div>
     <div class="topbar-progress">{{ props.progress }}</div>
-    <div class="topbar-pen">
-      <slot name="right">
-        <span class="pen-icon" title="待实现">✏</span>
-      </slot>
+    <div class="topbar-right">
+      <slot name="right" />
     </div>
     <div class="topbar-timer">{{ elapsedDisplay }}</div>
   </div>
@@ -68,8 +66,9 @@ const elapsedDisplay = computed(() => {
   font-variant-numeric: tabular-nums;
 }
 
-.topbar-pen {
-  color: #5b9bfc;
+.topbar-right {
+  display: flex;
+  align-items: center;
 }
 
 .topbar-timer {
