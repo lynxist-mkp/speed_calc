@@ -240,7 +240,7 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   border: none;
   background: rgba(255, 255, 255, 0.06);
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   font-size: 22px;
   cursor: pointer;
 }
@@ -254,5 +254,17 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(255, 110, 140, 0.4);
   border-radius: 999px;
   font-size: 11px;
+}
+
+// reduced-motion 静态降级：闪烁反馈改为静态边框
+@media (prefers-reduced-motion: reduce) {
+  .practice-session.flash-correct,
+  .practice-session.flash-wrong {
+    animation: none !important;
+    border: 2px solid var(--app-color-primary);
+  }
+  .practice-session.flash-wrong {
+    border-color: var(--app-color-danger);
+  }
 }
 </style>

@@ -109,7 +109,7 @@ onMounted(() => {
 }
 
 .title {
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   margin-bottom: 16px;
 }
 
@@ -127,21 +127,21 @@ onMounted(() => {
 
 .summary-label {
   font-size: 13px;
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   margin-bottom: 6px;
 }
 
 .summary-value {
   font-size: 28px;
   font-weight: 600;
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   &.error {
     color: #ff6e8c;
   }
 }
 
 .record-list {
-  background: var(--app-bg-surface, #073642);
+  background: var(--app-bg-surface);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -153,13 +153,13 @@ onMounted(() => {
   gap: 12px;
   padding: 12px 16px;
   font-size: 14px;
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
 }
 
 .record-header {
   background: rgba(255, 255, 255, 0.04);
   font-weight: 600;
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
 }
 
 .record-row {
@@ -170,7 +170,7 @@ onMounted(() => {
 }
 
 .ans-correct {
-  color: var(--app-color-primary, #5faf6f);
+  color: var(--app-color-primary);
   font-weight: 600;
 }
 
@@ -190,14 +190,14 @@ onMounted(() => {
   padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-primary, #93a1a1);
+  background: var(--app-bg-surface);
+  color: var(--app-text-primary);
   cursor: pointer;
   font-size: 15px;
   &.primary {
-    background: var(--app-color-primary, #5faf6f);
+    background: var(--app-color-primary);
     color: #fff;
-    border-color: var(--app-color-primary, #5faf6f);
+    border-color: var(--app-color-primary);
     &:hover {
       background: #6fbf7f;
     }

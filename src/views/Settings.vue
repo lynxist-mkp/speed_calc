@@ -200,7 +200,7 @@ onMounted(() => loadStandards());
 }
 
 .title {
-  color: var(--app-text-bright, #eee8d5);
+  color: var(--app-text-bright);
   margin-bottom: 16px;
 }
 
@@ -212,18 +212,18 @@ onMounted(() => loadStandards());
 
 .block-title {
   font-size: 16px;
-  color: var(--app-text-bright, #eee8d5);
+  color: var(--app-text-bright);
   margin: 0 0 6px;
 }
 
 .block-desc {
   font-size: 12px;
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   margin: 0 0 12px;
 }
 
 .empty {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   text-align: center;
   padding: 20px;
 }
@@ -241,11 +241,11 @@ onMounted(() => loadStandards());
     padding: 8px 6px;
     text-align: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    color: var(--app-text-primary, #93a1a1);
+    color: var(--app-text-primary);
   }
 
   th {
-    color: var(--app-text-bright, #eee8d5);
+    color: var(--app-text-bright);
     font-weight: 600;
   }
 }
@@ -255,8 +255,8 @@ onMounted(() => loadStandards());
   padding: 4px 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-bright, #eee8d5);
+  background: var(--app-bg-surface);
+  color: var(--app-text-bright);
   font-size: 13px;
   text-align: center;
 }
@@ -266,8 +266,8 @@ onMounted(() => loadStandards());
   padding: 4px 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-bright, #eee8d5);
+  background: var(--app-bg-surface);
+  color: var(--app-text-bright);
   font-size: 13px;
 }
 
@@ -281,24 +281,24 @@ onMounted(() => loadStandards());
   padding: 4px 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-primary, #93a1a1);
+  background: var(--app-bg-surface);
+  color: var(--app-text-primary);
   font-size: 12px;
   cursor: pointer;
 
   &.save:hover {
-    border-color: var(--app-color-primary, #5faf6f);
-    color: var(--app-color-primary, #5faf6f);
+    border-color: var(--app-color-primary);
+    color: var(--app-color-primary);
   }
   &.del:hover {
     border-color: #dc6c6c;
     color: #dc6c6c;
   }
   &.add {
-    background: var(--app-color-primary, #5faf6f);
+    background: var(--app-color-primary);
     color: #fff;
-    border-color: var(--app-color-primary, #5faf6f);
-    &:hover { background: var(--app-color-primary-hover, #7fc38c); }
+    border-color: var(--app-color-primary);
+    &:hover { background: var(--app-color-primary-hover); }
   }
 }
 
@@ -310,7 +310,7 @@ onMounted(() => loadStandards());
 
 .add-title {
   font-size: 13px;
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   margin: 0 0 8px;
 }
 
@@ -336,13 +336,13 @@ onMounted(() => loadStandards());
 
 .about-text {
   font-size: 14px;
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   margin: 0 0 4px;
 }
 
 .about-sub {
   font-size: 12px;
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   margin: 0;
 }
 </style>

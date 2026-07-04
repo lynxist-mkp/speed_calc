@@ -51,12 +51,11 @@ describe("Numpad.vue", () => {
     expect(wrapper.emitted("restart")).toBeTruthy();
   });
 
-  it("渲染拖拽手柄与说明文案", () => {
+  it("渲染拖拽手柄且手柄含 title 提示", () => {
     const wrapper = mount(Numpad, { props: { variant: "basic", layout: "normal" } });
-    expect(wrapper.find('[data-handle="drag"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain("上下拖调大小");
-    expect(wrapper.text()).toContain("左右拖调位置");
-    expect(wrapper.text()).toContain("双击恢复");
+    const handle = wrapper.find('[data-handle="drag"]');
+    expect(handle.exists()).toBe(true);
+    expect(handle.attributes("title")).toBe("拖动移动 · 双击复位");
   });
 
   it("data variant 不渲染 ± 键", () => {
@@ -68,5 +67,32 @@ describe("Numpad.vue", () => {
     const wrapper = mount(Numpad, { props: { variant: "data", layout: "normal" } });
     const restartButtons = wrapper.findAll('[data-key="restart"]');
     expect(restartButtons).toHaveLength(1);
+  });
+
+  it("手柄为 icon-only，不含常驻文案", () => {
+    const wrapper = mount(Numpad, { props: { variant: "basic", layout: "normal" } });
+    const handle = wrapper.find('[data-handle="drag"]');
+    expect(handle.text()).not.toContain("上下拖调大小");
+    expect(handle.text()).not.toContain("双击恢复");
+  });
+
+  it("重开按钮内联手柄区，不浮在卡片外", () => {
+    const wrapper = mount(Numpad, { props: { variant: "basic", layout: "normal" } });
+    // 重开按钮应在手柄区内（同级而非 absolute 浮空）
+    const handle = wrapper.find('[data-handle="drag"]');
+    const restartInHandle = handle.find('[data-key="restart"]');
+    expect(restartInHandle.exists()).toBe(true);
+  });
+
+  it("basic variant 仍有独立的 ± 键在网格中", () => {
+    const wrapper = mount(Numpad, { props: { variant: "basic", layout: "normal" } });
+    const signInGrid = wrapper.find('.keypad-grid [data-key="sign"]');
+    expect(signInGrid.exists()).toBe(true);
+  });
+
+  it("data variant 重开按钮在网格中（非手柄区）", () => {
+    const wrapper = mount(Numpad, { props: { variant: "data", layout: "normal" } });
+    const restartInGrid = wrapper.find('.keypad-grid [data-key="restart"]');
+    expect(restartInGrid.exists()).toBe(true);
   });
 });

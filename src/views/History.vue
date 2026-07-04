@@ -8,6 +8,7 @@ import {
   type SessionRow,
 } from "@/db/index";
 import { typeLabel } from "@/constants/typeLabels";
+import SegmentedControl from "@/components/SegmentedControl.vue";
 
 const PAGE_SIZE = 10;
 const sessions = ref<SessionRow[]>([]);
@@ -51,6 +52,16 @@ function commentClass(acc: number): string {
 
 async function loadTypes() {
   availableTypes.value = await listSessionTypes();
+}
+
+// SegmentedControl 选项：全部 + 各题型
+const filterOptions = computed(() => [
+  { label: "全部", value: "all" },
+  ...availableTypes.value.map((t) => ({ label: typeLabel(t), value: t })),
+]);
+
+async function onFilterChange(v: string) {
+  typeFilter.value = v;
 }
 
 async function loadPage() {
@@ -112,10 +123,11 @@ onMounted(async () => {
 
     <div class="filter-row">
       <span class="filter-label">题型筛选</span>
-      <select v-model="typeFilter" class="filter-select">
-        <option value="all">全部</option>
-        <option v-for="t in availableTypes" :key="t" :value="t">{{ typeLabel(t) }}</option>
-      </select>
+      <SegmentedControl
+        :options="filterOptions"
+        :model-value="typeFilter"
+        @update:model-value="onFilterChange"
+      />
     </div>
 
     <div v-if="loading" class="empty">加载中…</div>
@@ -136,9 +148,9 @@ onMounted(async () => {
     </div>
 
     <div v-if="totalPages > 1" class="pagination">
-      <button class="page-btn" :disabled="page === 1" @click="prevPage">‹ 上一页</button>
+      <button class="page-btn" aria-label="上一页" :disabled="page === 1" @click="prevPage">‹ 上一页</button>
       <span class="page-info">{{ page }} / {{ totalPages }}</span>
-      <button class="page-btn" :disabled="page === totalPages" @click="nextPage">下一页 ›</button>
+      <button class="page-btn" aria-label="下一页" :disabled="page === totalPages" @click="nextPage">下一页 ›</button>
     </div>
   </div>
 </template>
@@ -158,7 +170,7 @@ onMounted(async () => {
 }
 
 .title {
-  color: var(--app-text-bright, #eee8d5);
+  color: var(--app-text-bright);
   margin: 0;
 }
 
@@ -166,8 +178,8 @@ onMounted(async () => {
   padding: 6px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-secondary, #586e75);
+  background: var(--app-bg-surface);
+  color: var(--app-text-secondary);
   font-size: 13px;
   cursor: pointer;
   &:hover:not(:disabled) {
@@ -188,22 +200,12 @@ onMounted(async () => {
 }
 
 .filter-label {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   font-size: 13px;
-}
-
-.filter-select {
-  padding: 6px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-primary, #93a1a1);
-  font-size: 13px;
-  cursor: pointer;
 }
 
 .empty {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   text-align: center;
   padding: 40px;
 }
@@ -224,12 +226,12 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   gap: 12px;
 }
 
 .date {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   font-size: 13px;
 }
 
@@ -244,7 +246,7 @@ onMounted(async () => {
 .acc {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: var(--app-color-primary, #5faf6f);
+  color: var(--app-color-primary);
 }
 
 .comment {
@@ -268,12 +270,12 @@ onMounted(async () => {
   padding: 6px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-primary, #93a1a1);
+  background: var(--app-bg-surface);
+  color: var(--app-text-primary);
   cursor: pointer;
   &:hover:not(:disabled) {
-    border-color: var(--app-color-primary, #5faf6f);
-    color: var(--app-color-primary, #5faf6f);
+    border-color: var(--app-color-primary);
+    color: var(--app-color-primary);
   }
   &:disabled {
     opacity: 0.4;
@@ -282,7 +284,7 @@ onMounted(async () => {
 }
 
 .page-info {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   font-variant-numeric: tabular-nums;
 }
 </style>
