@@ -10,6 +10,7 @@ import CompareKeypad from "@/components/CompareKeypad.vue";
 import BarChart from "@/components/BarChart.vue";
 import { usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
+import { resolveNumpadKey, resolveCompareKey } from "@/utils/keymap";
 
 const router = useRouter();
 const store = usePracticeStore();
@@ -35,49 +36,33 @@ const useChart = computed(() => {
 
 function handleKeydown(e: KeyboardEvent) {
   if (store.phase !== "running") return;
-  const k = e.key;
-  // compare 模式键盘映射（按 UI 位置：左=小于，右=大于）：
-  // 小于 = <//《/1/,//，  |  大于 = >//》/2/.//。
-  // 左手键（1/,）→ 小于（UI 左），右手键（2/.) → 大于（UI 右），位置一致
+
+  // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发，以及 Space 在按钮上触发点击
+  if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space")
+      && e.target instanceof HTMLButtonElement) {
+    return;
+  }
+
   if (store.questionCategory === "compare") {
-    if (k === "<" || k === "《" || k === "1" || k === "," || k === "，") { e.preventDefault(); store.selectCompare("<"); }
-    else if (k === ">" || k === "》" || k === "2" || k === "." || k === "。") { e.preventDefault(); store.selectCompare(">"); }
-    else if (k === "Enter") {
-      if (e.target instanceof HTMLButtonElement) return;
-      e.preventDefault();
-      void onSubmit();
-    } else if (k === "Escape") {
-      if (e.target instanceof HTMLButtonElement) return;
-      e.preventDefault();
-      void onRestart();
-    }
+    const r = resolveCompareKey(e);
+    if (r.type === "select") { e.preventDefault(); store.selectCompare(r.payload); }
+    else if (r.type === "submit") { e.preventDefault(); void onSubmit(); }
+    else if (r.type === "restart") { e.preventDefault(); void onRestart(); }
     return;
   }
-  // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发（keydown + 派生 click）
-  if ((k === "Enter" || k === "Escape") && e.target instanceof HTMLButtonElement) {
-    return;
-  }
-  if (/^[0-9]$/.test(k)) {
+
+  // 数字题模式
+  const r = resolveNumpadKey(e, settings.global.keyboardInputLayout);
+  if (r.type === "input") {
     e.preventDefault();
-    store.inputChar(k);
-  } else if (k === "." || k === "," || k === "，") {
+    store.inputChar(r.payload);
+  } else if (r.type === "function") {
     e.preventDefault();
-    store.inputChar(".");
-  } else if (k === "-") {
-    e.preventDefault();
-    store.toggleSign();
-  } else if (k === "Backspace") {
-    e.preventDefault();
-    store.backspace();
-  } else if (k === "Enter") {
-    e.preventDefault();
-    void onSubmit();
-  } else if (k === "Escape") {
-    e.preventDefault();
-    void onRestart();
-  } else if (k === "Delete") {
-    e.preventDefault();
-    store.clearAnswer();
+    if (r.payload === "backspace") store.backspace();
+    else if (r.payload === "submit") void onSubmit();
+    else if (r.payload === "restart") void onRestart();
+    else if (r.payload === "clear") store.clearAnswer();
+    else if (r.payload === "toggle-sign") store.toggleSign();
   }
 }
 

@@ -15,8 +15,11 @@ import {
   insertRecord,
   updateSession,
 } from "@/db/index";
+import { resolveNumpadKey } from "@/utils/keymap";
+import { useSettingsStore } from "@/stores/settings";
 
 const router = useRouter();
+const settings = useSettingsStore();
 
 const data = ref<CompositeData | null>(null);
 const answers = ref<Partial<Record<keyof CompositeAnswers, string>>>({});
@@ -152,26 +155,23 @@ onBeforeUnmount(() => {
 });
 
 function handleKeydown(e: KeyboardEvent) {
-  const k = e.key;
-  if (/^[0-9]$/.test(k)) {
+  // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发，以及 Space 在按钮上触发点击
+  if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space")
+      && e.target instanceof HTMLButtonElement) {
+    return;
+  }
+
+  const r = resolveNumpadKey(e, settings.global.keyboardInputLayout);
+  if (r.type === "input") {
     e.preventDefault();
-    onInput(k);
-  } else if (k === "." || k === "," || k === "，") {
+    onInput(r.payload);
+  } else if (r.type === "function") {
     e.preventDefault();
-    onInput(".");
-  } else if (k === "-") {
-    e.preventDefault();
-    onInput("-");
-  } else if (k === "Backspace") {
-    e.preventDefault();
-    onBackspace();
-  } else if (k === "Enter") {
-    if (e.target instanceof HTMLButtonElement) return;
-    e.preventDefault();
-    onSubmit();
-  } else if (k === "Delete") {
-    e.preventDefault();
-    onClear();
+    if (r.payload === "backspace") onBackspace();
+    else if (r.payload === "submit") onSubmit();
+    else if (r.payload === "clear") onClear();
+    else if (r.payload === "toggle-sign") onInput("-");
+    // composite 用 onInput("-") 追加负号（与旧 e.key==='-' 行为一致）；不处理 restart（用 onBack 返回）
   }
 }
 
