@@ -1,54 +1,16 @@
 // 行测小助手 - 主题系统
-// 方向：Solarized 深色 + 原版绿色强调（用户决策覆盖 design-system.md 的绿黑默认）
-// 参考：https://ethanschoonover.com/solarized/
-// Element Plus dark 体系通过 html.dark 启用，本文件提供 --app-* 与 --el-* 覆盖
-
+// 方向：Solarized 深色 + 原版绿色强调
+// tokens.scss 提供 primitive/semantic/component 三层 token
+// 本文件仅保留 Element Plus dark 体系覆盖
 :root {
-  // Solarized 深色 token（base03 最暗 → base02 次暗）
-  --app-bg-page: #002b36;        // base03 最底层
-  --app-bg-surface: #073642;     // base02 卡片
-  --app-bg-elevated: #0a4252;    // base02 提亮 弹窗/浮动
-  --app-bg-overlay: rgba(7, 54, 66, 0.72); // 玻璃层底
-
-  // 文字（Solarized 柔和前景）
-  --app-text-primary: #93a1a1;   // base1 正文
-  --app-text-secondary: #586e75; // base01 次要
-  --app-text-muted: #42525c;     // base01 压暗 占位/禁用
-  --app-text-bright: #eee8d5;    // base2 标题/高亮
-
-  // 强调色：保留原版绿（呼应原版绿色基因），提亮以适应深色背景
-  --app-color-primary: #5faf6f;       // 原版绿提亮
-  --app-color-primary-hover: #7fc38c;
-  --app-color-primary-active: #4a9a5b;
-  --app-color-success: #859900;       // Solarized green
-  --app-color-warning: #b58900;       // Solarized yellow（"小于"按钮橙更柔和）
-  --app-color-warning-bright: #cb4b16; // Solarized orange（比较题"小于"亮橙）
-  --app-color-danger: #dc322f;        // Solarized red
-  --app-color-info: #2aa198;          // Solarized cyan
-
-  // 玻璃材质
-  --app-glass-bg: rgba(10, 66, 82, 0.55);
-  --app-glass-border: rgba(147, 161, 161, 0.18);
-  --app-glass-blur: 24px;
-
-  // 圆角同心递减：窗口 > 卡片 > 按钮
-  --app-radius-window: 16px;
-  --app-radius-card: 12px;
-  --app-radius-button: 8px;
-  --app-radius-small: 6px;
-
-  // 字体
-  --app-font-cn: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
-  --app-font-mono: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
-
-  // Element Plus 覆盖
-  --el-color-primary: #5faf6f;
-  --el-color-primary-light-3: #7fc38c;
+  // Element Plus 覆盖（引用 semantic token）
+  --el-color-primary: var(--app-color-primary);
+  --el-color-primary-light-3: var(--app-color-primary-hover);
   --el-color-primary-light-5: #9ad3a6;
   --el-color-primary-light-7: #b6e0bf;
   --el-color-primary-light-8: #c4e7cc;
   --el-color-primary-light-9: #d2eed8;
-  --el-color-primary-dark-2: #4a9a5b;
+  --el-color-primary-dark-2: var(--app-color-primary-active);
 
   --el-bg-color: var(--app-bg-surface);
   --el-bg-color-page: var(--app-bg-page);
@@ -58,6 +20,7 @@
   --el-text-color-regular: var(--app-text-primary);
   --el-text-color-secondary: var(--app-text-secondary);
   --el-text-color-placeholder: var(--app-text-muted);
+  --el-text-color-disabled: var(--app-text-muted);
 
   --el-border-color: var(--app-glass-border);
   --el-border-color-light: rgba(147, 161, 161, 0.12);

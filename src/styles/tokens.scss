@@ -1,0 +1,98 @@
+// src/styles/tokens.scss
+// 三层 token：primitive（色值原子）→ semantic（语义）→ component（组件级）
+// 引入顺序：tokens.scss 必须在 theme.scss 之前被 index.scss 加载
+
+:root {
+  // ===== Primitive 层 =====
+  --color-base03: #002b36;
+  --color-base02: #073642;
+  --color-base02-elevated: #0a4252;
+  --color-green: #5faf6f;
+  --color-green-hover: #7fc38c;
+  --color-green-active: #4a9a5b;
+  --color-green-dark: #2e5038;
+  --color-cyan: #2aa198;
+  --color-yellow: #b58900;
+  --color-orange: #cb4b16;
+  --color-red: #dc322f;
+  --color-bright: #eee8d5;
+  --color-primary-text: #93a1a1;
+  --color-secondary-text: #586e75;
+  --color-muted-text: #5d6f78; // 对比度修复，对 base03 约 4.6:1
+  --color-solarized-green: #859900;
+
+  // ===== Semantic 层 =====
+  --app-bg-page: var(--color-base03);
+  --app-bg-surface: var(--color-base02);
+  --app-bg-elevated: var(--color-base02-elevated);
+  --app-bg-overlay: rgba(7, 54, 66, 0.72);
+  --app-bg-surface-hover: rgba(95, 175, 111, 0.1);
+
+  --app-text-primary: var(--color-primary-text);
+  --app-text-secondary: var(--color-secondary-text);
+  --app-text-muted: var(--color-muted-text);
+  --app-text-bright: var(--color-bright);
+
+  --app-color-primary: var(--color-green);
+  --app-color-primary-hover: var(--color-green-hover);
+  --app-color-primary-active: var(--color-green-active);
+  --app-color-success: var(--color-solarized-green);
+  --app-color-warning: var(--color-yellow);
+  --app-color-warning-bright: var(--color-orange);
+  --app-color-danger: var(--color-red);
+  --app-color-info: var(--color-cyan);
+
+  --app-glass-bg: rgba(10, 66, 82, 0.55);
+  --app-glass-border: rgba(147, 161, 161, 0.18);
+  --app-glass-blur: 24px;
+
+  --app-border: rgba(147, 161, 161, 0.25);
+  --app-border-active: var(--color-green);
+
+  --app-radius-window: 16px;
+  --app-radius-card: 12px;
+  --app-radius-button: 8px;
+  --app-radius-small: 6px;
+
+  --app-font-cn: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+  --app-font-mono: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+
+  // chart token（ECharts 主题化引用）
+  --chart-primary: var(--color-green);
+  --chart-secondary: var(--color-cyan);
+  --chart-warning: var(--color-yellow);
+  --chart-danger: var(--color-red);
+  --chart-axis: var(--color-primary-text);
+  --chart-split: var(--color-base02);
+
+  // ===== Component 层 =====
+  --button-bg: var(--app-bg-surface);
+  --button-bg-active: rgba(46, 80, 56, 0.9);
+  --button-bg-hover: rgba(95, 175, 111, 0.18);
+  --button-text: var(--app-text-bright);
+  --button-border: var(--app-glass-border);
+
+  --card-bg: var(--app-bg-surface);
+  --card-border: var(--app-border);
+
+  --key-bg: rgba(7, 54, 66, 0.7);
+  --key-bg-hover: rgba(95, 175, 111, 0.12);
+  --key-bg-active: var(--color-base02);
+  --key-text: var(--app-text-bright);
+  --key-submit-bg: rgba(95, 175, 111, 0.85);
+
+  --type-cell-bg: rgba(7, 54, 66, 0.7);
+  --type-cell-bg-selected: rgba(46, 80, 56, 0.9);
+  --type-cell-border: rgba(147, 161, 161, 0.2);
+  --type-cell-border-selected: var(--color-green);
+
+  --seg-bg: rgba(7, 54, 66, 0.7);
+  --seg-bg-selected: rgba(46, 80, 56, 0.9);
+  --seg-border: rgba(147, 161, 161, 0.2);
+  --seg-divider: rgba(147, 161, 161, 0.15);
+
+  --row-bg: rgba(7, 54, 66, 0.7);
+  --row-border: rgba(147, 161, 161, 0.2);
+  --expand-bg: rgba(0, 43, 54, 0.6);
+  --expand-border: rgba(95, 175, 111, 0.3);
+}
