@@ -10,6 +10,17 @@ import {
   type TimeStandardRow,
 } from "@/db/index";
 import { typeLabel } from "@/constants/typeLabels";
+import { useSettingsStore } from "@/stores/settings";
+import type { KeyboardLayout } from "@/utils/keymap";
+
+const settingsStore = useSettingsStore();
+const keyboardLayout = ref<KeyboardLayout>("qwerty");
+
+async function onLayoutChange(val: KeyboardLayout) {
+  keyboardLayout.value = val;
+  await settingsStore.saveGlobal({ keyboardInputLayout: val });
+  ElMessage.success(val === "norman" ? "已切换到 Norman 布局" : "已切换到 QWERTY 布局");
+}
 
 const standards = ref<TimeStandardRow[]>([]);
 const loading = ref(true);
@@ -99,7 +110,10 @@ async function onClearHistory() {
   }
 }
 
-onMounted(() => loadStandards());
+onMounted(async () => {
+  await loadStandards();
+  keyboardLayout.value = settingsStore.global.keyboardInputLayout;
+});
 </script>
 
 <template>
@@ -173,6 +187,36 @@ onMounted(() => loadStandards());
           <input v-model.number="newStandard.excellentS" class="num-input" type="number" placeholder="优秀" />
           <button class="op-btn add" @click="addStandard">添加</button>
         </div>
+      </div>
+    </section>
+
+    <!-- 键盘布局 -->
+    <section class="block glass-card">
+      <h3 class="block-title">键盘布局</h3>
+      <p class="block-desc">选择你的物理键盘布局，影响答案输入的按键映射（右手小键盘区）</p>
+      <div class="layout-options">
+        <label class="layout-option" :class="{ active: keyboardLayout === 'qwerty' }">
+          <input
+            type="radio"
+            name="keyboardLayout"
+            value="qwerty"
+            :checked="keyboardLayout === 'qwerty'"
+            @change="onLayoutChange('qwerty')"
+          />
+          <span class="layout-label">QWERTY</span>
+          <span class="layout-desc">标准布局，e.code 直接反映物理键位置</span>
+        </label>
+        <label class="layout-option" :class="{ active: keyboardLayout === 'norman' }">
+          <input
+            type="radio"
+            name="keyboardLayout"
+            value="norman"
+            :checked="keyboardLayout === 'norman'"
+            @change="onLayoutChange('norman')"
+          />
+          <span class="layout-label">Norman</span>
+          <span class="layout-desc">通过 Karabiner-Elements 启用的 Norman 布局</span>
+        </label>
       </div>
     </section>
 
@@ -332,6 +376,48 @@ onMounted(() => loadStandards());
   &:hover {
     background: rgba(220, 108, 108, 0.15);
   }
+}
+
+.layout-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.layout-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  input[type="radio"] {
+    cursor: pointer;
+  }
+
+  &.active {
+    border-color: var(--app-color-primary);
+    background: rgba(38, 139, 210, 0.1);
+  }
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.layout-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-text-bright);
+  min-width: 70px;
+}
+
+.layout-desc {
+  font-size: 12px;
+  color: var(--app-text-secondary);
 }
 
 .about-text {

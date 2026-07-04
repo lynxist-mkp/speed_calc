@@ -135,7 +135,8 @@ function onDoubleClick() {
 
 onMounted(loadPersistedState);
 
-const numberKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+// 财务小键盘标准布局：7-8-9 在顶部，1-2-3 在底部
+const numberKeys = ["7", "8", "9", "4", "5", "6", "1", "2", "3"];
 
 function onKey(key: string) {
   if (key === "submit") emit("submit");

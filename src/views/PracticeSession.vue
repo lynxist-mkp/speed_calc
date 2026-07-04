@@ -52,7 +52,7 @@ function handleKeydown(e: KeyboardEvent) {
   }
 
   // 数字题模式
-  const r = resolveNumpadKey(e);
+  const r = resolveNumpadKey(e, settings.global.keyboardInputLayout);
   if (r.type === "input") {
     e.preventDefault();
     store.inputChar(r.payload);

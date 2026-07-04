@@ -16,8 +16,10 @@ import {
   updateSession,
 } from "@/db/index";
 import { resolveNumpadKey } from "@/utils/keymap";
+import { useSettingsStore } from "@/stores/settings";
 
 const router = useRouter();
+const settings = useSettingsStore();
 
 const data = ref<CompositeData | null>(null);
 const answers = ref<Partial<Record<keyof CompositeAnswers, string>>>({});
@@ -159,7 +161,7 @@ function handleKeydown(e: KeyboardEvent) {
     return;
   }
 
-  const r = resolveNumpadKey(e);
+  const r = resolveNumpadKey(e, settings.global.keyboardInputLayout);
   if (r.type === "input") {
     e.preventDefault();
     onInput(r.payload);
