@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { usePracticeStore } from "@/stores/practice";
@@ -12,6 +12,9 @@ import {
   type CustomPowerConfig,
 } from "@/generators/custom";
 import type { BasicType } from "@/generators/basic";
+import TypeGrid from "@/components/TypeGrid.vue";
+import SegmentedControl from "@/components/SegmentedControl.vue";
+import SettingRow from "@/components/SettingRow.vue";
 
 type Operator = "+" | "-" | "×" | "÷";
 
@@ -19,66 +22,110 @@ const router = useRouter();
 const store = usePracticeStore();
 const settings = useSettingsStore();
 
-const questionTypes: { label: string; type: BasicType }[] = [
-  { label: "两位数加减", type: "addsub_2d" },
-  { label: "凑整百练习", type: "round_100" },
-  { label: "三位数加法", type: "add_3d" },
-  { label: "三位数减法", type: "sub_3d" },
-  { label: "三位数加减", type: "addsub_3d" },
-  { label: "多数相加", type: "add_multi" },
-  { label: "混合加减", type: "addsub_mix" },
-  { label: "两位数乘一位数", type: "mul_2x1" },
-  { label: "三位数乘一位数", type: "mul_3x1" },
-  { label: "两位数乘11", type: "mul_2x11" },
-  { label: "两位数乘15", type: "mul_2x15" },
-  { label: "两位数乘两位数", type: "mul_2x2" },
-  { label: "三位数除一位数", type: "div_3x1" },
-  { label: "三位数除两位数", type: "div_3x2" },
-  { label: "乘法估算", type: "mul_est" },
-  { label: "五位数除三位数", type: "div_5x3" },
-  { label: "三位数除四位数", type: "div_3x4" },
+// 题型分 section（key 与 BasicType 一致，供 TypeGrid 使用）
+const sections = [
+  {
+    title: "加减法",
+    types: [
+      { key: "addsub_2d", label: "两位数加减" },
+      { key: "round_100", label: "凑整百练习" },
+      { key: "add_3d", label: "三位数加法" },
+      { key: "sub_3d", label: "三位数减法" },
+      { key: "addsub_3d", label: "三位数加减" },
+      { key: "add_multi", label: "多数相加" },
+      { key: "addsub_mix", label: "混合加减" },
+    ],
+  },
+  {
+    title: "乘除法",
+    types: [
+      { key: "mul_2x1", label: "两位数乘一位数" },
+      { key: "mul_3x1", label: "三位数乘一位数" },
+      { key: "mul_2x11", label: "两位数乘11" },
+      { key: "mul_2x15", label: "两位数乘15" },
+      { key: "mul_2x2", label: "两位数乘两位数" },
+      { key: "div_3x1", label: "三位数除一位数" },
+      { key: "div_3x2", label: "三位数除两位数" },
+      { key: "mul_est", label: "乘法估算" },
+      { key: "div_5x3", label: "五位数除三位数" },
+      { key: "div_3x4", label: "三位数除四位数" },
+    ],
+  },
 ];
+
+//扁平化题型列表（与原 questionTypes 顺序一致，用于 selectedType number index 与 BasicType 互转）
+const flatTypes: BasicType[] = sections.flatMap((s) => s.types.map((t) => t.key as BasicType));
 
 const OPERATORS: Operator[] = ["+", "-", "×", "÷"];
 
-const countDialogVisible = ref(false);
-const countMode = ref<"quick" | "normal" | "custom">("quick");
-const customCount = ref(10);
+// 当前选中题型（字符串 key，供 TypeGrid 使用）
+const selectedType = ref<BasicType>("addsub_2d");
 
-function openCountDialog() {
-  countMode.value = settings.basic.countMode;
-  customCount.value = settings.basic.count;
-  countDialogVisible.value = true;
-}
-
-function selectCountMode(mode: "quick" | "normal" | "custom") {
-  countMode.value = mode;
-  if (mode === "quick") customCount.value = 10;
-  if (mode === "normal") customCount.value = 15;
-}
-
-async function confirmCount() {
-  let count = customCount.value;
-  if (countMode.value === "custom") {
-    count = Math.max(5, Math.min(100, count));
+function onTypeChange(key: string) {
+  selectedType.value = key as BasicType;
+  const idx = flatTypes.indexOf(key as BasicType);
+  if (idx >= 0) {
+    void settings.saveBasic({ selectedType: idx });
   }
-  await settings.saveBasic({ countMode: countMode.value, count });
-  countDialogVisible.value = false;
 }
 
-const nbackDialogVisible = ref(false);
-const nbackChoice = ref<0 | 1 | 2>(0);
+// 键盘布局
+const layoutOptions = [
+  { label: "正序", value: "normal" },
+  { label: "倒序", value: "reverse" },
+  { label: "乱序", value: "shuffle" },
+];
+const layout = computed(() => settings.basic.keyboardLayout);
 
-function openNbackDialog() {
-  nbackChoice.value = settings.basic.nback;
-  nbackDialogVisible.value = true;
+async function onLayoutChange(v: string) {
+  await settings.saveBasic({
+    keyboardLayout: v as "normal" | "reverse" | "shuffle",
+  });
 }
 
-async function confirmNback() {
-  await settings.saveBasic({ nback: nbackChoice.value });
-  nbackDialogVisible.value = false;
+// 题量 segmented
+const countOptions = [
+  { label: "5", value: "5" },
+  { label: "10", value: "10" },
+  { label: "15", value: "15" },
+  { label: "20", value: "20" },
+  { label: "自定", value: "custom" },
+];
+const countMode = computed(() => {
+  if (settings.basic.countMode === "custom") return "custom";
+  return String(settings.basic.count);
+});
+const customCount = ref(settings.basic.count);
+const showCustomExpand = computed(() => countMode.value === "custom");
+
+async function onCountChange(v: string) {
+  if (v === "custom") {
+    await settings.saveBasic({ countMode: "custom", count: customCount.value });
+  } else {
+    const n = Number(v);
+    await settings.saveBasic({ countMode: "quick", count: n });
+  }
 }
 
+async function onCustomCountInput(e: Event) {
+  const v = Number((e.target as HTMLInputElement).value);
+  customCount.value = Math.max(5, Math.min(100, v));
+  await settings.saveBasic({ countMode: "custom", count: customCount.value });
+}
+
+// N-back
+const nbackOptions = [
+  { label: "关闭", value: "0" },
+  { label: "1-back", value: "1" },
+  { label: "2-back", value: "2" },
+];
+const nback = computed(() => String(settings.basic.nback));
+
+async function onNbackChange(v: string) {
+  await settings.saveBasic({ nback: Number(v) as 0 | 1 | 2 });
+}
+
+// 自定义弹窗（保留 el-dialog 用于复杂表单——这是复杂表单，不在本次重构范围）
 const customVisible = ref(false);
 const customTab = ref<"standard" | "power">("standard");
 const presets = ref<CustomPreset[]>([]);
@@ -157,7 +204,7 @@ async function onCustomConfirm() {
   }
   try {
     await upsertCustomPreset(name, JSON.stringify(cfg));
-    await settings.saveBasic({ selectedType: 17 });
+    await settings.saveBasic({ selectedType: flatTypes.length }); // 自定义索引 = 题型总数
     customVisible.value = false;
     await startCustom(type, cfg, name);
   } catch (e) {
@@ -184,27 +231,16 @@ async function startCustom(
   }
 }
 
-async function onTypeClick(index: number) {
-  if (index === 17) {
-    await openCustomDialog();
-    return;
-  }
-  await settings.saveBasic({ selectedType: index });
-}
-
-function onPlaceholderClick(feature: string) {
-  ElMessage.info(`${feature} 待后续实现`);
-}
-
+// 开始练习
 async function startPractice() {
-  const idx = settings.basic.selectedType;
-  if (idx === 17) {
-    ElMessage.info("请先在自定义中配置运算");
+  const idx = flatTypes.indexOf(selectedType.value);
+  if (idx < 0) {
+    ElMessage.error("题型无效");
     return;
   }
-  const t = questionTypes[idx];
+  const t = sections.flatMap((s) => s.types)[idx];
   await store.init({
-    type: t.type,
+    type: selectedType.value,
     subtype: t.label,
     count: settings.basic.count,
     nback: settings.basic.nback,
@@ -220,252 +256,315 @@ function goHistory() {
   router.push("/history");
 }
 
-async function onKeyboardLayoutChange(v: string | number | boolean) {
-  await settings.saveBasic({ keyboardLayout: v as "normal" | "reverse" | "shuffle" });
-}
-
-onMounted(() => settings.load());
+onMounted(async () => {
+  await settings.load();
+  const idx = settings.basic.selectedType;
+  if (idx >= 0 && idx < flatTypes.length) {
+    selectedType.value = flatTypes[idx];
+  }
+  customCount.value = settings.basic.count;
+});
 </script>
 
 <template>
   <div class="practice-settings">
-    <div class="row">
-      <span class="label">键盘布局</span>
-      <el-radio-group
-        :model-value="settings.basic.keyboardLayout"
-        @change="onKeyboardLayoutChange"
-      >
-        <el-radio-button value="normal">正序</el-radio-button>
-        <el-radio-button value="reverse">倒序</el-radio-button>
-        <el-radio-button value="shuffle">乱序</el-radio-button>
-      </el-radio-group>
-    </div>
+    <h2 class="page-title">基础计算</h2>
 
-    <div class="type-grid">
-      <button
-        v-for="(t, i) in questionTypes"
-        :key="t.type"
-        class="type-cell"
-        :class="{ selected: i === settings.basic.selectedType }"
-        @click="onTypeClick(i)"
-      >{{ t.label }}</button>
-      <button
-        class="type-cell"
-        :class="{ selected: settings.basic.selectedType === 17 }"
-        @click="onTypeClick(17)"
-      >自定义</button>
-    </div>
+    <!-- 键盘布局 -->
+    <SettingRow label="键盘布局">
+      <SegmentedControl
+        :options="layoutOptions"
+        :model-value="layout"
+        @update:model-value="onLayoutChange"
+      />
+    </SettingRow>
 
-    <div class="row" @click="openCountDialog">
-      <span class="label">题量</span>
-      <span class="value">{{ settings.basic.count }} 题 ›</span>
-    </div>
+    <!-- 题型选择 -->
+    <SettingRow label="题型选择">
+      <TypeGrid
+        :sections="sections"
+        :model-value="selectedType"
+        @update:model-value="onTypeChange"
+      />
+    </SettingRow>
 
-    <div class="row" @click="openNbackDialog">
-      <span class="label">N-back</span>
-      <span class="value">{{ settings.basic.nback === 0 ? "关闭" : `${settings.basic.nback}-back` }} ›</span>
-    </div>
-
-    <button class="start-btn" @click="startPractice">开始练习</button>
-
-    <div class="bottom-row">
-      <button class="bottom-btn" @click="onPlaceholderClick('导出题目')">导出题目</button>
-      <button class="bottom-btn" @click="goHistory">历史记录</button>
-    </div>
-
-    <button class="fab" @click="onPlaceholderClick('自定义新增')">+</button>
-
-    <el-dialog v-model="countDialogVisible" title="选择题量" width="320px">
-      <div class="count-options">
-        <button class="count-opt" :class="{ active: countMode === 'quick' }" @click="selectCountMode('quick')">快速 10 题</button>
-        <button class="count-opt" :class="{ active: countMode === 'normal' }" @click="selectCountMode('normal')">正常 15 题</button>
-        <div class="count-custom" :class="{ active: countMode === 'custom' }" @click="selectCountMode('custom')">
-          <div>自定义</div>
-          <el-slider v-model="customCount" :min="5" :max="100" :step="1" />
-          <div>{{ customCount }} 题</div>
+    <!-- 题量 -->
+    <SettingRow label="题量" :expandable="showCustomExpand" :expanded="showCustomExpand">
+      <SegmentedControl
+        :options="countOptions"
+        :model-value="countMode"
+        @update:model-value="onCountChange"
+      />
+      <template #expand>
+        <div class="custom-count">
+          <label>自定义题量（5-100）</label>
+          <input
+            type="range"
+            min="5"
+            max="100"
+            :value="customCount"
+            @input="onCustomCountInput"
+          />
+          <span class="count-value">{{ customCount }} 题</span>
         </div>
-      </div>
-      <template #footer>
-        <el-button @click="countDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmCount">确定</el-button>
       </template>
-    </el-dialog>
+    </SettingRow>
 
-    <el-dialog v-model="nbackDialogVisible" title="N-back 设置" width="320px">
-      <div class="nback-options">
-        <button class="nback-opt" :class="{ active: nbackChoice === 0 }" @click="nbackChoice = 0">关闭</button>
-        <button class="nback-opt" :class="{ active: nbackChoice === 1 }" @click="nbackChoice = 1">1-back</button>
-        <button class="nback-opt" :class="{ active: nbackChoice === 2 }" @click="nbackChoice = 2">2-back</button>
-      </div>
-      <template #footer>
-        <el-button @click="nbackDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmNback">确定</el-button>
-      </template>
-    </el-dialog>
+    <!-- N-back -->
+    <SettingRow label="N-back 工作记忆训练">
+      <SegmentedControl
+        :options="nbackOptions"
+        :model-value="nback"
+        @update:model-value="onNbackChange"
+      />
+    </SettingRow>
 
-    <el-dialog v-model="customVisible" title="自定义运算" width="480px">
+    <!-- 操作按钮 -->
+    <div class="actions">
+      <button class="btn-primary" @click="startPractice">开始练习</button>
+      <button class="btn-secondary" @click="openCustomDialog">自定义运算</button>
+      <button class="btn-secondary" @click="goHistory">历史记录</button>
+    </div>
+
+    <!-- 自定义运算弹窗（保留 el-dialog 用于复杂表单） -->
+    <el-dialog v-model="customVisible" title="自定义运算" width="600">
       <el-tabs v-model="customTab">
         <el-tab-pane label="标准运算" name="standard">
-          <div v-if="presets.length" class="recent-tags">
-            <span class="recent-tag" v-for="p in presets" :key="p.id" @click="loadPreset(p)">{{ p.name }}</span>
-          </div>
-          <div class="cfg-block">
-            <div class="cfg-label">第一个数位数</div>
-            <div class="cfg-buttons">
-              <button v-for="d in [1,2,3,4]" :key="d" class="cfg-btn"
-                :class="{ active: stdCfg.firstDigits === d }"
-                @click="stdCfg.firstDigits = d as 1|2|3|4">{{ d }}位数</button>
+          <div class="custom-form">
+            <div class="form-row">
+              <label>首位位数</label>
+              <input type="number" v-model.number="stdCfg.firstDigits" min="1" max="5" />
             </div>
-          </div>
-          <div class="cfg-block">
-            <div class="cfg-label">运算符（可多选）</div>
-            <div class="cfg-buttons">
-              <button v-for="op in OPERATORS" :key="op" class="cfg-btn"
-                :class="{ active: stdCfg.operators.includes(op) }"
-                @click="toggleOperator(op)">{{ op }}</button>
+            <div class="form-row">
+              <label>运算符</label>
+              <div class="op-list">
+                <button
+                  v-for="op in OPERATORS"
+                  :key="op"
+                  class="op-btn"
+                  :class="{ active: stdCfg.operators.includes(op) }"
+                  @click="toggleOperator(op)"
+                >
+                  {{ op }}
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="cfg-block">
-            <div class="cfg-label">第二个数</div>
-            <div class="cfg-buttons">
-              <button class="cfg-btn" :class="{ active: stdCfg.secondMode === 'random_digits' }"
-                @click="stdCfg.secondMode = 'random_digits'">随机位数</button>
-              <button class="cfg-btn" :class="{ active: stdCfg.secondMode === 'fixed' }"
-                @click="stdCfg.secondMode = 'fixed'">固定数字</button>
-              <button class="cfg-btn" :class="{ active: stdCfg.secondMode === 'range' }"
-                @click="stdCfg.secondMode = 'range'">随机范围</button>
-            </div>
-            <div v-if="stdCfg.secondMode === 'random_digits'" class="sub-cfg">
-              <button v-for="d in [1,2,3,4]" :key="d" class="cfg-btn"
-                :class="{ active: stdCfg.secondDigits === d }"
-                @click="stdCfg.secondDigits = d as 1|2|3|4">{{ d }}位数</button>
-            </div>
-            <input v-if="stdCfg.secondMode === 'fixed'" v-model.number="stdCfg.secondFixed" class="cfg-input" type="number" placeholder="固定数字" />
-            <div v-if="stdCfg.secondMode === 'range'" class="sub-cfg">
-              <input v-model.number="stdCfg.secondMin" class="cfg-input" type="number" placeholder="最小" />
-              <span>~</span>
-              <input v-model.number="stdCfg.secondMax" class="cfg-input" type="number" placeholder="最大" />
+            <div class="form-row">
+              <label>次位模式</label>
+              <select v-model="stdCfg.secondMode">
+                <option value="random_digits">随机位数</option>
+                <option value="fixed">固定值</option>
+                <option value="range">范围</option>
+              </select>
             </div>
           </div>
         </el-tab-pane>
         <el-tab-pane label="幂运算" name="power">
-          <div class="cfg-block">
-            <div class="cfg-label">底数设置方式</div>
-            <div class="cfg-buttons">
-              <button class="cfg-btn" :class="{ active: powCfg.baseMode === 'range' }"
-                @click="powCfg.baseMode = 'range'">按范围</button>
-              <button class="cfg-btn" :class="{ active: powCfg.baseMode === 'digits' }"
-                @click="powCfg.baseMode = 'digits'">按位数</button>
+          <div class="custom-form">
+            <div class="form-row">
+              <label>底数模式</label>
+              <select v-model="powCfg.baseMode">
+                <option value="digits">按位数</option>
+                <option value="range">按范围</option>
+              </select>
             </div>
-            <div v-if="powCfg.baseMode === 'range'" class="sub-cfg">
-              <input v-model.number="powCfg.baseMin" class="cfg-input" type="number" placeholder="最小值" />
-              <span>~</span>
-              <input v-model.number="powCfg.baseMax" class="cfg-input" type="number" placeholder="最大值" />
+            <div class="form-row">
+              <label>底数位数</label>
+              <input type="number" v-model.number="powCfg.baseDigits" min="1" max="5" />
             </div>
-            <div v-if="powCfg.baseMode === 'digits'" class="sub-cfg">
-              <button v-for="d in [1,2,3]" :key="d" class="cfg-btn"
-                :class="{ active: powCfg.baseDigits === d }"
-                @click="powCfg.baseDigits = d as 1|2|3">{{ d }}位数</button>
-            </div>
-          </div>
-          <div class="cfg-block">
-            <div class="cfg-label">运算类型（可多选）</div>
-            <div class="cfg-buttons">
-              <button class="cfg-btn" :class="{ active: powCfg.powerTypes.includes(2) }"
-                @click="togglePower(2)">平方</button>
-              <button class="cfg-btn" :class="{ active: powCfg.powerTypes.includes(3) }"
-                @click="togglePower(3)">立方</button>
+            <div class="form-row">
+              <label>幂次</label>
+              <div class="op-list">
+                <button
+                  v-for="p in [2, 3] as const"
+                  :key="p"
+                  class="op-btn"
+                  :class="{ active: powCfg.powerTypes.includes(p) }"
+                  @click="togglePower(p)"
+                >
+                  {{ p }}
+                </button>
+              </div>
             </div>
           </div>
         </el-tab-pane>
       </el-tabs>
+
+      <div class="presets">
+        <h4>最近预设</h4>
+        <div v-if="presets.length === 0" class="empty">暂无预设</div>
+        <div v-else class="preset-list">
+          <button
+            v-for="p in presets"
+            :key="p.id"
+            class="preset-item"
+            @click="loadPreset(p)"
+          >
+            {{ p.name }}
+          </button>
+        </div>
+      </div>
+
       <template #footer>
-        <el-button @click="customVisible = false">取消</el-button>
-        <el-button type="primary" @click="onCustomConfirm">确定</el-button>
+        <button class="btn-secondary" @click="customVisible = false">取消</button>
+        <button class="btn-primary" @click="onCustomConfirm">保存并开始</button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <style scoped lang="scss">
-.practice-settings { max-width: 720px; margin: 0 auto; padding: 24px; }
-.row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px; margin-bottom: 12px;
-  background: var(--app-bg-surface, #073642); border-radius: 10px; cursor: pointer;
+.practice-settings {
+  max-width: 720px;
+  margin: 0 auto;
 }
-.label { color: var(--app-text-primary, #93a1a1); }
-.value { color: var(--app-text-secondary, #586e75); }
-.type-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;
+
+.page-title {
+  font-size: 22px;
+  color: var(--app-text-bright);
+  margin-bottom: 16px;
 }
-.type-cell {
-  padding: 14px 8px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;
-  background: rgba(133, 200, 142, 0.15); color: var(--app-text-primary, #93a1a1);
-  font-size: 14px; cursor: pointer;
-  &.selected {
-    background: rgba(46, 80, 56, 0.9); color: #fff;
-    border-color: var(--app-color-primary, #5faf6f);
-  }
-  &:hover { background: rgba(133, 200, 142, 0.25); }
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
 }
-.start-btn {
-  width: 100%; padding: 14px; margin: 16px 0 12px;
-  background: var(--app-color-primary, #5faf6f); color: #fff;
-  border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;
-  &:hover { background: #6fbf7f; }
-}
-.bottom-row { display: flex; gap: 12px; margin-top: 12px; }
-.bottom-btn {
-  flex: 1; padding: 10px;
-  background: var(--app-bg-surface, #073642); color: var(--app-text-primary, #93a1a1);
-  border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; cursor: pointer;
-}
-.fab {
-  position: fixed; bottom: 32px; right: 32px;
-  width: 52px; height: 52px; border-radius: 50%;
-  background: #5b9bfc; color: #fff; border: none; font-size: 24px; cursor: pointer;
-  box-shadow: 0 4px 12px rgba(91, 155, 252, 0.4);
-}
-.count-options, .nback-options { display: flex; flex-direction: column; gap: 12px; }
-.count-opt, .nback-opt {
-  padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
-  background: var(--app-bg-surface, #073642); color: var(--app-text-primary, #93a1a1);
+
+.btn-primary {
+  flex: 1;
+  padding: 12px 20px;
+  background: var(--app-color-primary);
+  color: var(--app-bg-page);
+  border: none;
+  border-radius: var(--app-radius-button);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  &.active {
-    border-color: var(--app-color-primary, #5faf6f);
-    background: rgba(95, 175, 111, 0.2);
+
+  &:hover {
+    background: var(--app-color-primary-hover);
   }
 }
-.count-custom {
-  padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
-  &.active { border-color: var(--app-color-primary, #5faf6f); }
-}
-.recent-tags {
-  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
-  padding-bottom: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.recent-tag {
-  padding: 4px 10px; background: rgba(95, 175, 111, 0.15);
-  border: 1px solid rgba(95, 175, 111, 0.3); border-radius: 999px;
-  font-size: 12px; color: var(--app-color-primary, #5faf6f); cursor: pointer;
-  &:hover { background: rgba(95, 175, 111, 0.25); }
-}
-.cfg-block { margin-bottom: 16px; }
-.cfg-label { font-size: 13px; color: var(--app-text-primary, #93a1a1); margin-bottom: 8px; }
-.cfg-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-.cfg-btn {
-  padding: 8px 14px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;
-  background: var(--app-bg-surface, #073642); color: var(--app-text-primary, #93a1a1); cursor: pointer;
-  &.active {
-    border-color: var(--app-color-primary, #5faf6f);
-    background: rgba(95, 175, 111, 0.2); color: var(--app-color-primary, #5faf6f);
+
+.btn-secondary {
+  flex: 1;
+  padding: 12px 20px;
+  background: var(--button-bg);
+  color: var(--app-text-bright);
+  border: 1px solid var(--button-border);
+  border-radius: var(--app-radius-button);
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--button-bg-hover);
+    border-color: var(--app-color-primary);
   }
 }
-.sub-cfg { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
-.cfg-input {
-  width: 80px; padding: 6px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;
-  background: var(--app-bg-surface, #073642); color: var(--app-text-bright, #fdf6e3);
+
+.custom-count {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+
+  label {
+    color: var(--app-text-secondary);
+  }
+
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--app-color-primary);
+  }
+
+  .count-value {
+    color: var(--app-color-primary);
+    font-weight: 600;
+    text-align: right;
+  }
+}
+
+.custom-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+
+  label {
+    width: 80px;
+    color: var(--app-text-secondary);
+  }
+
+  input,
+  select {
+    background: var(--app-bg-surface);
+    color: var(--app-text-primary);
+    border: 1px solid var(--app-glass-border);
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+}
+
+.op-list {
+  display: flex;
+  gap: 6px;
+}
+
+.op-btn {
+  width: 36px;
+  height: 36px;
+  background: var(--button-bg);
+  border: 1px solid var(--button-border);
+  border-radius: 4px;
+  color: var(--app-text-primary);
+  cursor: pointer;
+
+  &.active {
+    background: var(--button-bg-active);
+    border-color: var(--app-color-primary);
+    color: var(--app-text-bright);
+  }
+}
+
+.presets {
+  margin-top: 16px;
+
+  h4 {
+    font-size: 13px;
+    color: var(--app-text-bright);
+    margin-bottom: 8px;
+  }
+
+  .empty {
+    font-size: 12px;
+    color: var(--app-text-muted);
+  }
+
+  .preset-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .preset-item {
+    background: var(--button-bg);
+    border: 1px solid var(--button-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--app-text-primary);
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--app-color-primary);
+    }
+  }
 }
 </style>
