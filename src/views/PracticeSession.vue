@@ -240,7 +240,7 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   border: none;
   background: rgba(255, 255, 255, 0.06);
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   font-size: 22px;
   cursor: pointer;
 }

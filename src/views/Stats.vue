@@ -253,12 +253,12 @@ onBeforeUnmount(() => {
 }
 
 .title {
-  color: var(--app-text-bright, #eee8d5);
+  color: var(--app-text-bright);
   margin-bottom: 16px;
 }
 
 .empty {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   text-align: center;
   padding: 40px;
 }
@@ -278,14 +278,14 @@ onBeforeUnmount(() => {
 .overall-value {
   font-size: 28px;
   font-weight: 700;
-  color: var(--app-color-primary, #5faf6f);
+  color: var(--app-color-primary);
   font-variant-numeric: tabular-nums;
 }
 
 .overall-label {
   margin-top: 4px;
   font-size: 12px;
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
 }
 
 .chart-section {
@@ -296,7 +296,7 @@ onBeforeUnmount(() => {
 
 .chart-title {
   font-size: 15px;
-  color: var(--app-text-bright, #eee8d5);
+  color: var(--app-text-bright);
   margin: 0 0 12px;
 }
 

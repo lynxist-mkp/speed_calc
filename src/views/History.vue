@@ -170,7 +170,7 @@ onMounted(async () => {
 }
 
 .title {
-  color: var(--app-text-bright, #eee8d5);
+  color: var(--app-text-bright);
   margin: 0;
 }
 
@@ -178,8 +178,8 @@ onMounted(async () => {
   padding: 6px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-secondary, #586e75);
+  background: var(--app-bg-surface);
+  color: var(--app-text-secondary);
   font-size: 13px;
   cursor: pointer;
   &:hover:not(:disabled) {
@@ -200,12 +200,12 @@ onMounted(async () => {
 }
 
 .filter-label {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   font-size: 13px;
 }
 
 .empty {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   text-align: center;
   padding: 40px;
 }
@@ -226,12 +226,12 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 6px;
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   gap: 12px;
 }
 
 .date {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   font-size: 13px;
 }
 
@@ -246,7 +246,7 @@ onMounted(async () => {
 .acc {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  color: var(--app-color-primary, #5faf6f);
+  color: var(--app-color-primary);
 }
 
 .comment {
@@ -270,12 +270,12 @@ onMounted(async () => {
   padding: 6px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-primary, #93a1a1);
+  background: var(--app-bg-surface);
+  color: var(--app-text-primary);
   cursor: pointer;
   &:hover:not(:disabled) {
-    border-color: var(--app-color-primary, #5faf6f);
-    color: var(--app-color-primary, #5faf6f);
+    border-color: var(--app-color-primary);
+    color: var(--app-color-primary);
   }
   &:disabled {
     opacity: 0.4;
@@ -284,7 +284,7 @@ onMounted(async () => {
 }
 
 .page-info {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   font-variant-numeric: tabular-nums;
 }
 </style>

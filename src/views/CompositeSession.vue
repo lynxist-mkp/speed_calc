@@ -264,13 +264,13 @@ const correctCount = computed(() =>
   border-radius: 8px;
   border: none;
   background: rgba(255, 255, 255, 0.06);
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   font-size: 22px;
   cursor: pointer;
 }
 
 .instruction {
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   font-size: 13px;
   margin-bottom: 12px;
 }
@@ -284,7 +284,7 @@ const correctCount = computed(() =>
 
 .known-cell {
   padding: 10px 8px;
-  background: var(--app-bg-surface, #073642);
+  background: var(--app-bg-surface);
   border-radius: 8px;
   text-align: center;
 }
@@ -292,14 +292,14 @@ const correctCount = computed(() =>
 .k-label {
   display: block;
   font-size: 12px;
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
   margin-bottom: 4px;
 }
 
 .k-value {
   font-size: 16px;
   font-weight: 600;
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -315,13 +315,13 @@ const correctCount = computed(() =>
   align-items: center;
   justify-content: space-between;
   padding: 12px;
-  background: var(--app-bg-surface, #073642);
+  background: var(--app-bg-surface);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   cursor: pointer;
 
   &.active {
-    border-color: var(--app-color-primary, #5faf6f);
+    border-color: var(--app-color-primary);
     background: rgba(95, 175, 111, 0.15);
   }
   &.correct {
@@ -336,7 +336,7 @@ const correctCount = computed(() =>
 
 .a-label {
   font-size: 13px;
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
 }
 
 .a-input {
@@ -344,17 +344,17 @@ const correctCount = computed(() =>
   text-align: right;
   font-size: 15px;
   font-weight: 600;
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
   font-variant-numeric: tabular-nums;
 }
 
 .user-ans {
-  color: var(--app-text-primary, #93a1a1);
+  color: var(--app-text-primary);
 }
 
 .true-ans {
   margin-left: 6px;
-  color: var(--app-color-primary, #5faf6f);
+  color: var(--app-color-primary);
   font-weight: 500;
   font-size: 13px;
 }
@@ -362,7 +362,7 @@ const correctCount = computed(() =>
 .a-unit {
   margin-left: 4px;
   font-size: 12px;
-  color: var(--app-text-secondary, #586e75);
+  color: var(--app-text-secondary);
 }
 
 .ops-row {
@@ -387,7 +387,7 @@ const correctCount = computed(() =>
 }
 
 .submit-btn {
-  background: var(--app-color-primary, #5faf6f);
+  background: var(--app-color-primary);
   color: #fff;
 }
 
@@ -397,6 +397,6 @@ const correctCount = computed(() =>
   text-align: center;
   font-size: 16px;
   font-weight: 600;
-  color: var(--app-color-primary, #5faf6f);
+  color: var(--app-color-primary);
 }
 </style>
