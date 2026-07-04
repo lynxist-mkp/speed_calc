@@ -8,6 +8,7 @@ import {
   type SessionRow,
 } from "@/db/index";
 import { typeLabel } from "@/constants/typeLabels";
+import SegmentedControl from "@/components/SegmentedControl.vue";
 
 const PAGE_SIZE = 10;
 const sessions = ref<SessionRow[]>([]);
@@ -51,6 +52,16 @@ function commentClass(acc: number): string {
 
 async function loadTypes() {
   availableTypes.value = await listSessionTypes();
+}
+
+// SegmentedControl 选项：全部 + 各题型
+const filterOptions = computed(() => [
+  { label: "全部", value: "all" },
+  ...availableTypes.value.map((t) => ({ label: typeLabel(t), value: t })),
+]);
+
+async function onFilterChange(v: string) {
+  typeFilter.value = v;
 }
 
 async function loadPage() {
@@ -112,10 +123,11 @@ onMounted(async () => {
 
     <div class="filter-row">
       <span class="filter-label">题型筛选</span>
-      <select v-model="typeFilter" class="filter-select">
-        <option value="all">全部</option>
-        <option v-for="t in availableTypes" :key="t" :value="t">{{ typeLabel(t) }}</option>
-      </select>
+      <SegmentedControl
+        :options="filterOptions"
+        :model-value="typeFilter"
+        @update:model-value="onFilterChange"
+      />
     </div>
 
     <div v-if="loading" class="empty">加载中…</div>
@@ -190,16 +202,6 @@ onMounted(async () => {
 .filter-label {
   color: var(--app-text-secondary, #586e75);
   font-size: 13px;
-}
-
-.filter-select {
-  padding: 6px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  background: var(--app-bg-surface, #073642);
-  color: var(--app-text-primary, #93a1a1);
-  font-size: 13px;
-  cursor: pointer;
 }
 
 .empty {
