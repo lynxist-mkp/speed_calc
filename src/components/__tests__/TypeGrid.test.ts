@@ -65,4 +65,30 @@ describe("TypeGrid.vue", () => {
     });
     expect(wrapper.text()).not.toContain("基础运算");
   });
+
+  it("空 sections 数组安全渲染不报错", () => {
+    const wrapper = mount(TypeGrid, {
+      props: { sections: [], modelValue: "" },
+    });
+    expect(wrapper.findAll(".type-cell")).toHaveLength(0);
+  });
+
+  it("切换 modelValue 后 selected 正确转移", async () => {
+    const wrapper = mount(TypeGrid, {
+      props: { sections: SECTIONS, modelValue: "add" },
+    });
+    expect(wrapper.find('[data-type-key="add"]').classes()).toContain("selected");
+    expect(wrapper.find('[data-type-key="sub"]').classes()).not.toContain("selected");
+
+    await wrapper.setProps({ modelValue: "sub" });
+    expect(wrapper.find('[data-type-key="add"]').classes()).not.toContain("selected");
+    expect(wrapper.find('[data-type-key="sub"]').classes()).toContain("selected");
+  });
+
+  it("modelValue 不匹配任何 key 时无 cell 被 selected", () => {
+    const wrapper = mount(TypeGrid, {
+      props: { sections: SECTIONS, modelValue: "nonexistent" },
+    });
+    expect(wrapper.find(".selected").exists()).toBe(false);
+  });
 });
