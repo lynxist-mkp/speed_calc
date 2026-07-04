@@ -65,13 +65,9 @@ export const usePracticeStore = defineStore("practice", () => {
   const error = ref<string | null>(null);
   const timeStandard = ref<TimeStandard | null>(null);
   let timerId: number | null = null;
-  let nbackEndGame = false;
 
   const nback = ref<0 | 1 | 2>(0);
   const pendingRecords = ref<AnswerRecord[]>([]);
-  const nbackPrompting = ref(false);
-  const nbackTarget = ref<{ index: number; question: string; trueAnswer: string; tolerance: number } | null>(null);
-  const nbackAnswer = ref("");
 
   const correctCount = computed(() => records.value.filter((r) => r.isCorrect).length);
   const errorCount = computed(() => records.value.filter((r) => !r.isCorrect).length);
@@ -82,7 +78,15 @@ export const usePracticeStore = defineStore("practice", () => {
   const currentQuestion = computed(() => questions.value[currentIndex.value] ?? null);
   const progress = computed(() => `${currentIndex.value + 1}/${questions.value.length}`);
 
-  const isDataType = computed(() => config.value?.type !== "basic_addsub");
+  // 正向枚举基础题型（含 basic_addsub + L4 17 题型 + custom_*），其余归资料分析
+  const isDataType = computed(() => {
+    const t = config.value?.type;
+    if (!t) return false;
+    if (t === "basic_addsub") return false;
+    if (BASIC_TYPES.has(t)) return false;
+    if (t.startsWith("custom_")) return false;
+    return true; // 资料分析填空题（DataType）+ 比较题（compare_*）
+  });
 
   const questionCategory = computed<"numpad" | "compare" | "composite">(() => {
     const t = config.value?.type;
@@ -135,10 +139,6 @@ export const usePracticeStore = defineStore("practice", () => {
     try {
       nback.value = cfg.nback ?? 0;
       pendingRecords.value = [];
-      nbackPrompting.value = false;
-      nbackTarget.value = null;
-      nbackAnswer.value = "";
-      nbackEndGame = false;
 
       let qs: AnyQuestion[];
       if (cfg.type === "custom_standard") {
@@ -204,8 +204,40 @@ export const usePracticeStore = defineStore("practice", () => {
     currentAnswer.value = currentAnswer.value.slice(0, -1);
   }
 
+  // 判分：用 target.userAnswer vs target.trueAnswer，按容差判定
+  function judgeRecord(target: AnswerRecord): void {
+    const userAns = Number(target.userAnswer);
+    const trueAns = Number(target.trueAnswer);
+    const tol = target.tolerance ?? 0;
+    if (tol > 0) {
+      target.isCorrect = trueAns === 0
+        ? userAns === 0
+        : Math.abs(userAns - trueAns) / Math.abs(trueAns) <= tol;
+    } else {
+      target.isCorrect = userAns === trueAns;
+    }
+  }
+
+  async function insertRecordToDb(record: AnswerRecord): Promise<void> {
+    try {
+      if (sessionId.value !== null) {
+        await insertRecord({
+          sessionId: sessionId.value,
+          qIndex: record.qIndex,
+          question: record.question,
+          userAnswer: record.userAnswer,
+          trueAnswer: record.trueAnswer,
+          isCorrect: record.isCorrect,
+          tolerance: record.tolerance ?? 0,
+          timeSpentMs: record.timeSpentMs,
+        });
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : String(e);
+    }
+  }
+
   async function submit() {
-    if (nbackPrompting.value) return; // 由 submitNback 处理
     const q = currentQuestion.value;
     if (q === null) return;
     // compare 模式分支（compare 题型不启用 N-back）
@@ -226,22 +258,7 @@ export const usePracticeStore = defineStore("practice", () => {
         timeSpentMs,
       };
       records.value.push(record);
-      try {
-        if (sessionId.value !== null) {
-          await insertRecord({
-            sessionId: sessionId.value,
-            qIndex: record.qIndex,
-            question: record.question,
-            userAnswer: record.userAnswer,
-            trueAnswer: record.trueAnswer,
-            isCorrect: record.isCorrect,
-            tolerance: 0,
-            timeSpentMs: record.timeSpentMs,
-          });
-        }
-      } catch (e) {
-        error.value = e instanceof Error ? e.message : String(e);
-      }
+      await insertRecordToDb(record);
       compareChoice.value = null;
       if (currentIndex.value + 1 >= questions.value.length) {
         await finish();
@@ -251,92 +268,84 @@ export const usePracticeStore = defineStore("practice", () => {
       }
       return;
     }
-    // 空答案守卫：空串、单负号、单"0." 视为未作答
-    if (currentAnswer.value === "" || currentAnswer.value === "-" || currentAnswer.value === "0.") return;
-    const userAns = Number(currentAnswer.value);
-    let isCorrect: boolean;
+
+    const k = currentIndex.value;
+    const isLast = k + 1 >= questions.value.length;
+    const qd = q as Question | DataQuestion | BasicQuestion;
     let tolerance: number;
-    // DataQuestion 有 tolerance 无 a；BasicQuestion 有 a（tolerance 可选），用 !"a" in q 区分
     if ("tolerance" in q && !("a" in q)) {
       tolerance = q.tolerance;
-      isCorrect = q.answer === 0
-        ? userAns === 0
-        : Math.abs(userAns - q.answer) / Math.abs(q.answer) <= tolerance;
     } else {
-      // basic 题型：检查 BasicQuestion.tolerance（mul_est 用 0.02）
       const bq = q as BasicQuestion;
       tolerance = bq.tolerance ?? 0;
-      if (tolerance > 0) {
-        isCorrect = bq.answer === 0
-          ? userAns === 0
-          : Math.abs(userAns - bq.answer) / Math.abs(bq.answer) <= tolerance;
-      } else {
-        isCorrect = userAns === bq.answer;
-      }
     }
     const timeSpentMs =
       questionStartedAt.value !== null
         ? Math.floor(performance.now() - questionStartedAt.value)
         : 0;
-    // compare 分支已 return，此处 q 必为 numpad/data/basic 题型，收窄类型以安全访问 display/answer
-    const qd = q as Question | DataQuestion | BasicQuestion;
-    const record: AnswerRecord = {
-      qIndex: currentIndex.value,
-      question: qd.display,
-      userAnswer: currentAnswer.value,
-      trueAnswer: String(qd.answer),
-      isCorrect,
-      timeSpentMs,
-      unit: "unit" in qd ? qd.unit : undefined,
-      tolerance,
-    };
+
+    function buildCurrentRecord(userAnswer: string): AnswerRecord {
+      return {
+        qIndex: k,
+        question: qd.display,
+        userAnswer,
+        trueAnswer: String(qd.answer),
+        isCorrect: false,
+        timeSpentMs,
+        unit: "unit" in qd ? qd.unit : undefined,
+        tolerance,
+      };
+    }
+
+    function advance() {
+      currentAnswer.value = "";
+      if (!isLast) {
+        currentIndex.value += 1;
+        questionStartedAt.value = performance.now();
+        const next = questions.value[currentIndex.value];
+        currentAnswer.value = next && "preset" in next ? (next.preset ?? "") : "";
+      }
+    }
 
     if (nback.value === 0) {
+      // 立即判分模式：空答案守卫
+      if (currentAnswer.value === "" || currentAnswer.value === "-" || currentAnswer.value === "0.") return;
+      const record = buildCurrentRecord(currentAnswer.value);
+      judgeRecord(record);
       records.value.push(record);
-      try {
-        if (sessionId.value !== null) {
-          await insertRecord({
-            sessionId: sessionId.value,
-            qIndex: record.qIndex,
-            question: record.question,
-            userAnswer: record.userAnswer,
-            trueAnswer: record.trueAnswer,
-            isCorrect: record.isCorrect,
-            tolerance,
-            timeSpentMs: record.timeSpentMs,
-          });
-        }
-      } catch (e) {
-        error.value = e instanceof Error ? e.message : String(e);
+      await insertRecordToDb(record);
+      advance();
+      if (isLast) await finish();
+      return;
+    }
+
+    // N-back 模式（nback > 0）：传统 N-back
+    // 前 N 题（k < nback）：不输入、不守卫、不判分，仅暂存
+    if (k < nback.value) {
+      pendingRecords.value.push(buildCurrentRecord(""));
+      advance();
+      if (isLast) {
+        pendingRecords.value = [];
+        await finish();
       }
-    } else {
-      pendingRecords.value.push(record);
+      return;
     }
 
-    currentAnswer.value = "";
-    const isLast = currentIndex.value + 1 >= questions.value.length;
-    if (!isLast) {
-      currentIndex.value += 1;
-      questionStartedAt.value = performance.now();
-      const next = questions.value[currentIndex.value];
-      currentAnswer.value = next && "preset" in next ? (next.preset ?? "") : "";
-    }
-
-    // N-back 回收检查：pendingRecords.length > n 时回收最早的
-    if (nback.value > 0 && pendingRecords.value.length > nback.value) {
-      const target = pendingRecords.value.shift()!;
-      nbackTarget.value = {
-        index: target.qIndex,
-        question: target.question,
-        trueAnswer: target.trueAnswer,
-        tolerance: target.tolerance ?? 0,
-      };
-      nbackAnswer.value = "";
-      nbackPrompting.value = true;
-      nbackEndGame = isLast;
-    }
-
-    if (isLast && nback.value === 0) {
+    // k >= nback：用户输入的是前第 N 题的回忆答案
+    // 空答案守卫（必须提供回忆答案）
+    if (currentAnswer.value === "" || currentAnswer.value === "-" || currentAnswer.value === "0.") return;
+    // 取出最早的 pending record（前第 N 题），用当前输入判分
+    const target = pendingRecords.value.shift()!;
+    target.userAnswer = currentAnswer.value;
+    judgeRecord(target);
+    records.value.push(target);
+    await insertRecordToDb(target);
+    // 当前题入 pending（等待后续题回忆，或最后 N 题不判分）
+    pendingRecords.value.push(buildCurrentRecord(""));
+    advance();
+    if (isLast) {
+      // 最后 N 题不判分，直接清空 pending 并结束
+      pendingRecords.value = [];
       await finish();
     }
   }
@@ -363,117 +372,6 @@ export const usePracticeStore = defineStore("practice", () => {
     }
   }
 
-  function setNbackAnswer(v: string) {
-    nbackAnswer.value = v;
-  }
-
-  async function submitNback() {
-    if (!nbackPrompting.value || nbackTarget.value === null) return;
-    const target = nbackTarget.value;
-    const userAns = Number(nbackAnswer.value);
-    const trueAns = Number(target.trueAnswer);
-    let isCorrect: boolean;
-    if (target.tolerance > 0) {
-      isCorrect = trueAns === 0
-        ? userAns === 0
-        : Math.abs(userAns - trueAns) / Math.abs(trueAns) <= target.tolerance;
-    } else {
-      isCorrect = userAns === trueAns;
-    }
-    const record: AnswerRecord = {
-      qIndex: target.index,
-      question: target.question,
-      userAnswer: nbackAnswer.value,
-      trueAnswer: target.trueAnswer,
-      isCorrect,
-      timeSpentMs: 0,
-    };
-    records.value.push(record);
-    try {
-      if (sessionId.value !== null) {
-        await insertRecord({
-          sessionId: sessionId.value,
-          qIndex: record.qIndex,
-          question: record.question,
-          userAnswer: record.userAnswer,
-          trueAnswer: record.trueAnswer,
-          isCorrect: record.isCorrect,
-          tolerance: target.tolerance,
-          timeSpentMs: 0,
-        });
-      }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : String(e);
-    }
-    nbackPrompting.value = false;
-    nbackTarget.value = null;
-    nbackAnswer.value = "";
-
-    // 仅在最后一题答完（末尾收尾）时逐个回收剩余 pending；否则等待下一题 submit 触发回收
-    if (nbackEndGame) {
-      if (pendingRecords.value.length > 0) {
-        const next = pendingRecords.value.shift()!;
-        nbackTarget.value = {
-          index: next.qIndex,
-          question: next.question,
-          trueAnswer: next.trueAnswer,
-          tolerance: next.tolerance ?? 0,
-        };
-        nbackPrompting.value = true;
-      } else {
-        await finish();
-      }
-    }
-  }
-
-  async function skipNback() {
-    if (!nbackPrompting.value || nbackTarget.value === null) return;
-    const target = nbackTarget.value;
-    const record: AnswerRecord = {
-      qIndex: target.index,
-      question: target.question,
-      userAnswer: "",
-      trueAnswer: target.trueAnswer,
-      isCorrect: false,
-      timeSpentMs: 0,
-    };
-    records.value.push(record);
-    try {
-      if (sessionId.value !== null) {
-        await insertRecord({
-          sessionId: sessionId.value,
-          qIndex: record.qIndex,
-          question: record.question,
-          userAnswer: record.userAnswer,
-          trueAnswer: record.trueAnswer,
-          isCorrect: false,
-          tolerance: target.tolerance,
-          timeSpentMs: 0,
-        });
-      }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : String(e);
-    }
-    nbackPrompting.value = false;
-    nbackTarget.value = null;
-    nbackAnswer.value = "";
-    // 仅在最后一题答完（末尾收尾）时逐个回收剩余 pending；否则等待下一题 submit 触发回收
-    if (nbackEndGame) {
-      if (pendingRecords.value.length > 0) {
-        const next = pendingRecords.value.shift()!;
-        nbackTarget.value = {
-          index: next.qIndex,
-          question: next.question,
-          trueAnswer: next.trueAnswer,
-          tolerance: next.tolerance ?? 0,
-        };
-        nbackPrompting.value = true;
-      } else {
-        await finish();
-      }
-    }
-  }
-
   function reset() {
     stopTimer();
     phase.value = "idle";
@@ -491,10 +389,6 @@ export const usePracticeStore = defineStore("practice", () => {
     timeStandard.value = null;
     nback.value = 0;
     pendingRecords.value = [];
-    nbackPrompting.value = false;
-    nbackTarget.value = null;
-    nbackAnswer.value = "";
-    nbackEndGame = false;
   }
 
   return {
@@ -520,9 +414,6 @@ export const usePracticeStore = defineStore("practice", () => {
     questionMeta,
     nback,
     pendingRecords,
-    nbackPrompting,
-    nbackTarget,
-    nbackAnswer,
     init,
     inputChar,
     selectCompare,
@@ -533,8 +424,5 @@ export const usePracticeStore = defineStore("practice", () => {
     finish,
     restart,
     reset,
-    setNbackAnswer,
-    submitNback,
-    skipNback,
   };
 });

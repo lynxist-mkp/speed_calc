@@ -389,7 +389,7 @@ describe("difficulty 参数影响数值范围", () => {
     expect(Math.max(...ns_hard)).toBeGreaterThanOrEqual(Math.max(...ns_easy));
   });
 
-  it("默认 normal 与显式 normal 行为一致（A 范围在 [1000,9999]）", () => {
+  it("默认 normal 与显式 normal 行为一致（A 范围在 [500,5000]）", () => {
     const qs = generateDataQuestion("estimate_prev", 50);
     const qsNormal = generateDataQuestion("estimate_prev", 50, "normal");
     expect(qs).toHaveLength(50);
@@ -399,8 +399,8 @@ describe("difficulty 参数影响数值范围", () => {
       const m = q.context?.match(/现期: (\d+)/);
       if (m) {
         const A = Number(m[1]);
-        expect(A).toBeGreaterThanOrEqual(1000);
-        expect(A).toBeLessThanOrEqual(9999);
+        expect(A).toBeGreaterThanOrEqual(500);
+        expect(A).toBeLessThanOrEqual(5000);
       }
     }
   });

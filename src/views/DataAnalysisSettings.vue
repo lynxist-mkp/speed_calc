@@ -27,7 +27,6 @@ const compareTypes: { label: string; type: CompareType }[] = [
   { label: "基期比大小", type: "compare_base" },
   { label: "分数比大小", type: "compare_frac" },
 ];
-const activeTab = ref<"fill" | "compare">("fill");
 
 const countOptions = [5, 10, 15, 20, 25];
 const customCount = ref(10);
@@ -108,78 +107,84 @@ onMounted(() => settings.load());
   <div class="da-settings">
     <h2 class="title">资料分析</h2>
 
-    <el-tabs v-model="activeTab">
-      <el-tab-pane label="填空题" name="fill">
-        <div class="row">
-          <span class="label">选择难度</span>
-          <div class="triple-buttons">
-            <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'easy' }"
-              @click="settings.saveDataAnalysis({ difficulty: 'easy' })">简单</button>
-            <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'normal' }"
-              @click="settings.saveDataAnalysis({ difficulty: 'normal' })">一般</button>
-            <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'hard' }"
-              @click="settings.saveDataAnalysis({ difficulty: 'hard' })">困难</button>
-          </div>
+    <!-- 填空题区 -->
+    <section class="block">
+      <h3 class="section-title">填空题</h3>
+
+      <div class="row">
+        <span class="label">选择难度</span>
+        <div class="triple-buttons">
+          <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'easy' }"
+            @click="settings.saveDataAnalysis({ difficulty: 'easy' })">简单</button>
+          <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'normal' }"
+            @click="settings.saveDataAnalysis({ difficulty: 'normal' })">一般</button>
+          <button class="triple-btn" :class="{ active: settings.dataAnalysis.difficulty === 'hard' }"
+            @click="settings.saveDataAnalysis({ difficulty: 'hard' })">困难</button>
         </div>
+      </div>
 
-        <div class="row">
-          <span class="label">题目呈现方式</span>
-          <div class="triple-buttons">
-            <button class="triple-btn" :class="{ active: settings.dataAnalysis.displayMode === 'chart' }"
-              @click="settings.saveDataAnalysis({ displayMode: 'chart' })">生成文字图表</button>
-            <button class="triple-btn" :class="{ active: settings.dataAnalysis.displayMode === 'formula' }"
-              @click="settings.saveDataAnalysis({ displayMode: 'formula' })">直接显示公式</button>
-          </div>
+      <div class="row">
+        <span class="label">题目呈现方式</span>
+        <div class="triple-buttons">
+          <button class="triple-btn" :class="{ active: settings.dataAnalysis.displayMode === 'chart' }"
+            @click="settings.saveDataAnalysis({ displayMode: 'chart' })">生成文字图表</button>
+          <button class="triple-btn" :class="{ active: settings.dataAnalysis.displayMode === 'formula' }"
+            @click="settings.saveDataAnalysis({ displayMode: 'formula' })">直接显示公式</button>
         </div>
+      </div>
 
-        <div class="type-grid">
-          <button
-            v-for="(t, i) in questionTypes"
-            :key="t.type"
-            class="type-cell"
-            :class="{ selected: i === settings.dataAnalysis.selectedFillType }"
-            @click="settings.saveDataAnalysis({ selectedFillType: i })"
-          >{{ t.label }}</button>
-        </div>
+      <div class="type-grid">
+        <button
+          v-for="(t, i) in questionTypes"
+          :key="t.type"
+          class="type-cell"
+          :class="{ selected: i === settings.dataAnalysis.selectedFillType }"
+          @click="settings.saveDataAnalysis({ selectedFillType: i })"
+        >{{ t.label }}</button>
+      </div>
 
-        <div class="row" @click="openDialog">
-          <span class="label">题量</span>
-          <span class="value">{{ settings.dataAnalysis.count }} 题 ›</span>
-        </div>
+      <div class="row" @click="openDialog">
+        <span class="label">题量</span>
+        <span class="value">{{ settings.dataAnalysis.count }} 题 ›</span>
+      </div>
 
-        <div class="row" @click="openNbackDialog">
-          <span class="label">N-back</span>
-          <span class="value">{{ settings.dataAnalysis.nback === 0 ? "关闭" : `${settings.dataAnalysis.nback}-back` }} ›</span>
-        </div>
+      <div class="row" @click="openNbackDialog">
+        <span class="label">N-back</span>
+        <span class="value">{{ settings.dataAnalysis.nback === 0 ? "关闭" : `${settings.dataAnalysis.nback}-back` }} ›</span>
+      </div>
 
-        <button class="start-btn" @click="startPractice">开始练习</button>
-        <button class="bottom-btn" @click="goHistory">历史记录</button>
-      </el-tab-pane>
+      <button class="start-btn" @click="startPractice">开始练习</button>
+    </section>
 
-      <el-tab-pane label="比较题" name="compare">
-        <div class="type-grid">
-          <button
-            v-for="(t, i) in compareTypes"
-            :key="t.type"
-            class="type-cell"
-            :class="{ selected: i === settings.dataAnalysis.selectedCompareType }"
-            @click="settings.saveDataAnalysis({ selectedCompareType: i })"
-          >{{ t.label }}</button>
-        </div>
+    <!-- 比较题区 -->
+    <section class="block">
+      <h3 class="section-title">比较题</h3>
 
-        <div class="row" @click="openDialog">
-          <span class="label">题量</span>
-          <span class="value">{{ settings.dataAnalysis.count }} 题 ›</span>
-        </div>
+      <div class="type-grid">
+        <button
+          v-for="(t, i) in compareTypes"
+          :key="t.type"
+          class="type-cell"
+          :class="{ selected: i === settings.dataAnalysis.selectedCompareType }"
+          @click="settings.saveDataAnalysis({ selectedCompareType: i })"
+        >{{ t.label }}</button>
+      </div>
 
-        <button class="start-btn" @click="startCompare">开始练习</button>
-      </el-tab-pane>
-    </el-tabs>
+      <div class="row" @click="openDialog">
+        <span class="label">题量</span>
+        <span class="value">{{ settings.dataAnalysis.count }} 题 ›</span>
+      </div>
 
-    <div class="composite-block">
+      <button class="start-btn" @click="startCompare">开始练习</button>
+    </section>
+
+    <!-- 一表通算区 -->
+    <section class="block">
       <h3 class="section-title">一表通算</h3>
       <button class="start-btn" @click="startComposite">开始练习</button>
-    </div>
+    </section>
+
+    <button class="bottom-btn" @click="goHistory">历史记录</button>
 
     <el-dialog v-model="dialogVisible" title="选择题量" width="320px">
       <div class="count-grid">
@@ -270,9 +275,10 @@ onMounted(() => settings.load());
 .count-custom {
   padding: 12px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px;
 }
-.composite-block {
-  margin-top: 24px; padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.block {
+  margin-bottom: 24px; padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  &:last-of-type { border-bottom: none; }
 }
 .section-title { color: var(--app-text-primary, #93a1a1); font-size: 16px; margin-bottom: 12px; }
 </style>

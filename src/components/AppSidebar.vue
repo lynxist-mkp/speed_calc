@@ -2,14 +2,13 @@
 // 浮动玻璃 sidebar - 左侧导航
 import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { House, Edit, Clock, DataLine, Setting } from "@element-plus/icons-vue";
+import { House, Clock, DataLine, Setting } from "@element-plus/icons-vue";
 
 const route = useRoute();
 const router = useRouter();
 
 const items = [
   { path: "/home", label: "主页", icon: House },
-  { path: "/practice", label: "练习", icon: Edit },
   { path: "/history", label: "历史", icon: Clock },
   { path: "/stats", label: "统计", icon: DataLine },
   { path: "/settings", label: "设置", icon: Setting },

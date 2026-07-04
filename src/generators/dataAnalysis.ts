@@ -27,11 +27,12 @@ function randFloat(min: number, max: number, decimals: number): number {
 }
 
 // ===== estimate_prev 估算前期量 =====
+// 难度递进：现期量位数 + 增长率幅度（实际资料分析常见 A∈[200,9999], r∈[5%,40%]）
 function genEstimatePrev(difficulty: Difficulty = "normal"): DataQuestion {
   const ranges = {
-    easy:   { A: [500, 5000] as const, r: [0.05, 0.20] as const },
-    normal: { A: [1000, 9999] as const, r: [0.05, 0.30] as const },
-    hard:   { A: [2000, 99999] as const, r: [0.05, 0.50] as const },
+    easy:   { A: [200, 2000] as const, r: [0.05, 0.15] as const },
+    normal: { A: [500, 5000] as const, r: [0.05, 0.25] as const },
+    hard:   { A: [1000, 9999] as const, r: [0.05, 0.40] as const },
   };
   const range = ranges[difficulty];
   const A = randInt(range.A[0], range.A[1]);
@@ -46,11 +47,12 @@ function genEstimatePrev(difficulty: Difficulty = "normal"): DataQuestion {
 }
 
 // ===== estimate_growth 估算增长量 =====
+// 难度递进：同 estimate_prev，含负增长（符号判断）
 function genEstimateGrowth(difficulty: Difficulty = "normal"): DataQuestion {
   const ranges = {
-    easy:   { A: [500, 5000] as const, r: [-0.20, 0.20] as const },
-    normal: { A: [1000, 9999] as const, r: [-0.30, 0.30] as const },
-    hard:   { A: [2000, 99999] as const, r: [-0.50, 0.50] as const },
+    easy:   { A: [200, 2000] as const, r: [-0.15, 0.15] as const },
+    normal: { A: [500, 5000] as const, r: [-0.25, 0.25] as const },
+    hard:   { A: [1000, 9999] as const, r: [-0.40, 0.40] as const },
   };
   const range = ranges[difficulty];
   let r = 0;
@@ -71,11 +73,12 @@ function genEstimateGrowth(difficulty: Difficulty = "normal"): DataQuestion {
 }
 
 // ===== baihua_frac 百化分 =====
+// 难度递进：分母范围（实际资料分析常见 n∈[2,20]，1/21+ 几乎不出现）
 function genBaihuaFrac(difficulty: Difficulty = "normal"): DataQuestion {
   const ranges = {
     easy:   { n: [2, 10] as const },
-    normal: { n: [2, 20] as const },
-    hard:   { n: [2, 50] as const },
+    normal: { n: [2, 15] as const },
+    hard:   { n: [2, 20] as const },
   };
   const range = ranges[difficulty];
   const n = randInt(range.n[0], range.n[1]);
@@ -90,11 +93,12 @@ function genBaihuaFrac(difficulty: Difficulty = "normal"): DataQuestion {
 }
 
 // ===== baihua_frac_rev 百化分反向 =====
+// 难度递进：同 baihua_frac
 function genBaihuaFracRev(difficulty: Difficulty = "normal"): DataQuestion {
   const ranges = {
     easy:   { n: [2, 10] as const },
-    normal: { n: [2, 20] as const },
-    hard:   { n: [2, 50] as const },
+    normal: { n: [2, 15] as const },
+    hard:   { n: [2, 20] as const },
   };
   const range = ranges[difficulty];
   const n = randInt(range.n[0], range.n[1]);
@@ -108,9 +112,10 @@ function genBaihuaFracRev(difficulty: Difficulty = "normal"): DataQuestion {
 }
 
 // ===== frac_calc_lt 分数计算(分子<分母) =====
+// 难度递进：分子分母位数（easy 限制 bMax 避免分数过小）
 function genFracCalcLt(difficulty: Difficulty = "normal"): DataQuestion {
   const ranges = {
-    easy:   { a: [100, 499] as const, bMax: 999 as const },
+    easy:   { a: [100, 499] as const, bMax: 499 as const },
     normal: { a: [100, 999] as const, bMax: 9999 as const },
     hard:   { a: [500, 9999] as const, bMax: 99999 as const },
   };
@@ -128,9 +133,10 @@ function genFracCalcLt(difficulty: Difficulty = "normal"): DataQuestion {
 }
 
 // ===== frac_calc_gt 分数计算(分子>分母) =====
+// 难度递进：分子位数（easy 限制 a 范围）
 function genFracCalcGt(difficulty: Difficulty = "normal"): DataQuestion {
   const ranges = {
-    easy:   { a: [101, 999] as const },
+    easy:   { a: [101, 499] as const },
     normal: { a: [101, 9999] as const },
     hard:   { a: [101, 99999] as const },
   };
@@ -254,3 +260,9 @@ export function generateDataQuestion(
   }
   return questions;
 }
+
+// TODO(L5+): 难度自适应——根据答题正确率动态调整 difficulty
+// 当前为静态三档（easy/normal/hard），后期可扩展为：
+// 1. 记录最近 N 题正确率，正确率 > 80% 自动升档，< 50% 自动降档
+// 2. 或基于时间标准（pass/good/excellent）动态调节数值范围
+// 3. 自适应作为可选模式，与手动三档并存

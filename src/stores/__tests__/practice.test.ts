@@ -226,6 +226,46 @@ describe("L2 store 多题型调度", () => {
     expect(store.isDataType).toBe(false);
   });
 
+  it("L4 新增基础题型 isDataType=false（addsub_2d）", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "addsub_2d", subtype: "两位数加减", count: 2 });
+    expect(store.isDataType).toBe(false);
+  });
+
+  it("L4 新增基础题型 isDataType=false（mul_2x2）", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "mul_2x2", subtype: "两位数乘两位数", count: 2 });
+    expect(store.isDataType).toBe(false);
+  });
+
+  it("L4 新增基础题型 isDataType=false（div_3x4）", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "div_3x4", subtype: "三位数除四位数", count: 2 });
+    expect(store.isDataType).toBe(false);
+  });
+
+  it("自定义运算 isDataType=false（custom_standard）", async () => {
+    const store = usePracticeStore();
+    await store.init({
+      type: "custom_standard",
+      subtype: "自定义",
+      count: 1,
+      customConfig: { firstDigits: 2, operators: ["+"], secondMode: "random_digits", secondDigits: 1 } as any,
+    });
+    expect(store.isDataType).toBe(false);
+  });
+
+  it("自定义运算 isDataType=false（custom_power）", async () => {
+    const store = usePracticeStore();
+    await store.init({
+      type: "custom_power",
+      subtype: "幂运算",
+      count: 1,
+      customConfig: { baseMode: "digits", baseDigits: 2, powerTypes: [2] } as any,
+    });
+    expect(store.isDataType).toBe(false);
+  });
+
   it("questionMeta 返回资料分析元数据", async () => {
     const store = usePracticeStore();
     await store.init({ type: "estimate_prev", subtype: "估算前期量", count: 2 });
@@ -391,208 +431,169 @@ describe("store compare 模式", () => {
   });
 });
 
-describe("N-back 状态机", () => {
+describe("N-back 延迟回忆模式", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
   });
 
-  it("nback=0 行为不变：提交立即入库", async () => {
+  // mock 答案循环：题0=46, 题1=134, 题2=78, 题3=46, 题4=134, 题5=78
+
+  it("nback=0：立即判分入库（行为不变）", async () => {
     const store = usePracticeStore();
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 0 });
-    expect(store.nback).toBe(0);
-    expect(store.pendingRecords).toHaveLength(0);
 
-    store.inputChar("4");
-    store.inputChar("6");
+    store.currentAnswer = "46";
     await store.submit();
     expect(store.records).toHaveLength(1);
+    expect(store.records[0].isCorrect).toBe(true);
+    expect(store.records[0].qIndex).toBe(0);
+    expect(store.records[0].userAnswer).toBe("46");
     expect(store.pendingRecords).toHaveLength(0);
     expect(insertRecord).toHaveBeenCalledTimes(1);
   });
 
-  it("nback=1：前 1 题延迟入库", async () => {
+  it("nback=1：前 1 题不输入不判分，题 2 输入回忆题 1 答案判分题 1", async () => {
     const store = usePracticeStore();
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
 
-    store.inputChar("4");
-    store.inputChar("6");
+    // 题 0（k=0 < N=1）：前 1 题，不输入，不判分
+    store.currentAnswer = "";
+    await store.submit();
+    expect(store.records).toHaveLength(0); // 不判分
+    expect(store.pendingRecords).toHaveLength(1); // 题 0 record 暂存
+    expect(store.currentIndex).toBe(1); // 推进到题 1
+
+    // 题 1（k=1 >= N=1）：输入回忆题 0 答案 46，判分题 0
+    store.currentAnswer = "46";
+    await store.submit();
+    expect(store.records).toHaveLength(1); // 题 0 判分
+    expect(store.records[0].qIndex).toBe(0);
+    expect(store.records[0].isCorrect).toBe(true); // 46 vs 46
+    expect(store.records[0].userAnswer).toBe("46"); // 用户输入的回忆答案
+    expect(store.pendingRecords).toHaveLength(1); // 题 1 record 暂存
+    expect(store.currentIndex).toBe(2);
+
+    // 题 2（k=2 >= N=1，最后一题）：输入回忆题 1 答案 134，判分题 1
+    store.currentAnswer = "134";
+    await store.submit();
+    expect(store.records).toHaveLength(2); // 题 0 + 题 1 判分
+    expect(store.records[1].qIndex).toBe(1);
+    expect(store.records[1].isCorrect).toBe(true); // 134 vs 134
+    expect(store.phase).toBe("finished");
+    // 题 2 不判分（最后 N=1 题），不入库
+    expect(store.records).toHaveLength(2);
+  });
+
+  it("nback=1 答错回忆：题 0 回忆错，判分为错", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
+
+    // 题 0：不输入
+    store.currentAnswer = "";
+    await store.submit();
+
+    // 题 1：输入错误回忆 99（正确答案 46）
+    store.currentAnswer = "99";
+    await store.submit();
+    expect(store.records).toHaveLength(1);
+    expect(store.records[0].qIndex).toBe(0);
+    expect(store.records[0].isCorrect).toBe(false); // 99 ≠ 46
+    expect(store.records[0].userAnswer).toBe("99");
+  });
+
+  it("nback=1 前 N 题空答案不守卫（允许空提交推进）", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
+
+    // 题 0：空答案也能提交（前 N 题不守卫）
+    store.currentAnswer = "";
+    await store.submit();
+    expect(store.currentIndex).toBe(1); // 推进了
+  });
+
+  it("nback=1 从第 N+1 题开始空答案守卫", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
+
+    // 题 0：空答案提交（前 N 题）
+    store.currentAnswer = "";
+    await store.submit();
+
+    // 题 1：空答案守卫（k >= N，必须输入回忆答案）
+    store.currentAnswer = "";
+    await store.submit();
+    expect(store.currentIndex).toBe(1); // 未推进
+    expect(store.records).toHaveLength(0); // 未判分
+  });
+
+  it("nback=2：前 2 题不输入，题 3 开始判分，最后 2 题不判分", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 5, nback: 2 });
+
+    // 题 0（k=0 < N=2）：不输入
+    store.currentAnswer = "";
     await store.submit();
     expect(store.records).toHaveLength(0);
     expect(store.pendingRecords).toHaveLength(1);
-    expect(store.nbackPrompting).toBe(false);
-    expect(insertRecord).not.toHaveBeenCalled();
 
-    store.inputChar("1");
-    store.inputChar("3");
-    store.inputChar("4");
+    // 题 1（k=1 < N=2）：不输入
+    store.currentAnswer = "";
     await store.submit();
-    expect(store.nbackPrompting).toBe(true);
-    expect(store.nbackTarget).not.toBeNull();
-    expect(store.nbackTarget!.index).toBe(0);
-  });
+    expect(store.records).toHaveLength(0);
+    expect(store.pendingRecords).toHaveLength(2);
 
-  it("nback=1：回忆正确则前题判对入库", async () => {
-    const store = usePracticeStore();
-    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
-
-    store.inputChar("4");
-    store.inputChar("6");
-    await store.submit();
-
-    store.inputChar("1");
-    store.inputChar("3");
-    store.inputChar("4");
-    await store.submit();
-    expect(store.nbackPrompting).toBe(true);
-
-    store.setNbackAnswer("46");
-    await store.submitNback();
-    expect(store.nbackPrompting).toBe(false);
-    expect(store.records).toHaveLength(1);
-    expect(store.records[0].isCorrect).toBe(true);
-    expect(store.records[0].qIndex).toBe(0);
-    expect(insertRecord).toHaveBeenCalledWith(expect.objectContaining({ qIndex: 0, isCorrect: true }));
-  });
-
-  it("nback=1：回忆错误则前题判错入库", async () => {
-    const store = usePracticeStore();
-    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
-
-    store.inputChar("4");
-    store.inputChar("6");
-    await store.submit();
-
-    store.inputChar("1");
-    store.inputChar("3");
-    store.inputChar("4");
-    await store.submit();
-
-    store.setNbackAnswer("99");
-    await store.submitNback();
-    expect(store.records[0].isCorrect).toBe(false);
-  });
-
-  it("nback=1 末尾收尾：最后一题答完回收剩余 pending", async () => {
-    const store = usePracticeStore();
-    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
-
-    // 题 0
-    store.inputChar("4");
-    store.inputChar("6");
-    await store.submit();
-
-    // 题 1 → 回忆题 0
-    store.inputChar("1");
-    store.inputChar("3");
-    store.inputChar("4");
-    await store.submit();
-    store.setNbackAnswer("46");
-    await store.submitNback();
-
-    // 题 2 → 回忆题 1
-    store.inputChar("7");
-    store.inputChar("8");
-    await store.submit();
-    expect(store.nbackPrompting).toBe(true);
-    store.setNbackAnswer("134");
-    await store.submitNback();
-
-    // 末尾：还剩题 2 待回忆
-    expect(store.nbackPrompting).toBe(true);
-    expect(store.nbackTarget!.index).toBe(2);
-    store.setNbackAnswer("78");
-    await store.submitNback();
-
-    expect(store.phase).toBe("finished");
-    expect(store.records).toHaveLength(3);
-    expect(store.pendingRecords).toHaveLength(0);
-  });
-
-  it("skipNback 视为答错", async () => {
-    const store = usePracticeStore();
-    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 1 });
-
-    store.inputChar("4");
-    store.inputChar("6");
-    await store.submit();
-
-    store.inputChar("1");
-    store.inputChar("3");
-    store.inputChar("4");
-    await store.submit();
-
-    await store.skipNback();
-    expect(store.records[0].isCorrect).toBe(false);
-    expect(store.nbackPrompting).toBe(false);
-  });
-
-  it("nback=2 端到端：题2答完才第一次弹窗，末尾连环回收剩余3题", async () => {
-    const store = usePracticeStore();
-    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 4, nback: 2 });
-    expect(store.nback).toBe(2);
-    expect(store.pendingRecords).toHaveLength(0);
-    expect(store.nbackPrompting).toBe(false);
-    // mock 答案循环：题0=46, 题1=134, 题2=78, 题3=46（循环回题0）
-
-    // 题 0：pending 累积到 1，1 > 2 为 false，不弹窗
+    // 题 2（k=2 >= N=2）：输入回忆题 0 答案 46，判分题 0
     store.currentAnswer = "46";
     await store.submit();
-    expect(store.pendingRecords).toHaveLength(1);
-    expect(store.nbackPrompting).toBe(false);
-    expect(store.currentIndex).toBe(1);
+    expect(store.records).toHaveLength(1);
+    expect(store.records[0].qIndex).toBe(0);
+    expect(store.records[0].isCorrect).toBe(true);
+    expect(store.pendingRecords).toHaveLength(2); // 题 1、2 暂存
 
-    // 题 1：pending 累积到 2，2 > 2 为 false，不弹窗
+    // 题 3（k=3 >= N=2）：输入回忆题 1 答案 134，判分题 1
     store.currentAnswer = "134";
     await store.submit();
-    expect(store.pendingRecords).toHaveLength(2);
-    expect(store.nbackPrompting).toBe(false);
-    expect(store.currentIndex).toBe(2);
+    expect(store.records).toHaveLength(2);
+    expect(store.records[1].qIndex).toBe(1);
+    expect(store.records[1].isCorrect).toBe(true);
 
-    // 题 2：pending 累积到 3，3 > 2 触发回收题 0
+    // 题 4（k=4 >= N=2，最后一题）：输入回忆题 2 答案 78，判分题 2
     store.currentAnswer = "78";
     await store.submit();
-    expect(store.nbackPrompting).toBe(true);
-    expect(store.nbackTarget!.index).toBe(0);
-    expect(store.pendingRecords).toHaveLength(2); // shift 后剩 [1, 2]
-    expect(store.currentIndex).toBe(3);
+    expect(store.phase).toBe("finished");
+    expect(store.records).toHaveLength(3); // 题 0、1、2 判分
+    // 题 3、4 不判分（最后 N=2 题）
+  });
 
-    // 回忆题 0（答 46）：题 2 不是最后一题，nbackEndGame=false，不连环
-    store.setNbackAnswer("46");
-    await store.submitNback();
-    expect(store.nbackPrompting).toBe(false);
-    expect(store.nbackTarget).toBeNull();
+  it("nback=1 端到端 6 题：题 0-4 判分，题 5 不判分", async () => {
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 6, nback: 1 });
+    // mock 循环：题0=46, 题1=134, 题2=78, 题3=46, 题4=134, 题5=78
 
-    // 题 3（最后一题）：pending 累积到 3，3 > 2 触发回收题 1，isLast=true → nbackEndGame=true
+    // 题 0：不输入
+    store.currentAnswer = "";
+    await store.submit();
+    // 题 1：输入 46（回忆题 0）
     store.currentAnswer = "46";
     await store.submit();
-    expect(store.nbackPrompting).toBe(true);
-    expect(store.nbackTarget!.index).toBe(1);
-    expect(store.pendingRecords).toHaveLength(2); // 剩 [2, 3]
+    // 题 2：输入 134（回忆题 1）
+    store.currentAnswer = "134";
+    await store.submit();
+    // 题 3：输入 78（回忆题 2）
+    store.currentAnswer = "78";
+    await store.submit();
+    // 题 4：输入 46（回忆题 3）
+    store.currentAnswer = "46";
+    await store.submit();
+    // 题 5：输入 134（回忆题 4）
+    store.currentAnswer = "134";
+    await store.submit();
 
-    // 回忆题 1（答 134）：nbackEndGame=true 连环回收题 2
-    store.setNbackAnswer("134");
-    await store.submitNback();
-    expect(store.nbackPrompting).toBe(true);
-    expect(store.nbackTarget!.index).toBe(2);
-    expect(store.pendingRecords).toHaveLength(1); // 剩 [3]
-
-    // 回忆题 2（答 78）：连环回收题 3
-    store.setNbackAnswer("78");
-    await store.submitNback();
-    expect(store.nbackPrompting).toBe(true);
-    expect(store.nbackTarget!.index).toBe(3);
-    expect(store.pendingRecords).toHaveLength(0);
-
-    // 回忆题 3（答 46）：pending 空，触发 finish
-    store.setNbackAnswer("46");
-    await store.submitNback();
-    expect(store.nbackPrompting).toBe(false);
-    expect(store.nbackTarget).toBeNull();
-    expect(store.pendingRecords).toHaveLength(0);
     expect(store.phase).toBe("finished");
-    expect(store.records).toHaveLength(4);
-    expect(store.records.map((r) => r.qIndex)).toEqual([0, 1, 2, 3]);
+    expect(store.records).toHaveLength(5); // 题 0-4 判分，题 5 不判分
+    expect(store.records.map((r) => r.qIndex)).toEqual([0, 1, 2, 3, 4]);
+    expect(store.records.every((r) => r.isCorrect)).toBe(true);
   });
 });
 

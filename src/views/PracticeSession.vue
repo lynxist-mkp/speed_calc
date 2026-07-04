@@ -7,7 +7,6 @@ import Numpad from "@/components/Numpad.vue";
 import QuestionDisplay from "@/components/QuestionDisplay.vue";
 import CompareQuestion from "@/components/CompareQuestion.vue";
 import CompareKeypad from "@/components/CompareKeypad.vue";
-import NbackPrompt from "@/components/NbackPrompt.vue";
 import BarChart from "@/components/BarChart.vue";
 import { usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
@@ -36,7 +35,6 @@ const useChart = computed(() => {
 
 function handleKeydown(e: KeyboardEvent) {
   if (store.phase !== "running") return;
-  if (store.nbackPrompting) return; // N-back 弹窗显示时，键盘交给 NbackPrompt
   const k = e.key;
   // compare 模式键盘映射（按 UI 位置：左=小于，右=大于）：
   // 小于 = <//《/1/,//，  |  大于 = >//》/2/.//。
@@ -102,18 +100,20 @@ async function onSubmit() {
     }
     return;
   }
-  // numpad 模式
-  if (store.currentAnswer === "") return;
+  // numpad 模式：空答案守卫由 store.submit() 处理（N-back 前 N 题允许空提交）
+  const beforeLen = store.records.length;
   await store.submit();
-  // 判分反馈
-  const lastRecord = store.records[store.records.length - 1];
-  if (lastRecord) {
-    if (flashTimer !== null) clearTimeout(flashTimer);
-    flashState.value = lastRecord.isCorrect ? "correct" : "wrong";
-    flashTimer = window.setTimeout(() => {
-      flashState.value = "none";
-      flashTimer = null;
-    }, 200);
+  // 仅当有新判分记录时显示反馈（N-back 前 N 题无判分，不闪烁）
+  if (store.records.length > beforeLen) {
+    const lastRecord = store.records[store.records.length - 1];
+    if (lastRecord) {
+      if (flashTimer !== null) clearTimeout(flashTimer);
+      flashState.value = lastRecord.isCorrect ? "correct" : "wrong";
+      flashTimer = window.setTimeout(() => {
+        flashState.value = "none";
+        flashTimer = null;
+      }, 200);
+    }
   }
   if (store.phase === "finished") {
     router.push("/practice/result");
@@ -136,15 +136,6 @@ async function onRestart() {
 
 function onBack() {
   router.push(store.isDataType ? "/practice/data-analysis" : "/practice");
-}
-
-async function onNbackSubmit(answer: string) {
-  store.setNbackAnswer(answer);
-  await store.submitNback();
-}
-
-async function onNbackSkip() {
-  await store.skipNback();
 }
 
 onMounted(() => {
@@ -225,13 +216,6 @@ onBeforeUnmount(() => {
       @select="store.selectCompare($event)"
       @submit="onSubmit"
       @restart="onRestart"
-    />
-
-    <NbackPrompt
-      :visible="store.nbackPrompting"
-      :target-index="store.nbackTarget?.index ?? 0"
-      @submit="onNbackSubmit"
-      @skip="onNbackSkip"
     />
   </div>
 </template>
