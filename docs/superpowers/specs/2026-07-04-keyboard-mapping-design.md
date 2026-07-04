@@ -130,8 +130,10 @@ export const FUNCTION_KEYS = {
 } as const;
 
 // 模式判定与映射查询
+// resolveNumpadKey: type="input" 时 payload 为待输入字符（数字或小数点）；
+//                   type="function" 时 payload 为功能名（backspace/submit/restart/clear/toggle-sign）
 export function resolveNumpadKey(e: KeyboardEvent): {
-  type: "digit" | "dot" | "function" | "ignore";
+  type: "input" | "function" | "ignore";
   payload?: string;
 };
 export function resolveCompareKey(e: KeyboardEvent): {
@@ -153,8 +155,8 @@ export function resolveCompareKey(e: KeyboardEvent): {
 function handleKeydown(e: KeyboardEvent) {
   if (store.phase !== "running") return;
   
-  // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发
-  if ((e.code === "Enter" || e.code === "Escape") 
+  // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发，以及 Space 在按钮上触发点击
+  if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space")
       && e.target instanceof HTMLButtonElement) return;
   
   if (store.questionCategory === "compare") {
@@ -167,8 +169,7 @@ function handleKeydown(e: KeyboardEvent) {
   
   // 数字题模式
   const r = resolveNumpadKey(e);
-  if (r.type === "digit") { e.preventDefault(); store.inputChar(r.payload); }
-  else if (r.type === "dot") { e.preventDefault(); store.inputChar("."); }
+  if (r.type === "input") { e.preventDefault(); store.inputChar(r.payload); }
   else if (r.type === "function") {
     e.preventDefault();
     if (r.payload === "backspace") store.backspace();
@@ -182,9 +183,9 @@ function handleKeydown(e: KeyboardEvent) {
 
 **CompositeSession.vue**：同样改用 `resolveNumpadKey`，但无需 toggle-sign（composite 无负数）。
 
-### 6.3 Numpad.vue 浮窗的视觉提示（可选增强）
+### 6.3 Numpad.vue 浮窗的视觉提示（不在本次范围）
 
-在 Numpad.vue 的按键单元格上叠加显示对应的物理键名（如 `7 (U)`），帮助用户记忆映射。此为可选增强，非必需。
+在 Numpad.vue 的按键单元格上叠加显示对应的物理键名（如 `7 (U)`），帮助用户记忆映射。**本次不实现**，留待后续迭代。本次仅改键盘事件处理，不改浮窗 UI。
 
 ## 7. 兼容性处理
 
@@ -222,19 +223,17 @@ if ((e.code === "Enter" || e.code === "Escape")
 
 新建 `src/utils/keymap.test.ts`：
 
-- **数字题模式**：每个 `e.code` 映射到正确字符
-- **compare 题模式**：`Comma`→`<`，`Period`→`>`
+- **数字题模式**：每个 `e.code` 映射到正确字符（包括 UIO/JKL/M,.、Space、Slash、Digit0-9、NumpadDecimal）
+- **compare 题模式**：`Comma`→`<`，`Period`→`>`，`Enter`→submit，`Escape`→restart
 - **功能键**：Backspace/Enter/Escape/Delete/Minus 正确分发
 - **未知键**：返回 `type: "ignore"`
-- **Norman 兼容性**：模拟 Norman 下 `KeyJ` 产生 `n` 字符，但 `e.code` 仍为 `KeyJ`，映射仍为 `4`
+- **Norman 兼容性**：模拟 Norman 下 `KeyJ` 产生 `n` 字符，但 `e.code` 仍为 `KeyJ`，映射仍为 `4`（即断言只看 `e.code`，不看 `e.key`）
 
 测试用例构造方式：用 `new KeyboardEvent("keydown", { code: "KeyJ", key: "n" })` 模拟 Norman 输入。
 
-### 8.2 集成测试（PracticeSession.vue）
+### 8.2 PracticeSession.vue 现有测试
 
-更新现有 `practice.test.ts` 中涉及键盘的用例：
-- 数字题：模拟 `e.code: "KeyK"` 应输入 `5`
-- compare 题：模拟 `e.code: "Comma"` 应选择 `<`
+`practice.test.ts` 测试的是 store，不直接测试 `handleKeydown`（私有函数）。本次不新增组件级测试，依赖 `keymap.test.ts` 的单元测试覆盖 + 手工验收。若现有 `practice.test.ts` 中有断言依赖旧的 `e.key` 字符检测逻辑，需相应更新（目前 `practice.test.ts` 主要测试 store 状态机，不涉及 `handleKeydown`，预计无需改动）。
 
 ### 8.3 手工验收
 
@@ -265,7 +264,7 @@ if ((e.code === "Enter" || e.code === "Escape")
 |---|---|
 | 用户已习惯横排输入，方案 A 增加学习成本 | 保留横排作为备用，不强制使用方案 A |
 | Norman 下 `,` 产生 `w` 字符，可能引起混淆 | 用 `e.code` 完全规避字符差异 |
-| `Space` 映射为 `0` 可能与 UI 焦点冲突（按钮激活） | 在 `handleKeydown` 中检测 `e.target`，若为按钮则跳过 Space→0 映射 |
+| `Space` 映射为 `0` 可能与 UI 焦点冲突（按钮激活时 Space 触发点击） | 在 `handleKeydown` 中检测 `e.target`，若为 `HTMLButtonElement` 则跳过 Space→0 映射（与现有 Enter/Escape 双触发防护同模式） |
 | compare 题保留 `e.key` 字符检测（`<` `>`）与 `e.code` 双轨 | 文档明确：`e.code` 为主，`e.key` 字符为兼容补丁 |
 
 ## 11. 未来扩展
