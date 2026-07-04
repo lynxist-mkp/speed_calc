@@ -255,4 +255,16 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   font-size: 11px;
 }
+
+// reduced-motion 静态降级：闪烁反馈改为静态边框
+@media (prefers-reduced-motion: reduce) {
+  .practice-session.flash-correct,
+  .practice-session.flash-wrong {
+    animation: none !important;
+    border: 2px solid var(--app-color-primary);
+  }
+  .practice-session.flash-wrong {
+    border-color: var(--app-color-danger);
+  }
+}
 </style>
