@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build artifacts
+dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+src-tauri/WixTools/
+src-tauri/.cargo/
+
+# Tauri bundle outputs
+*.dmg
+*.app
+*.exe
+*.msi
+*.deb
+*.rpm
+*.AppImage
+*.snap
+
+# Cache
+.vite/
+.vitest/
+coverage/
+
+# Lock files
+pnpm-lock.yaml
+Cargo.lock
+
+# Original app screenshots (reference only)
+ref/
+
+# OS files
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Superpowers runtime
+.superpowers/
+.worktrees/
