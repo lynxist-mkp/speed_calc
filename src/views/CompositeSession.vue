@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import TopBar from "@/components/TopBar.vue";
 import Numpad from "@/components/Numpad.vue";
+import KeymapGuideModal from "@/components/KeymapGuideModal.vue";
 import {
   generateComposite,
   COMPOSITE_FIELDS,
@@ -20,6 +21,33 @@ import { useSettingsStore } from "@/stores/settings";
 
 const router = useRouter();
 const settings = useSettingsStore();
+
+// 键盘指引弹窗：首次进入自动显示，之后可点 ? 按钮呼出
+const GUIDE_SHOWN_KEY = "keymap:guideShown";
+const guideVisible = ref(false);
+
+function openGuide() {
+  guideVisible.value = true;
+}
+
+function closeGuide() {
+  guideVisible.value = false;
+  try {
+    localStorage.setItem(GUIDE_SHOWN_KEY, "1");
+  } catch {
+    // localStorage 不可用，忽略
+  }
+}
+
+function goSettingsFromGuide() {
+  guideVisible.value = false;
+  try {
+    localStorage.setItem(GUIDE_SHOWN_KEY, "1");
+  } catch {
+    // 忽略
+  }
+  router.push("/settings");
+}
 
 const data = ref<CompositeData | null>(null);
 const answers = ref<Partial<Record<keyof CompositeAnswers, string>>>({});
@@ -147,6 +175,14 @@ function onBack() {
 onMounted(() => {
   refreshData();
   window.addEventListener("keydown", handleKeydown);
+  // 首次进入时自动弹出键盘指引
+  try {
+    if (!localStorage.getItem(GUIDE_SHOWN_KEY)) {
+      guideVisible.value = true;
+    }
+  } catch {
+    // localStorage 不可用，忽略
+  }
 });
 
 onBeforeUnmount(() => {
@@ -190,6 +226,9 @@ const correctCount = computed(() =>
     >
       <template #left>
         <button class="back-btn glass-button" @click="onBack">‹</button>
+      </template>
+      <template #right>
+        <button class="guide-btn glass-button" aria-label="键盘输入指引" title="键盘输入指引" @click="openGuide">?</button>
       </template>
     </TopBar>
 
@@ -248,6 +287,15 @@ const correctCount = computed(() =>
       @clear="onClear"
       @backspace="onBackspace"
       @restart="refreshData"
+      @open-guide="openGuide"
+    />
+
+    <!-- 键盘输入指引弹窗 -->
+    <KeymapGuideModal
+      :visible="guideVisible"
+      :layout="settings.global.keyboardInputLayout"
+      @close="closeGuide"
+      @go-settings="goSettingsFromGuide"
     />
   </div>
 </template>
@@ -267,6 +315,23 @@ const correctCount = computed(() =>
   color: var(--app-text-primary);
   font-size: 22px;
   cursor: pointer;
+}
+
+.guide-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--app-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 4px;
+  &:hover {
+    background: rgba(95, 175, 111, 0.2);
+    color: var(--app-color-primary);
+  }
 }
 
 .instruction {

@@ -17,6 +17,7 @@ const emit = defineEmits<{
   backspace: [];
   restart: [];
   "toggle-sign": [];
+  "open-guide": [];
 }>();
 
 // 拖拽状态
@@ -167,6 +168,16 @@ function onKey(key: string) {
       @dblclick="onDoubleClick"
     >
       <span class="handle-icon" aria-hidden="true">⋮⋮</span>
+      <!-- ? 指引按钮：呼出键盘映射指引 -->
+      <button
+        data-key="guide"
+        class="handle-guide"
+        aria-label="键盘输入指引"
+        title="键盘输入指引"
+        @click.stop="emit('open-guide')"
+      >
+        ?
+      </button>
       <!-- basic variant 重开按钮内联到手柄右侧 -->
       <button
         v-if="props.variant === 'basic'"
@@ -301,6 +312,29 @@ function onKey(key: string) {
 
   &:hover {
     background: rgba(42, 161, 152, 0.5);
+  }
+}
+
+.handle-guide {
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--app-glass-border);
+  border-radius: 50%;
+  background: rgba(147, 161, 161, 0.12);
+  color: var(--app-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: rgba(95, 175, 111, 0.2);
+    color: var(--app-color-primary);
+    border-color: var(--app-color-primary);
   }
 }
 

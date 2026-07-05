@@ -8,6 +8,7 @@ import QuestionDisplay from "@/components/QuestionDisplay.vue";
 import CompareQuestion from "@/components/CompareQuestion.vue";
 import CompareKeypad from "@/components/CompareKeypad.vue";
 import BarChart from "@/components/BarChart.vue";
+import KeymapGuideModal from "@/components/KeymapGuideModal.vue";
 import { usePracticeStore } from "@/stores/practice";
 import { useSettingsStore } from "@/stores/settings";
 import { resolveNumpadKey, resolveCompareKey } from "@/utils/keymap";
@@ -18,6 +19,33 @@ const settings = useSettingsStore();
 
 const flashState = ref<"none" | "correct" | "wrong">("none");
 let flashTimer: number | null = null;
+
+// 键盘指引弹窗：首次进入自动显示，之后可点 ? 按钮呼出
+const GUIDE_SHOWN_KEY = "keymap:guideShown";
+const guideVisible = ref(false);
+
+function openGuide() {
+  guideVisible.value = true;
+}
+
+function closeGuide() {
+  guideVisible.value = false;
+  try {
+    localStorage.setItem(GUIDE_SHOWN_KEY, "1");
+  } catch {
+    // localStorage 不可用，忽略
+  }
+}
+
+function goSettingsFromGuide() {
+  guideVisible.value = false;
+  try {
+    localStorage.setItem(GUIDE_SHOWN_KEY, "1");
+  } catch {
+    // 忽略
+  }
+  router.push("/settings");
+}
 
 const standardText = computed(() => {
   const s = store.timeStandard;
@@ -130,6 +158,14 @@ onMounted(() => {
     return;
   }
   window.addEventListener("keydown", handleKeydown);
+  // 首次进入练习时自动弹出键盘指引
+  try {
+    if (!localStorage.getItem(GUIDE_SHOWN_KEY)) {
+      guideVisible.value = true;
+    }
+  } catch {
+    // localStorage 不可用，忽略
+  }
 });
 
 onBeforeUnmount(() => {
@@ -150,6 +186,7 @@ onBeforeUnmount(() => {
         <button class="back-btn glass-button" @click="onBack">‹</button>
       </template>
       <template #right>
+        <button class="guide-btn glass-button" aria-label="键盘输入指引" title="键盘输入指引" @click="openGuide">?</button>
         <span v-if="store.nback > 0" class="nback-badge">{{ store.nback }}-back</span>
       </template>
     </TopBar>
@@ -193,6 +230,7 @@ onBeforeUnmount(() => {
       @backspace="store.backspace"
       @restart="onRestart"
       @toggle-sign="store.toggleSign"
+      @open-guide="openGuide"
     />
     <CompareKeypad
       v-else-if="store.questionCategory === 'compare'"
@@ -200,6 +238,14 @@ onBeforeUnmount(() => {
       @select="store.selectCompare($event)"
       @submit="onSubmit"
       @restart="onRestart"
+    />
+
+    <!-- 键盘输入指引弹窗 -->
+    <KeymapGuideModal
+      :visible="guideVisible"
+      :layout="settings.global.keyboardInputLayout"
+      @close="closeGuide"
+      @go-settings="goSettingsFromGuide"
     />
   </div>
 </template>
@@ -228,6 +274,23 @@ onBeforeUnmount(() => {
   color: var(--app-text-primary);
   font-size: 22px;
   cursor: pointer;
+}
+
+.guide-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--app-text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 4px;
+  &:hover {
+    background: rgba(95, 175, 111, 0.2);
+    color: var(--app-color-primary);
+  }
 }
 
 .nback-badge {
