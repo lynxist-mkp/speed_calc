@@ -46,3 +46,6 @@ ref/
 # Superpowers runtime
 .superpowers/
 .worktrees/
+
+# Superpowers skills framework (third-party, not project source)
+.trae/

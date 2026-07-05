@@ -1,7 +1,7 @@
 ---
 name: using-git-worktrees
 description: 当需要开始与当前工作区隔离的功能开发，或在执行实现计划之前使用——通过原生工具或 git worktree 回退机制确保隔离工作区存在
-version: '1.0.0'
+version: "1.0.0"
 license: MIT
 metadata:
   hermes:
@@ -149,20 +149,20 @@ npm test / cargo test / pytest / go test ./...
 
 ## 快速参考
 
-| 情况                       | 操作                                         |
-| -------------------------- | -------------------------------------------- |
-| 已在 linked worktree 内    | 跳过创建（步骤 0）                           |
-| 在 submodule 内            | 按普通仓库处理（步骤 0 守卫）                |
-| 有原生 worktree 工具       | 用它（步骤 1a）                              |
-| 没有原生工具               | git worktree 回退（步骤 1b）                 |
-| `.worktrees/` 存在         | 用它（验证已忽略）                           |
-| `worktrees/` 存在          | 用它（验证已忽略）                           |
-| 两者都存在                 | 用 `.worktrees/`                             |
-| 都不存在                   | 检查 instructions 文件，再默认 `.worktrees/` |
-| 目录未被忽略               | 添加到 .gitignore + 提交                     |
-| 创建时权限错误             | 沙盒回退，原地工作                           |
-| 基线测试失败               | 报告失败 + 询问                              |
-| 无 package.json/Cargo.toml | 跳过依赖安装                                 |
+| 情况 | 操作 |
+|------|------|
+| 已在 linked worktree 内 | 跳过创建（步骤 0） |
+| 在 submodule 内 | 按普通仓库处理（步骤 0 守卫） |
+| 有原生 worktree 工具 | 用它（步骤 1a） |
+| 没有原生工具 | git worktree 回退（步骤 1b） |
+| `.worktrees/` 存在 | 用它（验证已忽略） |
+| `worktrees/` 存在 | 用它（验证已忽略） |
+| 两者都存在 | 用 `.worktrees/` |
+| 都不存在 | 检查 instructions 文件，再默认 `.worktrees/` |
+| 目录未被忽略 | 添加到 .gitignore + 提交 |
+| 创建时权限错误 | 沙盒回退，原地工作 |
+| 基线测试失败 | 报告失败 + 询问 |
+| 无 package.json/Cargo.toml | 跳过依赖安装 |
 
 ## 常见错误
 

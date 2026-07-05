@@ -1,7 +1,7 @@
 ---
 name: writing-plans
 description: 当你有规格说明或需求用于多步骤任务时使用，在动手写代码之前
-version: '1.0.0'
+version: "1.0.0"
 license: MIT
 metadata:
   hermes:
@@ -21,7 +21,6 @@ metadata:
 **上下文：** 此技能应在专用 worktree 中运行（由 brainstorming 技能创建）。
 
 **计划保存位置：** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
-
 - （用户对计划位置的偏好优先于此默认值）
 
 ## 范围检查
@@ -42,7 +41,6 @@ metadata:
 ## 小步骤任务粒度
 
 **每步是一个操作（2-5 分钟）：**
-
 - "编写失败的测试" - 一步
 - "运行它确认失败" - 一步
 - "实现最少代码让测试通过" - 一步
@@ -73,7 +71,6 @@ metadata:
 ### 任务 N：[组件名称]
 
 **文件：**
-
 - 创建：`exact/path/to/file.py`
 - 修改：`exact/path/to/existing.py:123-145`
 - 测试：`tests/exact/path/to/test.py`
@@ -114,7 +111,6 @@ git commit -m "feat: add specific feature"
 ## 禁止占位符
 
 每个步骤都必须包含工程师需要的实际内容。以下是**计划缺陷**——绝不要写出来：
-
 - "待定"、"TODO"、"后续实现"、"补充细节"
 - "添加适当的错误处理" / "添加验证" / "处理边界情况"
 - "为上述代码编写测试"（没有实际测试代码）
@@ -123,7 +119,6 @@ git commit -m "feat: add specific feature"
 - 引用了未在任何任务中定义的类型、函数或方法
 
 ## 注意事项
-
 - 始终使用精确的文件路径
 - 每个步骤都包含完整代码——如果步骤涉及代码变更，就展示代码
 - 精确的命令和预期输出
@@ -154,11 +149,9 @@ git commit -m "feat: add specific feature"
 **选哪种方式？"**
 
 **如果选择子代理驱动：**
-
 - **必需子技能：** 使用 superpowers:subagent-driven-development
 - 每个任务一个新子代理 + 两阶段审查
 
 **如果选择内联执行：**
-
 - **必需子技能：** 使用 superpowers:executing-plans
 - 批量执行并设有检查点供审查

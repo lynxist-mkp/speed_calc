@@ -49,25 +49,21 @@ scripts/start-server.sh --project-dir /path/to/project
 **按平台启动服务器：**
 
 **Claude Code (macOS / Linux)：**
-
 ```bash
 # 默认模式即可——脚本会自动将服务器放到后台
 scripts/start-server.sh --project-dir /path/to/project
 ```
 
 **Claude Code (Windows)：**
-
 ```bash
 # Windows 会自动检测并使用前台模式，这会阻塞工具调用。
 # 在 Bash 工具调用上设置 run_in_background: true，
 # 让服务器在会话轮次之间存活。
 scripts/start-server.sh --project-dir /path/to/project
 ```
-
 通过 Bash 工具调用时，设置 `run_in_background: true`。然后在下一轮读取 `$SCREEN_DIR/.server-info` 获取 URL 和端口。
 
 **Codex：**
-
 ```bash
 # Codex 会回收后台进程。脚本会自动检测 CODEX_CI 并
 # 切换到前台模式。正常运行即可——不需要额外标志。
@@ -75,7 +71,6 @@ scripts/start-server.sh --project-dir /path/to/project
 ```
 
 **Gemini CLI：**
-
 ```bash
 # 使用 --foreground 并在 shell 工具调用上设置 is_background: true，
 # 让进程在轮次之间存活
@@ -221,18 +216,8 @@ scripts/start-server.sh \
 
 ```html
 <div class="pros-cons">
-  <div class="pros">
-    <h4>优点</h4>
-    <ul>
-      <li>好处</li>
-    </ul>
-  </div>
-  <div class="cons">
-    <h4>缺点</h4>
-    <ul>
-      <li>不足</li>
-    </ul>
-  </div>
+  <div class="pros"><h4>优点</h4><ul><li>好处</li></ul></div>
+  <div class="cons"><h4>缺点</h4><ul><li>不足</li></ul></div>
 </div>
 ```
 
@@ -245,7 +230,7 @@ scripts/start-server.sh \
   <div class="mock-content">主内容区域</div>
 </div>
 <button class="mock-button">操作按钮</button>
-<input class="mock-input" placeholder="输入框" />
+<input class="mock-input" placeholder="输入框">
 <div class="placeholder">占位区域</div>
 ```
 

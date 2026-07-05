@@ -1,7 +1,7 @@
 ---
 name: dispatching-parallel-agents
 description: 当面对 2 个以上可以独立进行、无共享状态或顺序依赖的任务时使用
-version: '1.0.0'
+version: "1.0.0"
 license: MIT
 metadata:
   hermes:
@@ -39,14 +39,12 @@ digraph when_to_use {
 ```
 
 **适用场景：**
-
 - 3 个以上测试文件因不同根因失败
 - 多个子系统独立出现故障
 - 每个问题无需其他问题的上下文即可理解
 - 排查之间无共享状态
 
 **不适用场景：**
-
 - 失败是相关的（修复一个可能修复其他的）
 - 需要理解完整的系统状态
 - 智能体之间会互相干扰
@@ -56,7 +54,6 @@ digraph when_to_use {
 ### 1. 识别独立的问题域
 
 按故障分组：
-
 - 文件 A 测试：工具审批流程
 - 文件 B 测试：批量完成行为
 - 文件 C 测试：中止功能
@@ -66,7 +63,6 @@ digraph when_to_use {
 ### 2. 创建聚焦的智能体任务
 
 每个智能体获得：
-
 - **明确范围：** 一个测试文件或子系统
 - **清晰目标：** 让这些测试通过
 - **约束条件：** 不修改其他代码
@@ -76,16 +72,15 @@ digraph when_to_use {
 
 ```typescript
 // 在 Claude Code / AI 环境中
-Task('修复 agent-tool-abort.test.ts 的失败')
-Task('修复 batch-completion-behavior.test.ts 的失败')
-Task('修复 tool-approval-race-conditions.test.ts 的失败')
+Task("修复 agent-tool-abort.test.ts 的失败")
+Task("修复 batch-completion-behavior.test.ts 的失败")
+Task("修复 tool-approval-race-conditions.test.ts 的失败")
 // 三个任务并发运行
 ```
 
 ### 4. 审查与集成
 
 当智能体返回时：
-
 - 阅读每个总结
 - 验证修复之间没有冲突
 - 运行完整测试套件
@@ -94,7 +89,6 @@ Task('修复 tool-approval-race-conditions.test.ts 的失败')
 ## 智能体提示词结构
 
 好的智能体提示词应该是：
-
 1. **聚焦的** - 一个清晰的问题域
 2. **自包含的** - 包含理解问题所需的所有上下文
 3. **明确输出要求** - 智能体应该返回什么？
@@ -146,7 +140,6 @@ Task('修复 tool-approval-race-conditions.test.ts 的失败')
 **场景：** 大规模重构后，3 个文件中出现 6 个测试失败
 
 **失败情况：**
-
 - agent-tool-abort.test.ts：3 个失败（时序问题）
 - batch-completion-behavior.test.ts：2 个失败（工具未执行）
 - tool-approval-race-conditions.test.ts：1 个失败（执行计数 = 0）
@@ -154,7 +147,6 @@ Task('修复 tool-approval-race-conditions.test.ts 的失败')
 **决策：** 独立的问题域——中止逻辑、批量完成、竞态条件各自独立
 
 **分派：**
-
 ```
 智能体 1 → 修复 agent-tool-abort.test.ts
 智能体 2 → 修复 batch-completion-behavior.test.ts
@@ -162,7 +154,6 @@ Task('修复 tool-approval-race-conditions.test.ts 的失败')
 ```
 
 **结果：**
-
 - 智能体 1：用基于事件的等待替换了超时
 - 智能体 2：修复了事件结构 bug（threadId 位置不对）
 - 智能体 3：添加了等待异步工具执行完成的逻辑
@@ -181,7 +172,6 @@ Task('修复 tool-approval-race-conditions.test.ts 的失败')
 ## 验证
 
 智能体返回后：
-
 1. **审查每个总结** - 理解改了什么
 2. **检查冲突** - 智能体是否编辑了同一段代码？
 3. **运行完整套件** - 验证所有修复协同工作
@@ -190,7 +180,6 @@ Task('修复 tool-approval-race-conditions.test.ts 的失败')
 ## 实际效果
 
 来自调试会话（2025-10-03）：
-
 - 3 个文件中 6 个失败
 - 并行分派 3 个智能体
 - 所有排查并发完成

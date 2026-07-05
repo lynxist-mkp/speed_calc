@@ -4,7 +4,7 @@
 
 **用途：** 在工作成果扩散到更多工作之前，对照需求和代码质量标准做一次审查。
 
-````
+```
 Task tool（general-purpose）:
   description: "审查代码改动"
   prompt: |
@@ -116,10 +116,9 @@ Task tool（general-purpose）:
     - 对没真看过的代码给反馈
     - 含糊其辞（"改进错误处理"）
     - 回避给出明确判断
-````
+```
 
 **占位符说明：**
-
 - `{DESCRIPTION}` —— 已构建内容的简要说明
 - `{PLAN_OR_REQUIREMENTS}` —— 预期功能（计划文件路径、任务文本或需求）
 - `{BASE_SHA}` —— 起始 commit
