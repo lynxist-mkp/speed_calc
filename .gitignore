@@ -1,35 +1,71 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Build artifacts
 dist/
-target/
+dist-ssr/
 build/
+*.tsbuildinfo
+
+# Vite / Vitest cache
+.vite/
+.vitest/
+coverage/
 
 # Tauri
 src-tauri/target/
 src-tauri/gen/
+src-tauri/WixTools/
+src-tauri/.cargo/
+
+# Tauri bundle outputs
+*.dmg
+*.app
+*.exe
+*.msi
+*.deb
+*.rpm
+*.AppImage
+*.snap
+
+# Cargo
+**/*.rs.bk
 
 # OS files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+Desktop.ini
 
 # Editor
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Env
 .env
 .env.local
+.env.*.local
 
 # Runtime
 .omo/
 
 # Worktrees (local only)
 .worktrees/
+
+# Superpowers brainstorm runtime (local server state, pid files)
+.superpowers/
