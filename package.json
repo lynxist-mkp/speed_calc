@@ -21,7 +21,7 @@
     "@element-plus/icons-vue": "^2.3.1",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-sql": "^2",
-    "echarts": "^5.5.1",
+    "echarts": "^6.1.0",
     "element-plus": "^2.8.8",
     "katex": "^0.16.11",
     "pinia": "^2.2.6",
