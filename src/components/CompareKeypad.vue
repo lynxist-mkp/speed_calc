@@ -1,14 +1,14 @@
 <script setup lang="ts">
 interface Props {
-  selected: ">" | "<" | null;
+  selected: '>' | '<' | null
 }
-defineProps<Props>();
+defineProps<Props>()
 
 defineEmits<{
-  select: [choice: ">" | "<"];
-  submit: [];
-  restart: [];
-}>();
+  select: [choice: '>' | '<']
+  submit: []
+  restart: []
+}>()
 </script>
 
 <template>
@@ -18,24 +18,28 @@ defineEmits<{
       class="ck-btn lt-btn"
       :class="{ active: selected === '<' }"
       @click="$emit('select', '<')"
-    >小于</button>
+    >
+      小于
+    </button>
     <button
       data-testid="btn-gt"
       class="ck-btn gt-btn"
       :class="{ active: selected === '>' }"
       @click="$emit('select', '>')"
-    >大于</button>
-    <button
-      data-testid="btn-restart"
-      class="ck-btn restart-btn"
-      @click="$emit('restart')"
-    >重开</button>
+    >
+      大于
+    </button>
+    <button data-testid="btn-restart" class="ck-btn restart-btn" @click="$emit('restart')">
+      重开
+    </button>
     <button
       data-testid="btn-submit"
       class="ck-btn submit-btn"
       :disabled="selected === null"
       @click="$emit('submit')"
-    >确定</button>
+    >
+      确定
+    </button>
   </div>
 </template>
 

@@ -1,138 +1,131 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
-import { ElMessageBox, ElMessage } from "element-plus";
-import {
-  listSessionsPaged,
-  listSessionTypes,
-  clearAllSessions,
-  type SessionRow,
-} from "@/db/index";
-import { typeLabel } from "@/constants/typeLabels";
-import SegmentedControl from "@/components/SegmentedControl.vue";
-import SessionDetailDrawer from "@/components/SessionDetailDrawer.vue";
+import { ref, computed, onMounted, watch } from 'vue'
+import { ElMessageBox, ElMessage } from 'element-plus'
+import { listSessionsPaged, listSessionTypes, clearAllSessions, type SessionRow } from '@/db/index'
+import { typeLabel } from '@/constants/typeLabels'
+import SegmentedControl from '@/components/SegmentedControl.vue'
+import SessionDetailDrawer from '@/components/SessionDetailDrawer.vue'
 
-const PAGE_SIZE = 10;
-const sessions = ref<SessionRow[]>([]);
-const total = ref(0);
-const page = ref(1);
-const typeFilter = ref<string>("all");
-const availableTypes = ref<string[]>([]);
-const loading = ref(true);
+const PAGE_SIZE = 10
+const sessions = ref<SessionRow[]>([])
+const total = ref(0)
+const page = ref(1)
+const typeFilter = ref<string>('all')
+const availableTypes = ref<string[]>([])
+const loading = ref(true)
 
 // 详情抽屉
-const drawerVisible = ref(false);
-const selectedSession = ref<SessionRow | null>(null);
+const drawerVisible = ref(false)
+const selectedSession = ref<SessionRow | null>(null)
 
 function openDetail(s: SessionRow) {
-  selectedSession.value = s;
-  drawerVisible.value = true;
+  selectedSession.value = s
+  drawerVisible.value = true
 }
 
 function closeDetail() {
-  drawerVisible.value = false;
+  drawerVisible.value = false
 }
 
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)));
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)))
 
 function formatDuration(ms: number) {
-  const totalSec = Math.floor(ms / 1000);
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  return `0:${m}:${s}`;
+  const totalSec = Math.floor(ms / 1000)
+  const m = Math.floor(totalSec / 60)
+  const s = totalSec % 60
+  return `0:${m}:${s}`
 }
 
 function formatDate(ts: number) {
-  const d = new Date(ts);
-  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const d = new Date(ts)
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 function accuracy(s: SessionRow): number {
-  return s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+  return s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
 }
 
 function comment(acc: number): string {
-  if (acc >= 90) return "优秀";
-  if (acc >= 75) return "良好";
-  if (acc >= 60) return "合格";
-  return "加油";
+  if (acc >= 90) return '优秀'
+  if (acc >= 75) return '良好'
+  if (acc >= 60) return '合格'
+  return '加油'
 }
 
 function commentClass(acc: number): string {
-  if (acc >= 90) return "excellent";
-  if (acc >= 75) return "good";
-  if (acc >= 60) return "pass";
-  return "fail";
+  if (acc >= 90) return 'excellent'
+  if (acc >= 75) return 'good'
+  if (acc >= 60) return 'pass'
+  return 'fail'
 }
 
 async function loadTypes() {
-  availableTypes.value = await listSessionTypes();
+  availableTypes.value = await listSessionTypes()
 }
 
 // SegmentedControl 选项：全部 + 各题型
 const filterOptions = computed(() => [
-  { label: "全部", value: "all" },
+  { label: '全部', value: 'all' },
   ...availableTypes.value.map((t) => ({ label: typeLabel(t), value: t })),
-]);
+])
 
 async function onFilterChange(v: string) {
-  typeFilter.value = v;
+  typeFilter.value = v
 }
 
 async function loadPage() {
-  loading.value = true;
+  loading.value = true
   try {
-    const { rows, total: t } = await listSessionsPaged(page.value, PAGE_SIZE, typeFilter.value);
-    sessions.value = rows;
-    total.value = t;
+    const { rows, total: t } = await listSessionsPaged(page.value, PAGE_SIZE, typeFilter.value)
+    sessions.value = rows
+    total.value = t
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 watch(typeFilter, () => {
-  page.value = 1;
-  loadPage();
-});
+  page.value = 1
+  loadPage()
+})
 
-watch(page, () => loadPage());
+watch(page, () => loadPage())
 
 function prevPage() {
-  if (page.value > 1) page.value -= 1;
+  if (page.value > 1) page.value -= 1
 }
 
 function nextPage() {
-  if (page.value < totalPages.value) page.value += 1;
+  if (page.value < totalPages.value) page.value += 1
 }
 
 async function onClear() {
   try {
-    await ElMessageBox.confirm("确认清除所有练习记录？此操作不可恢复。", "清除历史", {
-      confirmButtonText: "清除",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-    await clearAllSessions();
-    ElMessage.success("已清除所有练习记录");
-    page.value = 1;
-    await loadPage();
-    await loadTypes();
+    await ElMessageBox.confirm('确认清除所有练习记录？此操作不可恢复。', '清除历史', {
+      confirmButtonText: '清除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await clearAllSessions()
+    ElMessage.success('已清除所有练习记录')
+    page.value = 1
+    await loadPage()
+    await loadTypes()
   } catch {
     // 用户取消
   }
 }
 
 onMounted(async () => {
-  await Promise.all([loadTypes(), loadPage()]);
-});
+  await Promise.all([loadTypes(), loadPage()])
+})
 </script>
 
 <template>
   <div class="history-page">
     <div class="header-row">
       <h2 class="title">练习历史</h2>
-      <button class="clear-btn" :disabled="sessions.length === 0" @click="onClear">
-        清除全部
-      </button>
+      <button class="clear-btn" :disabled="sessions.length === 0" @click="onClear">清除全部</button>
     </div>
 
     <div class="filter-row">
@@ -175,17 +168,22 @@ onMounted(async () => {
     </div>
 
     <div v-if="totalPages > 1" class="pagination">
-      <button class="page-btn" aria-label="上一页" :disabled="page === 1" @click="prevPage">‹ 上一页</button>
+      <button class="page-btn" aria-label="上一页" :disabled="page === 1" @click="prevPage">
+        ‹ 上一页
+      </button>
       <span class="page-info">{{ page }} / {{ totalPages }}</span>
-      <button class="page-btn" aria-label="下一页" :disabled="page === totalPages" @click="nextPage">下一页 ›</button>
+      <button
+        class="page-btn"
+        aria-label="下一页"
+        :disabled="page === totalPages"
+        @click="nextPage"
+      >
+        下一页 ›
+      </button>
     </div>
 
     <!-- 详情抽屉 -->
-    <SessionDetailDrawer
-      :visible="drawerVisible"
-      :session="selectedSession"
-      @close="closeDetail"
-    />
+    <SessionDetailDrawer :visible="drawerVisible" :session="selectedSession" @close="closeDetail" />
   </div>
 </template>
 
@@ -254,7 +252,9 @@ onMounted(async () => {
   padding: 16px;
   border-radius: 10px;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
+  transition:
+    border-color 0.15s,
+    transform 0.1s;
   outline: none;
 
   &:hover {
@@ -299,10 +299,18 @@ onMounted(async () => {
 
 .comment {
   font-size: 13px;
-  &.excellent { color: #5faf6f; }
-  &.good { color: #b58900; }
-  &.pass { color: #268bd2; }
-  &.fail { color: #dc6c6c; }
+  &.excellent {
+    color: #5faf6f;
+  }
+  &.good {
+    color: #b58900;
+  }
+  &.pass {
+    color: #268bd2;
+  }
+  &.fail {
+    color: #dc6c6c;
+  }
 }
 
 .card-footer {

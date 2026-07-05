@@ -2,32 +2,32 @@
 // 题型网格组件 - sectioned + selectable
 // 用于 PracticeSettings 与 DataAnalysisSettings 共用
 interface TypeItem {
-  key: string;
-  label: string;
-  icon?: string;
+  key: string
+  label: string
+  icon?: string
 }
 interface Section {
-  title: string;
-  types: TypeItem[];
+  title: string
+  types: TypeItem[]
 }
 
 interface Props {
-  sections: Section[];
-  modelValue: string;
-  disabled?: boolean;
-  showTitle?: boolean;
+  sections: Section[]
+  modelValue: string
+  disabled?: boolean
+  showTitle?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   showTitle: true,
-});
+})
 const emit = defineEmits<{
-  "update:modelValue": [key: string];
-}>();
+  'update:modelValue': [key: string]
+}>()
 
 function select(key: string) {
-  if (props.disabled) return;
-  emit("update:modelValue", key);
+  if (props.disabled) return
+  emit('update:modelValue', key)
 }
 </script>
 
@@ -74,7 +74,7 @@ function select(key: string) {
     gap: 4px;
 
     &::before {
-      content: "";
+      content: '';
       width: 3px;
       height: 12px;
       background: var(--app-color-primary);
@@ -98,7 +98,9 @@ function select(key: string) {
   font-size: 11px;
   color: var(--app-text-primary);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 
   &:hover:not(.disabled) {
     border-color: var(--type-cell-border-selected);

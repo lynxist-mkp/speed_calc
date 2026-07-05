@@ -24,6 +24,7 @@ digraph when_to_use {
 ```
 
 **适用场景：**
+
 - 错误发生在执行深处（不在入口点）
 - 堆栈跟踪显示很长的调用链
 - 不清楚无效数据从哪里来
@@ -32,17 +33,21 @@ digraph when_to_use {
 ## 追踪流程
 
 ### 1. 观察症状
+
 ```
 Error: git init failed in /Users/jesse/project/packages/core
 ```
 
 ### 2. 找到直接原因
+
 **哪段代码直接导致了这个错误？**
+
 ```typescript
-await execFileAsync('git', ['init'], { cwd: projectDir });
+await execFileAsync('git', ['init'], { cwd: projectDir })
 ```
 
 ### 3. 问：谁调用了它？
+
 ```typescript
 WorktreeManager.createSessionWorktree(projectDir, sessionId)
   → 被 Session.initializeWorkspace() 调用
@@ -51,16 +56,20 @@ WorktreeManager.createSessionWorktree(projectDir, sessionId)
 ```
 
 ### 4. 继续向上追踪
+
 **传入了什么值？**
+
 - `projectDir = ''`（空字符串！）
 - 空字符串作为 `cwd` 会解析为 `process.cwd()`
 - 那就是源代码目录！
 
 ### 5. 找到最初的触发点
+
 **空字符串从哪里来的？**
+
 ```typescript
-const context = setupCoreTest(); // 返回 { tempDir: '' }
-Project.create('name', context.tempDir); // 在 beforeEach 之前就访问了！
+const context = setupCoreTest() // 返回 { tempDir: '' }
+Project.create('name', context.tempDir) // 在 beforeEach 之前就访问了！
 ```
 
 ## 添加堆栈跟踪
@@ -70,26 +79,28 @@ Project.create('name', context.tempDir); // 在 beforeEach 之前就访问了！
 ```typescript
 // 在有问题的操作之前
 async function gitInit(directory: string) {
-  const stack = new Error().stack;
+  const stack = new Error().stack
   console.error('DEBUG git init:', {
     directory,
     cwd: process.cwd(),
     nodeEnv: process.env.NODE_ENV,
     stack,
-  });
+  })
 
-  await execFileAsync('git', ['init'], { cwd: directory });
+  await execFileAsync('git', ['init'], { cwd: directory })
 }
 ```
 
 **重要：** 在测试中使用 `console.error()`（而非 logger——可能不会显示）
 
 **运行并捕获：**
+
 ```bash
 npm test 2>&1 | grep 'DEBUG git init'
 ```
 
 **分析堆栈跟踪：**
+
 - 找测试文件名
 - 找触发调用的行号
 - 识别模式（同一个测试？同一个参数？）
@@ -111,6 +122,7 @@ npm test 2>&1 | grep 'DEBUG git init'
 **症状：** `.git` 被创建在 `packages/core/`（源代码目录）中
 
 **追踪链：**
+
 1. `git init` 在 `process.cwd()` 中执行 ← cwd 参数为空
 2. WorktreeManager 被传入空的 projectDir
 3. Session.create() 传递了空字符串
@@ -122,6 +134,7 @@ npm test 2>&1 | grep 'DEBUG git init'
 **修复：** 将 tempDir 改为 getter，在 beforeEach 之前访问时抛出异常
 
 **同时添加了纵深防御：**
+
 - 第 1 层：Project.create() 校验目录
 - 第 2 层：WorkspaceManager 校验非空
 - 第 3 层：NODE_ENV 守卫拒绝在 tmpdir 之外执行 git init
@@ -163,6 +176,7 @@ digraph principle {
 ## 实际效果
 
 来自调试实践（2025-10-03）：
+
 - 通过 5 层追踪找到了根本原因
 - 在源头修复（getter 校验）
 - 添加了 4 层纵深防御

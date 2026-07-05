@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import Katex from "@/components/Katex.vue";
+import { computed } from 'vue'
+import Katex from '@/components/Katex.vue'
 
 interface Props {
-  display: string;
-  isData: boolean;
-  context?: string;
-  hint?: string;
-  tolerance?: number;
-  unit?: string;
-  standardText?: string | null;
-  answer: string;
+  display: string
+  isData: boolean
+  context?: string
+  hint?: string
+  tolerance?: number
+  unit?: string
+  standardText?: string | null
+  answer: string
 }
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 const toleranceText = computed(() =>
-  props.tolerance ? `允许误差范围：±${(props.tolerance * 100).toFixed(0)}%` : null
-);
+  props.tolerance ? `允许误差范围：±${(props.tolerance * 100).toFixed(0)}%` : null,
+)
 </script>
 
 <template>
@@ -50,7 +50,7 @@ const toleranceText = computed(() =>
 
 .formula {
   font-size: 40px;
-  font-family: "JetBrains Mono", "SF Mono", monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
   color: var(--app-text-primary, #93a1a1);
   display: flex;
   align-items: baseline;
@@ -71,8 +71,14 @@ const toleranceText = computed(() =>
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .context {

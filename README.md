@@ -26,13 +26,13 @@
 
 ## 前置依赖
 
-| 依赖 | 版本要求 | 说明 |
-|---|---|---|
-| Node.js | ≥ 24 | 推荐使用 LTS |
-| pnpm | ≥ 11 | 包管理器 |
-| Rust | stable | Tauri 编译需要 |
-| macOS | ≥ 26 | 仅 macOS 构建需要 |
-| Windows | ≥ 10 | 仅 Windows 构建需要 |
+| 依赖    | 版本要求 | 说明                |
+| ------- | -------- | ------------------- |
+| Node.js | ≥ 24     | 推荐使用 LTS        |
+| pnpm    | ≥ 11     | 包管理器            |
+| Rust    | stable   | Tauri 编译需要      |
+| macOS   | ≥ 26     | 仅 macOS 构建需要   |
+| Windows | ≥ 10     | 仅 Windows 构建需要 |
 
 ## 快速开始
 
@@ -93,15 +93,15 @@ speed_calc/
 
 ## 技术栈
 
-| 层 | 选型 |
-|---|---|
-| 桌面框架 | Tauri 2.x |
-| 前端框架 | Vue 3 + TypeScript + Vite |
-| UI 组件库 | Element Plus（Solarized 深色主题） |
-| 状态管理 | Pinia |
-| 图表 / 公式 | ECharts / KaTeX |
-| 本地存储 | SQLite（tauri-plugin-sql） |
-| 测试框架 | Vitest + @vue/test-utils |
+| 层          | 选型                               |
+| ----------- | ---------------------------------- |
+| 桌面框架    | Tauri 2.x                          |
+| 前端框架    | Vue 3 + TypeScript + Vite          |
+| UI 组件库   | Element Plus（Solarized 深色主题） |
+| 状态管理    | Pinia                              |
+| 图表 / 公式 | ECharts / KaTeX                    |
+| 本地存储    | SQLite（tauri-plugin-sql）         |
+| 测试框架    | Vitest + @vue/test-utils           |
 
 ## 贡献
 

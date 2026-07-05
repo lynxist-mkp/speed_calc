@@ -1,10 +1,10 @@
 <script setup lang="ts">
 // 浮动玻璃 toolbar - 顶部
-import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
-const route = useRoute();
-const title = computed(() => (route.meta.title as string) ?? "行测小助手");
+const route = useRoute()
+const title = computed(() => (route.meta.title as string) ?? '行测小助手')
 </script>
 
 <template>

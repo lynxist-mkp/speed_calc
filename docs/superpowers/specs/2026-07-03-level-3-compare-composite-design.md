@@ -16,29 +16,29 @@
 
 ### 新增文件
 
-| 文件 | 职责 |
-|---|---|
-| `src/generators/compareAnalysis.ts` | 3 类比较题生成器（纯函数 + 两类难度模式） |
-| `src/generators/__tests__/compareAnalysis.test.ts` | 比较题生成器单测 |
-| `src/components/CompareQuestion.vue` | 比较题题目区（左右并排算式 + 绿色 `?`） |
-| `src/components/CompareKeypad.vue` | 比较题 4 大按钮（大于绿/小于橙/重开薄荷/确定灰） |
-| `src/components/__tests__/CompareQuestion.test.ts` | CompareQuestion 组件测试 |
-| `src/components/__tests__/CompareKeypad.test.ts` | CompareKeypad 组件测试 |
-| `src/generators/compositeAnalysis.ts` | 一表通算数据生成器（已知数据 + 9 项答案计算） |
-| `src/generators/__tests__/compositeAnalysis.test.ts` | 一表通算生成器单测 |
-| `src/views/CompositeSession.vue` | 一表通算答题页（独立交互：刷新数据/9填空/提交/随机） |
+| 文件                                                 | 职责                                                 |
+| ---------------------------------------------------- | ---------------------------------------------------- |
+| `src/generators/compareAnalysis.ts`                  | 3 类比较题生成器（纯函数 + 两类难度模式）            |
+| `src/generators/__tests__/compareAnalysis.test.ts`   | 比较题生成器单测                                     |
+| `src/components/CompareQuestion.vue`                 | 比较题题目区（左右并排算式 + 绿色 `?`）              |
+| `src/components/CompareKeypad.vue`                   | 比较题 4 大按钮（大于绿/小于橙/重开薄荷/确定灰）     |
+| `src/components/__tests__/CompareQuestion.test.ts`   | CompareQuestion 组件测试                             |
+| `src/components/__tests__/CompareKeypad.test.ts`     | CompareKeypad 组件测试                               |
+| `src/generators/compositeAnalysis.ts`                | 一表通算数据生成器（已知数据 + 9 项答案计算）        |
+| `src/generators/__tests__/compositeAnalysis.test.ts` | 一表通算生成器单测                                   |
+| `src/views/CompositeSession.vue`                     | 一表通算答题页（独立交互：刷新数据/9填空/提交/随机） |
 
 ### 修改文件
 
-| 文件 | 改动 |
-|---|---|
-| `src/stores/practice.ts` | `questionCategory` 计算属性 + `compareChoice` ref + `selectCompare` + submit compare 分支 |
-| `src/views/PracticeSession.vue` | 按 `questionCategory` 切换题目区（QuestionDisplay vs CompareQuestion）+ 输入区（Numpad vs CompareKeypad）+ handleKeydown compare 分支 |
-| `src/views/DataAnalysisSettings.vue` | 加 el-tabs（填空题/比较题）+ 一表通算独立区块按钮 |
-| `src/views/PracticeResult.vue` | 结算页题目列对比较题用 KaTeX 渲染（已用 Katex，答案列显示 `>`/`<`） |
-| `src/router/index.ts` | 新增 `/practice/composite` 路由 |
-| `src-tauri/migrations/0004_add_compare_composite_standards.sql` | 比较题 3 类 + 一表通算时间标准种子 |
-| `src-tauri/src/lib.rs` | 注册 migration 0004 |
+| 文件                                                            | 改动                                                                                                                                  |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/stores/practice.ts`                                        | `questionCategory` 计算属性 + `compareChoice` ref + `selectCompare` + submit compare 分支                                             |
+| `src/views/PracticeSession.vue`                                 | 按 `questionCategory` 切换题目区（QuestionDisplay vs CompareQuestion）+ 输入区（Numpad vs CompareKeypad）+ handleKeydown compare 分支 |
+| `src/views/DataAnalysisSettings.vue`                            | 加 el-tabs（填空题/比较题）+ 一表通算独立区块按钮                                                                                     |
+| `src/views/PracticeResult.vue`                                  | 结算页题目列对比较题用 KaTeX 渲染（已用 Katex，答案列显示 `>`/`<`）                                                                   |
+| `src/router/index.ts`                                           | 新增 `/practice/composite` 路由                                                                                                       |
+| `src-tauri/migrations/0004_add_compare_composite_standards.sql` | 比较题 3 类 + 一表通算时间标准种子                                                                                                    |
+| `src-tauri/src/lib.rs`                                          | 注册 migration 0004                                                                                                                   |
 
 ### 边界原则
 
@@ -52,38 +52,39 @@
 
 ### 2.1 三类比较题
 
-| 题型 type | label | 左算式 | 右算式 | 实际计算 |
-|---|---|---|---|---|
-| `compare_growth` | 增量比大小 | `A1 × r1%` | `A2 × r2%` | A·r |
-| `compare_base` | 基期比大小 | `A1/(1+r1%)` | `A2/(1+r2%)` | A/(1+r) |
-| `compare_frac` | 分数比大小 | `a1/b1` | `a2/b2` | a/b |
+| 题型 type        | label      | 左算式       | 右算式       | 实际计算 |
+| ---------------- | ---------- | ------------ | ------------ | -------- |
+| `compare_growth` | 增量比大小 | `A1 × r1%`   | `A2 × r2%`   | A·r      |
+| `compare_base`   | 基期比大小 | `A1/(1+r1%)` | `A2/(1+r2%)` | A/(1+r)  |
+| `compare_frac`   | 分数比大小 | `a1/b1`      | `a2/b2`      | a/b      |
 
 ### 2.2 接口设计
 
 ```typescript
 // src/generators/compareAnalysis.ts
-export type CompareType = "compare_growth" | "compare_base" | "compare_frac";
+export type CompareType = 'compare_growth' | 'compare_base' | 'compare_frac'
 
 export interface CompareQuestion {
-  type: CompareType;
+  type: CompareType
   display: {
-    leftTex: string;   // KaTeX tex，如 "\\frac{482}{252} \\times 25.2\\%"
-    rightTex: string;
-  };
-  leftValue: number;    // 用于判分（左实际值）
-  rightValue: number;   // 用于判分（右实际值）
-  answer: ">" | "<";    // 真值：leftValue > rightValue ? ">" : "<"
-  context?: string;     // 上下文（如现期/增长率数据）
-  hint?: string;
-  pattern: "A" | "B";   // 难度模式标记（统计/调试用，不影响判分）
+    leftTex: string // KaTeX tex，如 "\\frac{482}{252} \\times 25.2\\%"
+    rightTex: string
+  }
+  leftValue: number // 用于判分（左实际值）
+  rightValue: number // 用于判分（右实际值）
+  answer: '>' | '<' // 真值：leftValue > rightValue ? ">" : "<"
+  context?: string // 上下文（如现期/增长率数据）
+  hint?: string
+  pattern: 'A' | 'B' // 难度模式标记（统计/调试用，不影响判分）
 }
 
-export function generateCompareQuestion(type: CompareType, count: number): CompareQuestion[];
+export function generateCompareQuestion(type: CompareType, count: number): CompareQuestion[]
 ```
 
 ### 2.3 两类难度模式（3 类题通用）
 
 **模式 A：相近难分**
+
 - 两算式的"分母层"数值相近（差 < 10%）
 - 实际值也很接近（差 1%~5%），需算到小数位才能判断
 - 例（compare_frac）：`482/252 ? 503/265` → 1.913 vs 1.896（分母 252 vs 265 差 5%，值差 0.9%）
@@ -91,6 +92,7 @@ export function generateCompareQuestion(type: CompareType, count: number): Compa
 - 例（compare_growth）：`482×25.2% ? 530×24.8%` → 121 vs 131（A 482 vs 530 差 9%，值差 8%）
 
 **模式 B：整数倍率**
+
 - 两算式的"分母层"呈整数倍关系（2x 或 3x）
 - 实际值接近，需通分心算
 - 例（compare_frac）：`300/100 ? 590/200` → 3.0 vs 2.95（分母 2x 倍率，值差 1.7%）
@@ -102,6 +104,7 @@ export function generateCompareQuestion(type: CompareType, count: number): Compa
 ### 2.4 生成策略
 
 每次出题随机选模式 A 或 B（各 50% 概率），按模式约束生成参数：
+
 - **模式 A**：分母层相近（差 <10%），保证实际值差 1%~5%（重试直至落入区间，最多 50 次）
 - **模式 B**：分母层整数倍（2x 或 3x 随机），调整另一个参数使实际值差 1%~5%
 
@@ -134,12 +137,12 @@ export function generateCompareQuestion(type: CompareType, count: number): Compa
 
 ### 3.1 已知数据（4 项，刷新数据生成）
 
-| 字段 | 含义 | 范围 |
-|---|---|---|
-| `currentA` | 现期 A | [100, 999] |
-| `currentB` | 现期 B | [100, 999] |
-| `r1` | 增长率 r1 | [5%, 30%]（百分数形式，如 10.2 表示 10.2%） |
-| `r2` | 增长率 r2 | [5%, 30%] |
+| 字段       | 含义      | 范围                                        |
+| ---------- | --------- | ------------------------------------------- |
+| `currentA` | 现期 A    | [100, 999]                                  |
+| `currentB` | 现期 B    | [100, 999]                                  |
+| `r1`       | 增长率 r1 | [5%, 30%]（百分数形式，如 10.2 表示 10.2%） |
+| `r2`       | 增长率 r2 | [5%, 30%]                                   |
 
 ### 3.2 派生数据（由已知数据计算，展示给用户）
 
@@ -150,73 +153,73 @@ export function generateCompareQuestion(type: CompareType, count: number): Compa
 
 ### 3.3 九项求解结果（用户填空，±5% 容差）
 
-| # | key | 标签 | 公式 | 单位 |
-|---|---|---|---|---|
-| 1 | P | 现期比重 P | `currentA / (currentA + currentB) × 100` | % |
-| 2 | Pp | 基期比重 P' | `baseA / (baseA + baseB) × 100` | % |
-| 3 | d | 两期比重差 d | `P - Pp` | 个百分点 |
-| 4 | k | 比值增长率 k | `(currentA/currentB - baseA/baseB) / (baseA/baseB) × 100` | % |
-| 5 | S | 基期和 S | `baseA + baseB` | — |
-| 6 | D | 基期差 D | `baseA - baseB` | — |
-| 7 | r | 隔年增长率 r | `((1+r1/100)×(1+r2/100) - 1) × 100` | % |
-| 8 | r3 | AB和增长率 r3 | `((currentA+currentB)/(baseA+baseB) - 1) × 100` | % |
-| 9 | r4 | AB差增长率 r4 | `((currentA-currentB)/(baseA-baseB) - 1) × 100` | % |
+| #   | key | 标签          | 公式                                                      | 单位     |
+| --- | --- | ------------- | --------------------------------------------------------- | -------- |
+| 1   | P   | 现期比重 P    | `currentA / (currentA + currentB) × 100`                  | %        |
+| 2   | Pp  | 基期比重 P'   | `baseA / (baseA + baseB) × 100`                           | %        |
+| 3   | d   | 两期比重差 d  | `P - Pp`                                                  | 个百分点 |
+| 4   | k   | 比值增长率 k  | `(currentA/currentB - baseA/baseB) / (baseA/baseB) × 100` | %        |
+| 5   | S   | 基期和 S      | `baseA + baseB`                                           | —        |
+| 6   | D   | 基期差 D      | `baseA - baseB`                                           | —        |
+| 7   | r   | 隔年增长率 r  | `((1+r1/100)×(1+r2/100) - 1) × 100`                       | %        |
+| 8   | r3  | AB和增长率 r3 | `((currentA+currentB)/(baseA+baseB) - 1) × 100`           | %        |
+| 9   | r4  | AB差增长率 r4 | `((currentA-currentB)/(baseA-baseB) - 1) × 100`           | %        |
 
 ### 3.4 接口设计
 
 ```typescript
 // src/generators/compositeAnalysis.ts
 export interface CompositeData {
-  currentA: number;
-  currentB: number;
-  r1: number;  // 百分数形式，如 10.2
-  r2: number;
-  baseA: number;
-  baseB: number;
-  growthA: number;
-  growthB: number;
+  currentA: number
+  currentB: number
+  r1: number // 百分数形式，如 10.2
+  r2: number
+  baseA: number
+  baseB: number
+  growthA: number
+  growthB: number
 }
 
 export interface CompositeAnswers {
-  P: number;
-  Pp: number;
-  d: number;
-  k: number;
-  S: number;
-  D: number;
-  r: number;
-  r3: number;
-  r4: number;
+  P: number
+  Pp: number
+  d: number
+  k: number
+  S: number
+  D: number
+  r: number
+  r3: number
+  r4: number
 }
 
 export interface CompositeQuestion {
-  data: CompositeData;
-  answers: CompositeAnswers;  // 用户不可见，判分用
+  data: CompositeData
+  answers: CompositeAnswers // 用户不可见，判分用
 }
 
-export function generateComposite(): CompositeQuestion;
+export function generateComposite(): CompositeQuestion
 
 export const COMPOSITE_FIELDS: ReadonlyArray<{
-  key: keyof CompositeAnswers;
-  label: string;
-  unit: string;
-}>;
+  key: keyof CompositeAnswers
+  label: string
+  unit: string
+}>
 ```
 
 ### 3.5 COMPOSITE_FIELDS 元数据
 
 ```typescript
 export const COMPOSITE_FIELDS = [
-  { key: "P",  label: "现期比重 P",   unit: "%" },
-  { key: "Pp", label: "基期比重 P'",  unit: "%" },
-  { key: "d",  label: "两期比重差 d", unit: "个百分点" },
-  { key: "k",  label: "比值增长率 k", unit: "%" },
-  { key: "S",  label: "基期和 S",     unit: "" },
-  { key: "D",  label: "基期差 D",     unit: "" },
-  { key: "r",  label: "隔年增长率 r", unit: "%" },
-  { key: "r3", label: "AB和增长率 r3", unit: "%" },
-  { key: "r4", label: "AB差增长率 r4", unit: "%" },
-] as const;
+  { key: 'P', label: '现期比重 P', unit: '%' },
+  { key: 'Pp', label: "基期比重 P'", unit: '%' },
+  { key: 'd', label: '两期比重差 d', unit: '个百分点' },
+  { key: 'k', label: '比值增长率 k', unit: '%' },
+  { key: 'S', label: '基期和 S', unit: '' },
+  { key: 'D', label: '基期差 D', unit: '' },
+  { key: 'r', label: '隔年增长率 r', unit: '%' },
+  { key: 'r3', label: 'AB和增长率 r3', unit: '%' },
+  { key: 'r4', label: 'AB差增长率 r4', unit: '%' },
+] as const
 ```
 
 ### 3.6 数值精度
@@ -257,13 +260,14 @@ export const COMPOSITE_FIELDS = [
 - 误差行文案：`允许误差范围: 精确判分`（比较题无容差）
 
 Props:
+
 ```typescript
 interface Props {
-  leftTex: string;
-  rightTex: string;
-  selected: ">" | "<" | null;
-  context?: string;
-  standardText: string | null;
+  leftTex: string
+  rightTex: string
+  selected: '>' | '<' | null
+  context?: string
+  standardText: string | null
 }
 ```
 
@@ -281,13 +285,15 @@ interface Props {
 ```
 
 Props:
+
 ```typescript
 interface Props {
-  selected: ">" | "<" | null;
+  selected: '>' | '<' | null
 }
 ```
 
 Emits:
+
 ```typescript
 {
   select: [choice: ">" | "<"];
@@ -312,12 +318,21 @@ Emits:
 
 ```typescript
 // compare 模式额外分支（在现有 handleKeydown 开头）
-if (store.questionCategory === "compare") {
-  if (k === ">" || k === "1") { e.preventDefault(); store.selectCompare(">"); }
-  else if (k === "<" || k === "2") { e.preventDefault(); store.selectCompare("<"); }
-  else if (k === "Enter") { e.preventDefault(); void onSubmit(); }
-  else if (k === "Escape") { e.preventDefault(); void onRestart(); }
-  return;  // compare 模式不处理数字/小数点/退格/逗号
+if (store.questionCategory === 'compare') {
+  if (k === '>' || k === '1') {
+    e.preventDefault()
+    store.selectCompare('>')
+  } else if (k === '<' || k === '2') {
+    e.preventDefault()
+    store.selectCompare('<')
+  } else if (k === 'Enter') {
+    e.preventDefault()
+    void onSubmit()
+  } else if (k === 'Escape') {
+    e.preventDefault()
+    void onRestart()
+  }
+  return // compare 模式不处理数字/小数点/退格/逗号
 }
 // 现有 numpad 逻辑不变
 ```
@@ -387,10 +402,7 @@ async function submit() {
     />
 
     <!-- 输入区按 category 切换 -->
-    <Numpad
-      v-if="store.questionCategory === 'numpad'"
-      ...
-    />
+    <Numpad v-if="store.questionCategory === 'numpad'" ... />
     <CompareKeypad
       v-else-if="store.questionCategory === 'compare'"
       :selected="store.compareChoice"
@@ -452,6 +464,7 @@ async function submit() {
 ### 5.3 Numpad 复用方案
 
 一表通算需要 9 个输入位轮流聚焦，每个输入位接受数字输入：
+
 - 每个输入位是 `<input readonly @focus="activeField = key">` + 显示 `answers[key] || ""`
 - Numpad `@input` 把字符追加到 `answers[activeField]`
 - Numpad `@backspace` 删除 `answers[activeField]` 末位
@@ -463,85 +476,85 @@ async function submit() {
 
 ```typescript
 // CompositeSession.vue 内部状态
-const data = ref<CompositeData | null>(null);
-const answers = ref<Partial<CompositeAnswers>>({});
-const activeField = ref<keyof CompositeAnswers | null>(null);
-const submitted = ref(false);
-const results = ref<Partial<Record<keyof CompositeAnswers, boolean>>>({});
-const startedAt = ref<number | null>(null);
-const elapsedMs = ref(0);
-let timerId: number | null = null;
-let trueAnswers: CompositeAnswers | null = null;  // 闭包持有，不入响应式
+const data = ref<CompositeData | null>(null)
+const answers = ref<Partial<CompositeAnswers>>({})
+const activeField = ref<keyof CompositeAnswers | null>(null)
+const submitted = ref(false)
+const results = ref<Partial<Record<keyof CompositeAnswers, boolean>>>({})
+const startedAt = ref<number | null>(null)
+const elapsedMs = ref(0)
+let timerId: number | null = null
+let trueAnswers: CompositeAnswers | null = null // 闭包持有，不入响应式
 
 async function refreshData() {
-  const q = generateComposite();
-  data.value = q.data;
-  trueAnswers = q.answers;
-  answers.value = {};
-  submitted.value = false;
-  results.value = {};
-  activeField.value = null;
+  const q = generateComposite()
+  data.value = q.data
+  trueAnswers = q.answers
+  answers.value = {}
+  submitted.value = false
+  results.value = {}
+  activeField.value = null
   if (startedAt.value === null) {
-    startedAt.value = performance.now();
-    startTimer();
+    startedAt.value = performance.now()
+    startTimer()
   }
 }
 
 function onNumpadInput(char: string) {
-  if (activeField.value === null) return;
-  const k = activeField.value;
-  answers.value[k] = (answers.value[k] ?? "") + char as any;
+  if (activeField.value === null) return
+  const k = activeField.value
+  answers.value[k] = ((answers.value[k] ?? '') + char) as any
 }
 
 function onNumpadBackspace() {
-  if (activeField.value === null) return;
-  const k = activeField.value;
-  const cur = String(answers.value[k] ?? "");
-  answers.value[k] = cur.slice(0, -1) as any;
+  if (activeField.value === null) return
+  const k = activeField.value
+  const cur = String(answers.value[k] ?? '')
+  answers.value[k] = cur.slice(0, -1) as any
 }
 
 function onNumpadClear() {
-  if (activeField.value === null) return;
-  answers.value[activeField.value] = undefined;
+  if (activeField.value === null) return
+  answers.value[activeField.value] = undefined
 }
 
 async function submitAll() {
-  if (!trueAnswers || !data.value) return;
+  if (!trueAnswers || !data.value) return
   const correctCount = COMPOSITE_FIELDS.reduce((acc, f) => {
-    const userAns = Number(answers.value[f.key]);
-    const trueAns = trueAnswers[f.key];
-    const isCorrect = !isNaN(userAns) && Math.abs(userAns - trueAns) / Math.abs(trueAns) <= 0.05;
-    results.value[f.key] = isCorrect;
-    return acc + (isCorrect ? 1 : 0);
-  }, 0);
-  submitted.value = true;
+    const userAns = Number(answers.value[f.key])
+    const trueAns = trueAnswers[f.key]
+    const isCorrect = !isNaN(userAns) && Math.abs(userAns - trueAns) / Math.abs(trueAns) <= 0.05
+    results.value[f.key] = isCorrect
+    return acc + (isCorrect ? 1 : 0)
+  }, 0)
+  submitted.value = true
   // 入库
-  await persistSession(correctCount);
+  await persistSession(correctCount)
 }
 
 async function persistSession(correctCount: number) {
   // 1 个 session（type=composite, total=9, correct=correctCount）
   const sessionId = await insertSession({
-    type: "composite",
-    subtype: "一表通算",
-    difficulty: "normal",
+    type: 'composite',
+    subtype: '一表通算',
+    difficulty: 'normal',
     total: 9,
     nback: 0,
-  });
+  })
   // 9 个 record
   for (const f of COMPOSITE_FIELDS) {
     await insertRecord({
       sessionId,
       qIndex: COMPOSITE_FIELDS.indexOf(f),
       question: f.label,
-      userAnswer: String(answers.value[f.key] ?? ""),
-      trueAnswer: String(trueAnswers?.[f.key] ?? ""),
+      userAnswer: String(answers.value[f.key] ?? ''),
+      trueAnswer: String(trueAnswers?.[f.key] ?? ''),
       isCorrect: results.value[f.key] ?? false,
       tolerance: 0.05,
       timeSpentMs: 0,
-    });
+    })
   }
-  await updateSession(sessionId, { correct: correctCount, durationMs: elapsedMs.value });
+  await updateSession(sessionId, { correct: correctCount, durationMs: elapsedMs.value })
 }
 ```
 
@@ -592,10 +605,10 @@ async function persistSession(correctCount: number) {
 
 ```typescript
 const compareTypes: { label: string; type: CompareType }[] = [
-  { label: "增量比大小", type: "compare_growth" },
-  { label: "基期比大小", type: "compare_base" },
-  { label: "分数比大小", type: "compare_frac" },
-];
+  { label: '增量比大小', type: 'compare_growth' },
+  { label: '基期比大小', type: 'compare_base' },
+  { label: '分数比大小', type: 'compare_frac' },
+]
 ```
 
 ### 6.3 路由新增
@@ -626,6 +639,7 @@ VALUES
 ```
 
 时间标准来源说明：
+
 - 比较题 3 类：30/22/16（与 baihua_frac 同档，比大小比填空快）
 - 一表通算：单题 9 项，120/90/70（按 9 项×10s 估算，截图未实证）
 
@@ -634,21 +648,21 @@ VALUES
 ```typescript
 // DataAnalysisSettings.vue
 async function startCompare() {
-  const t = compareTypes[selectedCompareType.value];
+  const t = compareTypes[selectedCompareType.value]
   await store.init({
     type: t.type,
     subtype: t.label,
     count: selectedCount.value,
-  });
-  if (store.phase === "running") {
-    router.push("/practice/session");  // 复用
+  })
+  if (store.phase === 'running') {
+    router.push('/practice/session') // 复用
   } else {
-    ElMessage.error(store.error ?? "练习初始化失败");
+    ElMessage.error(store.error ?? '练习初始化失败')
   }
 }
 
 function startComposite() {
-  router.push("/practice/composite");  // 直接跳，不走 store.init
+  router.push('/practice/composite') // 直接跳，不走 store.init
 }
 ```
 

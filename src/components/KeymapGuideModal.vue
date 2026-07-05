@@ -1,37 +1,43 @@
 <script setup lang="ts">
 // 键盘输入指引模态弹窗：视觉化展示右手主键盘区 → 财务小键盘映射
-import { computed, watch, onBeforeUnmount } from "vue";
-import type { KeyboardLayout } from "@/utils/keymap";
+import { computed, watch, onBeforeUnmount } from 'vue'
+import type { KeyboardLayout } from '@/utils/keymap'
 
 interface Props {
-  visible: boolean;
-  layout?: KeyboardLayout;
+  visible: boolean
+  layout?: KeyboardLayout
 }
 const props = withDefaults(defineProps<Props>(), {
-  layout: "qwerty",
-});
+  layout: 'qwerty',
+})
 const emit = defineEmits<{
-  close: [];
-  "go-settings": [];
-}>();
+  close: []
+  'go-settings': []
+}>()
 
 // 物理键帽标签统一按标准 QWERTY 显示（物理键盘本身就是 QWERTY 标签，映射按物理位置）
 const keyRows = [
-  { num: "7", key: "U" }, { num: "8", key: "I" }, { num: "9", key: "O" },
-  { num: "4", key: "J" }, { num: "5", key: "K" }, { num: "6", key: "L" },
-  { num: "1", key: "M" }, { num: "2", key: "," }, { num: "3", key: "." },
-];
+  { num: '7', key: 'U' },
+  { num: '8', key: 'I' },
+  { num: '9', key: 'O' },
+  { num: '4', key: 'J' },
+  { num: '5', key: 'K' },
+  { num: '6', key: 'L' },
+  { num: '1', key: 'M' },
+  { num: '2', key: ',' },
+  { num: '3', key: '.' },
+]
 
 // 仅 QWERTY 模式下提示 Norman 用户去设置切换
-const showNormanHint = computed(() => props.layout === "qwerty");
+const showNormanHint = computed(() => props.layout === 'qwerty')
 
 // 模态打开时拦截 Esc/Enter，避免冒泡到练习页触发重开/提交
 function onKeydownCapture(e: KeyboardEvent) {
-  if (!props.visible) return;
-  if (e.code === "Escape" || e.code === "Enter") {
-    e.stopPropagation();
-    e.preventDefault();
-    emit("close");
+  if (!props.visible) return
+  if (e.code === 'Escape' || e.code === 'Enter') {
+    e.stopPropagation()
+    e.preventDefault()
+    emit('close')
   }
 }
 
@@ -39,16 +45,16 @@ watch(
   () => props.visible,
   (v) => {
     if (v) {
-      window.addEventListener("keydown", onKeydownCapture, true);
+      window.addEventListener('keydown', onKeydownCapture, true)
     } else {
-      window.removeEventListener("keydown", onKeydownCapture, true);
+      window.removeEventListener('keydown', onKeydownCapture, true)
     }
-  }
-);
+  },
+)
 
 onBeforeUnmount(() => {
-  window.removeEventListener("keydown", onKeydownCapture, true);
-});
+  window.removeEventListener('keydown', onKeydownCapture, true)
+})
 </script>
 
 <template>
@@ -116,11 +122,7 @@ onBeforeUnmount(() => {
         </section>
 
         <!-- Norman 提示条（仅 QWERTY 模式显示） -->
-        <button
-          v-if="showNormanHint"
-          class="kgm-norman-hint"
-          @click="emit('go-settings')"
-        >
+        <button v-if="showNormanHint" class="kgm-norman-hint" @click="emit('go-settings')">
           <span class="kgm-hint-icon">ⓘ</span>
           <span>使用 Norman 布局？前往设置切换键盘布局</span>
           <span class="kgm-hint-arrow">→</span>

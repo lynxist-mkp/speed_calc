@@ -13,6 +13,7 @@
 打通资料分析 9 类题型的"出题 → 答题 → 判分 → 计时 → 入库 → 结算"闭环。复用 L1 的 store 状态机、三段式路由、Numpad 组件、结算页；新增生成器多态、KaTeX 公式渲染、容差判分。
 
 **YAGNI 边界**（推迟到 L4）：
+
 - 柱状图呈现（年均增长率/年平均量用纯文字数据 + KaTeX 公式）
 - 难度选择（L2 写死 normal，生成器预留 difficulty 参数）
 - 呈现方式开关、键盘布局开关、N-back、导出题目
@@ -23,17 +24,17 @@
 
 ## 2. 9 类题型
 
-| type 字符串 | 题型名 | 公式方向 | 误差 | 截图实证 |
-|---|---|---|---|---|
-| `estimate_prev` | 估算前期量 | 给现期 A、增长率 r，求 A/(1+r) | ±3% | #5 |
-| `estimate_growth` | 估算增长量 | 给现期 A、r，求 A·r/(1+r) | ±3% | #6 |
-| `baihua_frac` | 百化分 | 给 n，求 1/n 的百分数 | ±2% | #7 |
-| `baihua_frac_rev` | 百化分反向 | 给百分数，求对应 1/n | ±2% | #7 反向 |
-| `frac_calc_lt` | 分数计算(＜) | 给 a、b（a<b），求 a/b，预填"0." | ±2% | #11 |
-| `frac_calc_gt` | 分数计算(＞) | 给 a、b（a>b），求 a/b | ±2% | #12 |
-| `annual_growth_rate` | 年均增长率 | 给首末值 + 年数 n，求 (末/首)^(1/n)-1 | ±3% | #10 |
-| `base_period_ratio` | 基期比重 | 给 A、B、rA、rB，求 (A/(1+rA)) / ((A+B)/(1+rA+rB)) | ±3% | #13 |
-| `annual_avg` | 年平均量 | 给 5 年数据，求平均 | ±1% | #15 |
+| type 字符串          | 题型名       | 公式方向                                           | 误差 | 截图实证 |
+| -------------------- | ------------ | -------------------------------------------------- | ---- | -------- |
+| `estimate_prev`      | 估算前期量   | 给现期 A、增长率 r，求 A/(1+r)                     | ±3%  | #5       |
+| `estimate_growth`    | 估算增长量   | 给现期 A、r，求 A·r/(1+r)                          | ±3%  | #6       |
+| `baihua_frac`        | 百化分       | 给 n，求 1/n 的百分数                              | ±2%  | #7       |
+| `baihua_frac_rev`    | 百化分反向   | 给百分数，求对应 1/n                               | ±2%  | #7 反向  |
+| `frac_calc_lt`       | 分数计算(＜) | 给 a、b（a<b），求 a/b，预填"0."                   | ±2%  | #11      |
+| `frac_calc_gt`       | 分数计算(＞) | 给 a、b（a>b），求 a/b                             | ±2%  | #12      |
+| `annual_growth_rate` | 年均增长率   | 给首末值 + 年数 n，求 (末/首)^(1/n)-1              | ±3%  | #10      |
+| `base_period_ratio`  | 基期比重     | 给 A、B、rA、rB，求 (A/(1+rA)) / ((A+B)/(1+rA+rB)) | ±3%  | #13      |
+| `annual_avg`         | 年平均量     | 给 5 年数据，求平均                                | ±1%  | #15      |
 
 **判分公式**：`|user - true| / |true| <= tolerance`（true=0 时退化精确判分）
 
@@ -41,24 +42,25 @@
 
 ## 3. 文件结构
 
-| 文件 | 职责 | 创建/修改 |
-|---|---|---|
-| `src-tauri/migrations/0003_add_data_analysis_standards.sql` | 资料分析 9 类题型时间标准种子 | 创建 |
-| `src-tauri/src/lib.rs` | 注册 migration 0003 | 修改 |
-| `src/generators/dataAnalysis.ts` | 9 类纯函数生成器 | 创建 |
-| `src/generators/__tests__/dataAnalysis.test.ts` | 生成器单测 | 创建 |
-| `src/components/Katex.vue` | KaTeX 极简渲染封装 | 创建 |
-| `src/components/QuestionDisplay.vue` | 题目区动态渲染（基础纯文本 / 资料 KaTeX+上下文+误差行） | 创建 |
-| `src/components/__tests__/Katex.test.ts` | KaTeX 组件测试 | 创建 |
-| `src/components/__tests__/QuestionDisplay.test.ts` | QuestionDisplay 组件测试 | 创建 |
-| `src/stores/practice.ts` | init 多题型调度 + questionMeta + submit 容差判分 + preset 预填 | 修改 |
-| `src/stores/__tests__/practice.test.ts` | 扩展 store 测试 | 修改 |
-| `src/views/DataAnalysisSettings.vue` | 资料分析独立设置页 | 创建 |
-| `src/views/PracticeSession.vue` | 题目区替换为 QuestionDisplay + Numpad variant 动态 | 修改 |
-| `src/views/Home.vue` | "资料分析"卡片跳 /practice/data-analysis | 修改 |
-| `src/router/index.ts` | 加 /practice/data-analysis 路由 | 修改 |
+| 文件                                                        | 职责                                                           | 创建/修改 |
+| ----------------------------------------------------------- | -------------------------------------------------------------- | --------- |
+| `src-tauri/migrations/0003_add_data_analysis_standards.sql` | 资料分析 9 类题型时间标准种子                                  | 创建      |
+| `src-tauri/src/lib.rs`                                      | 注册 migration 0003                                            | 修改      |
+| `src/generators/dataAnalysis.ts`                            | 9 类纯函数生成器                                               | 创建      |
+| `src/generators/__tests__/dataAnalysis.test.ts`             | 生成器单测                                                     | 创建      |
+| `src/components/Katex.vue`                                  | KaTeX 极简渲染封装                                             | 创建      |
+| `src/components/QuestionDisplay.vue`                        | 题目区动态渲染（基础纯文本 / 资料 KaTeX+上下文+误差行）        | 创建      |
+| `src/components/__tests__/Katex.test.ts`                    | KaTeX 组件测试                                                 | 创建      |
+| `src/components/__tests__/QuestionDisplay.test.ts`          | QuestionDisplay 组件测试                                       | 创建      |
+| `src/stores/practice.ts`                                    | init 多题型调度 + questionMeta + submit 容差判分 + preset 预填 | 修改      |
+| `src/stores/__tests__/practice.test.ts`                     | 扩展 store 测试                                                | 修改      |
+| `src/views/DataAnalysisSettings.vue`                        | 资料分析独立设置页                                             | 创建      |
+| `src/views/PracticeSession.vue`                             | 题目区替换为 QuestionDisplay + Numpad variant 动态             | 修改      |
+| `src/views/Home.vue`                                        | "资料分析"卡片跳 /practice/data-analysis                       | 修改      |
+| `src/router/index.ts`                                       | 加 /practice/data-analysis 路由                                | 修改      |
 
 **边界原则**：
+
 - 生成器纯函数无副作用可单测
 - store 保持单一会话状态源（题型无关状态机）
 - QuestionDisplay 纯展示无状态，props 驱动
@@ -100,48 +102,55 @@ DataAnalysisSettings（选题型 + 题量）
 
 ```typescript
 export type DataType =
-  | "estimate_prev" | "estimate_growth"
-  | "baihua_frac" | "baihua_frac_rev"
-  | "frac_calc_lt" | "frac_calc_gt"
-  | "annual_growth_rate" | "base_period_ratio" | "annual_avg";
+  | 'estimate_prev'
+  | 'estimate_growth'
+  | 'baihua_frac'
+  | 'baihua_frac_rev'
+  | 'frac_calc_lt'
+  | 'frac_calc_gt'
+  | 'annual_growth_rate'
+  | 'base_period_ratio'
+  | 'annual_avg'
 
 export interface DataQuestion {
-  display: string;        // KaTeX 源串，如 "\\frac{9738}{1.102} \\approx"
-  answer: number;         // 数值答案
-  tolerance: number;      // 误差比例 0.03 = ±3%
-  context?: string;       // 上下文行，如 "现期: 9738, 增长率: 10.2%"
-  hint?: string;          // 附加提示，如 "建议写到小数点后2~3位"
-  preset?: string;        // 预填，如 "0." 或 "-"
-  unit?: string;          // 单位，如 "%" "万"
+  display: string // KaTeX 源串，如 "\\frac{9738}{1.102} \\approx"
+  answer: number // 数值答案
+  tolerance: number // 误差比例 0.03 = ±3%
+  context?: string // 上下文行，如 "现期: 9738, 增长率: 10.2%"
+  hint?: string // 附加提示，如 "建议写到小数点后2~3位"
+  preset?: string // 预填，如 "0." 或 "-"
+  unit?: string // 单位，如 "%" "万"
 }
 
 export function generateDataQuestion(
   type: DataType,
   count: number,
-  difficulty?: "easy" | "normal" | "hard"
-): DataQuestion[];
+  difficulty?: 'easy' | 'normal' | 'hard',
+): DataQuestion[]
 ```
 
 ### 参数范围（normal 难度，参照截图量级）
 
-| type | 参数范围 | display 样例 | answer | preset |
-|---|---|---|---|---|
-| `estimate_prev` | A∈[1000,9999], r∈[5%,30%] | `\frac{9738}{1.102} \approx` | A/(1+r) | — |
-| `estimate_growth` | A∈[1000,9999], r∈[-30%,30%]（r 可负→答案负） | `\text{求增长量：} 9385 \times \frac{0.284}{1.284} \approx` | A·r/(1+r) | r<0 → "-" |
-| `baihua_frac` | n∈[2,20] | `\frac{1}{11} \approx` + unit="%" | 100/n | — |
-| `baihua_frac_rev` | n∈[2,20]，给 100/n 的近似百分数 | `9.1\% \approx \frac{1}{?} \approx` | n | — |
-| `frac_calc_lt` | a∈[100,999], b∈[a,9999] | `\frac{632}{924} \approx` | a/b | "0." |
-| `frac_calc_gt` | a∈[100,9999], b∈[100,a-1] | `\frac{977}{524} \approx` | a/b | — |
-| `annual_growth_rate` | 6 年数据（首末值），n=5 | `\text{2012~2017 年均增长率} \approx` + unit="%" | (末/首)^(1/5)-1 | — |
-| `base_period_ratio` | A,B∈[100,999], rA,rB∈[5%,30%] | `\frac{323}{371} \times \frac{1.02}{1.217} \approx` + unit="%" | (A/(1+rA))/((A+B)/(1+rA+rB)) | — |
-| `annual_avg` | 5 年数据∈[10,99]（万） | `\text{2012~2016 年平均成交量} \approx` + unit="万" | sum/5 | — |
+| type                 | 参数范围                                     | display 样例                                                   | answer                       | preset    |
+| -------------------- | -------------------------------------------- | -------------------------------------------------------------- | ---------------------------- | --------- |
+| `estimate_prev`      | A∈[1000,9999], r∈[5%,30%]                    | `\frac{9738}{1.102} \approx`                                   | A/(1+r)                      | —         |
+| `estimate_growth`    | A∈[1000,9999], r∈[-30%,30%]（r 可负→答案负） | `\text{求增长量：} 9385 \times \frac{0.284}{1.284} \approx`    | A·r/(1+r)                    | r<0 → "-" |
+| `baihua_frac`        | n∈[2,20]                                     | `\frac{1}{11} \approx` + unit="%"                              | 100/n                        | —         |
+| `baihua_frac_rev`    | n∈[2,20]，给 100/n 的近似百分数              | `9.1\% \approx \frac{1}{?} \approx`                            | n                            | —         |
+| `frac_calc_lt`       | a∈[100,999], b∈[a,9999]                      | `\frac{632}{924} \approx`                                      | a/b                          | "0."      |
+| `frac_calc_gt`       | a∈[100,9999], b∈[100,a-1]                    | `\frac{977}{524} \approx`                                      | a/b                          | —         |
+| `annual_growth_rate` | 6 年数据（首末值），n=5                      | `\text{2012~2017 年均增长率} \approx` + unit="%"               | (末/首)^(1/5)-1              | —         |
+| `base_period_ratio`  | A,B∈[100,999], rA,rB∈[5%,30%]                | `\frac{323}{371} \times \frac{1.02}{1.217} \approx` + unit="%" | (A/(1+rA))/((A+B)/(1+rA+rB)) | —         |
+| `annual_avg`         | 5 年数据∈[10,99]（万）                       | `\text{2012~2016 年平均成交量} \approx` + unit="万"            | sum/5                        | —         |
 
 **辅助函数**：
+
 - `randInt(min, max)`、`randFloat(min, max, decimals)` 工具
 - 上下文行格式：`现期: ${A}, 增长率: ${(r*100).toFixed(1)}%`
 - hint：百化分 → "写到小数点后一位即可"；分数计算 → "建议写到小数点后2~3位"；估算增长量 → "需要负号时会自动生成"
 
 **边界处理**：
+
 - `baihua_frac` n=1 退化：n 从 2 起，避免 100% 平凡解
 - `annual_growth_rate` 首末值相等：重采，避免 0% 增长
 - `frac_calc_lt` a=b 退化：b 严格大于 a
@@ -154,19 +163,20 @@ export function generateDataQuestion(
 ### Question 类型联合
 
 ```typescript
-type AnyQuestion = BasicQuestion | DataQuestion;
-const questions = ref<AnyQuestion[]>([]);
+type AnyQuestion = BasicQuestion | DataQuestion
+const questions = ref<AnyQuestion[]>([])
 ```
 
 ### 新增 computed
 
 ```typescript
-const isDataType = computed(() => config.value?.type !== "basic_addsub");
+const isDataType = computed(() => config.value?.type !== 'basic_addsub')
 
 const questionMeta = computed(() => {
-  const q = currentQuestion.value;
-  if (!q) return null;
-  if ("context" in q) {  // DataQuestion
+  const q = currentQuestion.value
+  if (!q) return null
+  if ('context' in q) {
+    // DataQuestion
     return {
       tolerance: q.tolerance,
       context: q.context,
@@ -174,26 +184,29 @@ const questionMeta = computed(() => {
       unit: q.unit,
       isData: true,
       display: q.display,
-    };
+    }
   }
-  return { isData: false, display: q.display };
-});
+  return { isData: false, display: q.display }
+})
 ```
 
 ### init 多题型调度 + 预填
 
 ```typescript
 async function init(cfg: SessionConfig) {
-  stopTimer();
+  stopTimer()
   try {
-    const qs = cfg.type === "basic_addsub"
-      ? generateBasicAddSub(cfg.count)
-      : generateDataQuestion(cfg.type as DataType, cfg.count);
-    questions.value = qs;
-    currentIndex.value = 0;
-    currentAnswer.value = qs[0] && "preset" in qs[0] ? (qs[0].preset ?? "") : "";
+    const qs =
+      cfg.type === 'basic_addsub'
+        ? generateBasicAddSub(cfg.count)
+        : generateDataQuestion(cfg.type as DataType, cfg.count)
+    questions.value = qs
+    currentIndex.value = 0
+    currentAnswer.value = qs[0] && 'preset' in qs[0] ? (qs[0].preset ?? '') : ''
     // ... 其余不变（records/elapsedMs/error/config/insertSession/getTimeStandard/startTimer）
-  } catch (e) { /* 不变 */ }
+  } catch (e) {
+    /* 不变 */
+  }
 }
 ```
 
@@ -252,23 +265,23 @@ async function submit() {
 
 ```vue
 <script setup lang="ts">
-import { computed } from "vue";
-import Katex from "@/components/Katex.vue";
+import { computed } from 'vue'
+import Katex from '@/components/Katex.vue'
 
 interface Props {
-  display: string;
-  isData: boolean;
-  context?: string;
-  hint?: string;
-  tolerance?: number;
-  unit?: string;
-  standardText?: string | null;
-  answer: string;
+  display: string
+  isData: boolean
+  context?: string
+  hint?: string
+  tolerance?: number
+  unit?: string
+  standardText?: string | null
+  answer: string
 }
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 const toleranceText = computed(() =>
-  props.tolerance ? `允许误差范围：±${(props.tolerance * 100).toFixed(0)}%` : null
-);
+  props.tolerance ? `允许误差范围：±${(props.tolerance * 100).toFixed(0)}%` : null,
+)
 </script>
 
 <template>
@@ -299,17 +312,17 @@ const toleranceText = computed(() =>
 
 ```vue
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
-import katex from "katex";
-import "katex/dist/katex.min.css";
+import { ref, watch, onMounted } from 'vue'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
-const props = defineProps<{ tex: string }>();
-const el = ref<HTMLElement | null>(null);
+const props = defineProps<{ tex: string }>()
+const el = ref<HTMLElement | null>(null)
 function render() {
-  if (el.value) katex.render(props.tex, el.value, { throwOnError: false });
+  if (el.value) katex.render(props.tex, el.value, { throwOnError: false })
 }
-onMounted(render);
-watch(() => props.tex, render);
+onMounted(render)
+watch(() => props.tex, render)
 </script>
 <template><span ref="el" class="katex-render"></span></template>
 ```
@@ -395,12 +408,12 @@ VALUES
 
 ## 13. 测试策略
 
-| 层 | 测试文件 | 覆盖 |
-|---|---|---|
-| 生成器 | `src/generators/__tests__/dataAnalysis.test.ts` | 9 类各生成 N 题；答案计算正确；参数范围合规；负数预填；分数计算 lt/gt 分支；百化分正反向互逆；边界（n≥2、首末值不等、a≠b） |
-| store | `src/stores/__tests__/practice.test.ts`（扩展） | init 多题型调度；questionMeta 正确；submit 容差判分（边界 ±0.01%）；preset 预填；推进时下一题 preset；空答案守卫（"-" / "0."） |
-| 组件 | `src/components/__tests__/Katex.test.ts` | 渲染输出含 katex-html；throwOnError:false 容错（无效 tex 不崩溃） |
-| 组件 | `src/components/__tests__/QuestionDisplay.test.ts` | 基础纯文本渲染；资料 KaTeX 渲染；上下文/误差/提示/标准行显隐；unit 显示 |
+| 层     | 测试文件                                           | 覆盖                                                                                                                           |
+| ------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 生成器 | `src/generators/__tests__/dataAnalysis.test.ts`    | 9 类各生成 N 题；答案计算正确；参数范围合规；负数预填；分数计算 lt/gt 分支；百化分正反向互逆；边界（n≥2、首末值不等、a≠b）     |
+| store  | `src/stores/__tests__/practice.test.ts`（扩展）    | init 多题型调度；questionMeta 正确；submit 容差判分（边界 ±0.01%）；preset 预填；推进时下一题 preset；空答案守卫（"-" / "0."） |
+| 组件   | `src/components/__tests__/Katex.test.ts`           | 渲染输出含 katex-html；throwOnError:false 容错（无效 tex 不崩溃）                                                              |
+| 组件   | `src/components/__tests__/QuestionDisplay.test.ts` | 基础纯文本渲染；资料 KaTeX 渲染；上下文/误差/提示/标准行显隐；unit 显示                                                        |
 
 预期 L2 新增约 30-40 个测试用例，L1 既有 38 个不回归。
 

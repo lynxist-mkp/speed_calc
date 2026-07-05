@@ -4,5 +4,5 @@ allowBuilds:
   vue-demi: true
 onlyBuiltDependencies:
   - esbuild
-  - "@parcel/watcher"
+  - '@parcel/watcher'
   - vue-demi

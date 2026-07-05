@@ -42,10 +42,10 @@ GitHub Actions (windows-latest)
 
 ## 触发条件
 
-| 触发方式 | 用途 | 产物分发 |
-|---------|------|---------|
-| `workflow_dispatch`（手动） | 首次打包、调试构建 | 上传到 Actions Artifacts（90 天有效期） |
-| `push tag v*`（自动发版） | 后续发版本 | 自动创建 GitHub Release，附带 MSI + NSIS .exe；portable .exe 仍上传到 Artifacts |
+| 触发方式                    | 用途               | 产物分发                                                                        |
+| --------------------------- | ------------------ | ------------------------------------------------------------------------------- |
+| `workflow_dispatch`（手动） | 首次打包、调试构建 | 上传到 Actions Artifacts（90 天有效期）                                         |
+| `push tag v*`（自动发版）   | 后续发版本         | 自动创建 GitHub Release，附带 MSI + NSIS .exe；portable .exe 仍上传到 Artifacts |
 
 ## 工作流文件
 
@@ -69,11 +69,11 @@ GitHub Actions (windows-latest)
 
 ## 产物说明
 
-| 产物 | 用途 | 说明 |
-|------|------|------|
-| `*.msi` | Windows Installer 安装包 | 标准安装方式，适合企业部署 |
-| `*-setup.exe` | NSIS 安装程序 | 体积更小的安装包，适合个人用户 |
-| `speed-calc.exe` | 免安装可执行文件 | 双击即运行，需 WebView2 运行时（Win10/11 系统自带） |
+| 产物             | 用途                     | 说明                                                |
+| ---------------- | ------------------------ | --------------------------------------------------- |
+| `*.msi`          | Windows Installer 安装包 | 标准安装方式，适合企业部署                          |
+| `*-setup.exe`    | NSIS 安装程序            | 体积更小的安装包，适合个人用户                      |
+| `speed-calc.exe` | 免安装可执行文件         | 双击即运行，需 WebView2 运行时（Win10/11 系统自带） |
 
 ## 用户操作流程
 
@@ -86,13 +86,13 @@ GitHub Actions (windows-latest)
 
 ## 风险与缓解
 
-| 风险 | 影响 | 缓解 |
-|------|------|------|
-| `tauri-plugin-sql` 在 Windows 上编译失败 | 构建失败 | 已在 Cargo.toml 启用 `sqlite` feature，理论可行；若失败，需检查是否需要 `sqlite-bundled` feature |
-| `entitlements.plist` 在 Windows 上无效 | 无影响 | macOS 专属文件，Tauri 在 Windows 构建时会自动忽略 |
-| portable `.exe` 缺少 WebView2 运行时 | 用户首次运行失败 | NSIS / MSI 安装包会自动引导安装 WebView2；portable 用户需自备，文档中说明 |
-| GitHub Actions 首次构建缓存未命中 | 构建较慢（约 15-20 分钟） | 后续构建命中 Rust 缓存后约 5-8 分钟 |
-| Windows 文件系统大小写不敏感 | 极小概率路径冲突 | 项目目前无 import 大小写混用情况，构建时会暴露 |
+| 风险                                     | 影响                      | 缓解                                                                                             |
+| ---------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------ |
+| `tauri-plugin-sql` 在 Windows 上编译失败 | 构建失败                  | 已在 Cargo.toml 启用 `sqlite` feature，理论可行；若失败，需检查是否需要 `sqlite-bundled` feature |
+| `entitlements.plist` 在 Windows 上无效   | 无影响                    | macOS 专属文件，Tauri 在 Windows 构建时会自动忽略                                                |
+| portable `.exe` 缺少 WebView2 运行时     | 用户首次运行失败          | NSIS / MSI 安装包会自动引导安装 WebView2；portable 用户需自备，文档中说明                        |
+| GitHub Actions 首次构建缓存未命中        | 构建较慢（约 15-20 分钟） | 后续构建命中 Rust 缓存后约 5-8 分钟                                                              |
+| Windows 文件系统大小写不敏感             | 极小概率路径冲突          | 项目目前无 import 大小写混用情况，构建时会暴露                                                   |
 
 ## 验证标准
 

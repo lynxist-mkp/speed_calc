@@ -1,58 +1,58 @@
 <script setup lang="ts">
 // 历史详情抽屉：从右侧滑出，展示某次 session 的所有题目详情
-import { ref, watch } from "vue";
-import { listRecordsBySession, type SessionRow, type RecordRow } from "@/db/index";
-import { typeLabel } from "@/constants/typeLabels";
+import { ref, watch } from 'vue'
+import { listRecordsBySession, type SessionRow, type RecordRow } from '@/db/index'
+import { typeLabel } from '@/constants/typeLabels'
 
 interface Props {
-  visible: boolean;
-  session: SessionRow | null;
+  visible: boolean
+  session: SessionRow | null
 }
-const props = defineProps<Props>();
-const emit = defineEmits<{ close: [] }>();
+const props = defineProps<Props>()
+const emit = defineEmits<{ close: [] }>()
 
-const records = ref<RecordRow[]>([]);
-const loading = ref(false);
+const records = ref<RecordRow[]>([])
+const loading = ref(false)
 
 watch(
   () => [props.visible, props.session?.id],
   async ([vis]) => {
     if (vis && props.session) {
-      loading.value = true;
+      loading.value = true
       try {
-        records.value = await listRecordsBySession(props.session.id);
+        records.value = await listRecordsBySession(props.session.id)
       } finally {
-        loading.value = false;
+        loading.value = false
       }
     } else {
-      records.value = [];
+      records.value = []
     }
   },
-  { immediate: true }
-);
+  { immediate: true },
+)
 
 function formatTime(ms: number): string {
-  if (!ms) return "0s";
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
+  if (!ms) return '0s'
+  if (ms < 1000) return `${ms}ms`
+  return `${(ms / 1000).toFixed(1)}s`
 }
 
 function formatDate(ts: number): string {
-  const d = new Date(ts);
-  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const d = new Date(ts)
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 function accuracy(s: SessionRow): number {
-  return s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0;
+  return s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
 }
 
 // 拦截 Esc/Enter 防止冒泡到练习页
 function onKeydownCapture(e: KeyboardEvent) {
-  if (!props.visible) return;
-  if (e.code === "Escape") {
-    e.stopPropagation();
-    e.preventDefault();
-    emit("close");
+  if (!props.visible) return
+  if (e.code === 'Escape') {
+    e.stopPropagation()
+    e.preventDefault()
+    emit('close')
   }
 }
 
@@ -60,12 +60,12 @@ watch(
   () => props.visible,
   (v) => {
     if (v) {
-      window.addEventListener("keydown", onKeydownCapture, true);
+      window.addEventListener('keydown', onKeydownCapture, true)
     } else {
-      window.removeEventListener("keydown", onKeydownCapture, true);
+      window.removeEventListener('keydown', onKeydownCapture, true)
     }
-  }
-);
+  },
+)
 </script>
 
 <template>
@@ -94,7 +94,9 @@ watch(
               </span>
               <span class="stat-item">
                 <span class="stat-label">正确率</span>
-                <span class="stat-value" :class="accuracy(session) >= 75 ? 'good' : 'low'">{{ accuracy(session) }}%</span>
+                <span class="stat-value" :class="accuracy(session) >= 75 ? 'good' : 'low'"
+                  >{{ accuracy(session) }}%</span
+                >
               </span>
             </div>
           </header>
@@ -141,8 +143,12 @@ watch(
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .drawer-panel {
@@ -161,8 +167,12 @@ watch(
 }
 
 @keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .drawer-close {
@@ -228,8 +238,12 @@ watch(
   font-weight: 600;
   color: var(--app-text-bright);
   font-variant-numeric: tabular-nums;
-  &.good { color: var(--app-color-primary); }
-  &.low { color: #dc6c6c; }
+  &.good {
+    color: var(--app-color-primary);
+  }
+  &.low {
+    color: #dc6c6c;
+  }
 }
 
 .drawer-body {

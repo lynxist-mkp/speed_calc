@@ -1,14 +1,14 @@
 <script setup lang="ts">
 // 行测小助手 - 应用根布局
 // sidebar 72px + 单一顶栏（default→AppToolbar / answer→由 view 自带 TopBar）
-import { computed } from "vue";
-import { useRoute } from "vue-router";
-import AppSidebar from "./components/AppSidebar.vue";
-import AppToolbar from "./components/AppToolbar.vue";
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import AppSidebar from './components/AppSidebar.vue'
+import AppToolbar from './components/AppToolbar.vue'
 
-const route = useRoute();
-const layout = computed(() => (route.meta.layout as string | undefined) ?? "default");
-const showAppToolbar = computed(() => layout.value === "default");
+const route = useRoute()
+const layout = computed(() => (route.meta.layout as string | undefined) ?? 'default')
+const showAppToolbar = computed(() => layout.value === 'default')
 </script>
 
 <template>
@@ -31,11 +31,7 @@ const showAppToolbar = computed(() => layout.value === "default");
   width: 100%;
   height: 100%;
   background: var(--app-bg-page);
-  background-image: radial-gradient(
-    ellipse at top left,
-    rgba(95, 175, 111, 0.06),
-    transparent 60%
-  );
+  background-image: radial-gradient(ellipse at top left, rgba(95, 175, 111, 0.06), transparent 60%);
 }
 
 .app-main {

@@ -16,47 +16,47 @@
 
 ### 阶段 1: 文档门面（6 文件）
 
-| 路径 | 职责 |
-|---|---|
-| `LICENSE` | GPL-3.0 官方全文 + 版权行 |
-| `CHANGELOG.md` | 版本变更记录入口 |
-| `README.md` | 项目门面，GitHub 主页渲染 |
-| `CONTRIBUTING.md` | 贡献者指南 |
-| `SECURITY.md` | 安全漏洞报告流程 |
+| 路径                 | 职责                                     |
+| -------------------- | ---------------------------------------- |
+| `LICENSE`            | GPL-3.0 官方全文 + 版权行                |
+| `CHANGELOG.md`       | 版本变更记录入口                         |
+| `README.md`          | 项目门面，GitHub 主页渲染                |
+| `CONTRIBUTING.md`    | 贡献者指南                               |
+| `SECURITY.md`        | 安全漏洞报告流程                         |
 | `CODE_OF_CONDUCT.md` | 社区行为准则（Contributor Covenant 2.1） |
 
 ### 阶段 2: 工程化（8 文件 + package.json 修改）
 
-| 路径 | 职责 |
-|---|---|
-| `.editorconfig` | 跨编辑器基础格式 |
-| `.prettierrc.json` | Prettier 格式化规则 |
-| `.prettierignore` | Prettier 忽略清单 |
-| `eslint.config.js` | ESLint flat config（v9+） |
-| `commitlint.config.js` | Conventional Commits 中文适配 |
-| `lint-staged.config.js` | lint-staged 文件类型映射 |
-| `.husky/pre-commit` | pre-commit 钩子 |
-| `.husky/commit-msg` | commit-msg 钩子 |
-| `package.json`（修改） | 新增 scripts + devDependencies |
+| 路径                    | 职责                           |
+| ----------------------- | ------------------------------ |
+| `.editorconfig`         | 跨编辑器基础格式               |
+| `.prettierrc.json`      | Prettier 格式化规则            |
+| `.prettierignore`       | Prettier 忽略清单              |
+| `eslint.config.js`      | ESLint flat config（v9+）      |
+| `commitlint.config.js`  | Conventional Commits 中文适配  |
+| `lint-staged.config.js` | lint-staged 文件类型映射       |
+| `.husky/pre-commit`     | pre-commit 钩子                |
+| `.husky/commit-msg`     | commit-msg 钩子                |
+| `package.json`（修改）  | 新增 scripts + devDependencies |
 
 ### 阶段 3: CI/CD（4 文件，删除 1 文件）
 
-| 路径 | 职责 |
-|---|---|
-| `.github/workflows/ci.yml` | 跨平台 lint-test CI |
-| `.github/workflows/release.yml` | Release 构建 + GitHub Release |
-| `.github/workflows/codeql.yml` | CodeQL 静态安全分析 |
-| `.github/dependabot.yml` | 依赖更新监控 |
-| `.github/workflows/build-windows.yml`（删除） | 合并到 release.yml 后删除 |
+| 路径                                          | 职责                          |
+| --------------------------------------------- | ----------------------------- |
+| `.github/workflows/ci.yml`                    | 跨平台 lint-test CI           |
+| `.github/workflows/release.yml`               | Release 构建 + GitHub Release |
+| `.github/workflows/codeql.yml`                | CodeQL 静态安全分析           |
+| `.github/dependabot.yml`                      | 依赖更新监控                  |
+| `.github/workflows/build-windows.yml`（删除） | 合并到 release.yml 后删除     |
 
 ### 阶段 4: 社区（4 模板）
 
-| 路径 | 职责 |
-|---|---|
-| `.github/ISSUE_TEMPLATE/bug_report.yml` | Bug 报告表单 |
-| `.github/ISSUE_TEMPLATE/feature_request.yml` | 功能请求表单 |
-| `.github/ISSUE_TEMPLATE/config.yml` | Issue 模板配置 |
-| `.github/PULL_REQUEST_TEMPLATE.md` | PR 模板 |
+| 路径                                         | 职责           |
+| -------------------------------------------- | -------------- |
+| `.github/ISSUE_TEMPLATE/bug_report.yml`      | Bug 报告表单   |
+| `.github/ISSUE_TEMPLATE/feature_request.yml` | 功能请求表单   |
+| `.github/ISSUE_TEMPLATE/config.yml`          | Issue 模板配置 |
+| `.github/PULL_REQUEST_TEMPLATE.md`           | PR 模板        |
 
 ---
 
@@ -65,12 +65,14 @@
 ### 任务 1: 创建 LICENSE + CHANGELOG.md
 
 **文件：**
+
 - 创建：`LICENSE`
 - 创建：`CHANGELOG.md`
 
 - [ ] **步骤 1: 下载 GPL-3.0 官方全文**
 
 运行：
+
 ```bash
 curl -sL https://www.gnu.org/licenses/gpl-3.0.txt -o LICENSE
 ```
@@ -78,12 +80,14 @@ curl -sL https://www.gnu.org/licenses/gpl-3.0.txt -o LICENSE
 - [ ] **步骤 2: 在 LICENSE 顶部追加版权行**
 
 在文件最顶部插入：
+
 ```
 Copyright (c) 2026 linkslinks
 
 ```
 
 运行：
+
 ```bash
 printf 'Copyright (c) 2026 linkslinks\n\n' | cat - LICENSE > LICENSE.tmp && mv LICENSE.tmp LICENSE
 ```
@@ -92,6 +96,7 @@ printf 'Copyright (c) 2026 linkslinks\n\n' | cat - LICENSE > LICENSE.tmp && mv L
 
 运行：`head -5 LICENSE`
 预期输出：
+
 ```
 Copyright (c) 2026 linkslinks
 
@@ -155,6 +160,7 @@ git commit -m "docs: 添加 GPL-3.0 LICENSE 与 CHANGELOG"
 ### 任务 2: 创建 README.md
 
 **文件：**
+
 - 创建：`README.md`
 
 - [ ] **步骤 1: 创建 README.md**
@@ -190,13 +196,13 @@ git commit -m "docs: 添加 GPL-3.0 LICENSE 与 CHANGELOG"
 
 ## 前置依赖
 
-| 依赖 | 版本要求 | 说明 |
-|---|---|---|
-| Node.js | ≥ 24 | 推荐使用 LTS |
-| pnpm | ≥ 11 | 包管理器 |
-| Rust | stable | Tauri 编译需要 |
-| macOS | ≥ 26 | 仅 macOS 构建需要 |
-| Windows | ≥ 10 | 仅 Windows 构建需要 |
+| 依赖    | 版本要求 | 说明                |
+| ------- | -------- | ------------------- |
+| Node.js | ≥ 24     | 推荐使用 LTS        |
+| pnpm    | ≥ 11     | 包管理器            |
+| Rust    | stable   | Tauri 编译需要      |
+| macOS   | ≥ 26     | 仅 macOS 构建需要   |
+| Windows | ≥ 10     | 仅 Windows 构建需要 |
 
 ## 快速开始
 
@@ -257,15 +263,15 @@ speed_calc/
 
 ## 技术栈
 
-| 层 | 选型 |
-|---|---|
-| 桌面框架 | Tauri 2.x |
-| 前端框架 | Vue 3 + TypeScript + Vite |
-| UI 组件库 | Element Plus（Solarized 深色主题） |
-| 状态管理 | Pinia |
-| 图表 / 公式 | ECharts / KaTeX |
-| 本地存储 | SQLite（tauri-plugin-sql） |
-| 测试框架 | Vitest + @vue/test-utils |
+| 层          | 选型                               |
+| ----------- | ---------------------------------- |
+| 桌面框架    | Tauri 2.x                          |
+| 前端框架    | Vue 3 + TypeScript + Vite          |
+| UI 组件库   | Element Plus（Solarized 深色主题） |
+| 状态管理    | Pinia                              |
+| 图表 / 公式 | ECharts / KaTeX                    |
+| 本地存储    | SQLite（tauri-plugin-sql）         |
+| 测试框架    | Vitest + @vue/test-utils           |
 
 ## 贡献
 
@@ -309,6 +315,7 @@ git commit -m "docs: 添加 README 项目门面"
 ### 任务 3: 创建 CONTRIBUTING.md + SECURITY.md + CODE_OF_CONDUCT.md
 
 **文件：**
+
 - 创建：`CONTRIBUTING.md`
 - 创建：`SECURITY.md`
 - 创建：`CODE_OF_CONDUCT.md`
@@ -330,11 +337,11 @@ git commit -m "docs: 添加 README 项目门面"
 
 ### 依赖安装
 
-| 依赖 | 版本要求 |
-|---|---|
-| Node.js | ≥ 24 |
-| pnpm | ≥ 11 |
-| Rust | stable |
+| 依赖    | 版本要求 |
+| ------- | -------- |
+| Node.js | ≥ 24     |
+| pnpm    | ≥ 11     |
+| Rust    | stable   |
 
 ```bash
 # 克隆仓库
@@ -379,21 +386,22 @@ pnpm typecheck  # 应无错误
 
 **type 枚举**：
 
-| type | 说明 |
-|---|---|
-| `feat` | 新功能 |
-| `fix` | Bug 修复 |
-| `docs` | 文档变更 |
-| `style` | 代码格式（不影响功能） |
+| type       | 说明                       |
+| ---------- | -------------------------- |
+| `feat`     | 新功能                     |
+| `fix`      | Bug 修复                   |
+| `docs`     | 文档变更                   |
+| `style`    | 代码格式（不影响功能）     |
 | `refactor` | 重构（既非 feat 也非 fix） |
-| `perf` | 性能优化 |
-| `test` | 测试相关 |
-| `chore` | 构建 / 工具链 / 杂项 |
-| `build` | 构建系统或外部依赖变更 |
-| `ci` | CI 配置变更 |
-| `revert` | 回滚某次提交 |
+| `perf`     | 性能优化                   |
+| `test`     | 测试相关                   |
+| `chore`    | 构建 / 工具链 / 杂项       |
+| `build`    | 构建系统或外部依赖变更     |
+| `ci`       | CI 配置变更                |
+| `revert`   | 回滚某次提交               |
 
 **示例**：
+
 ```
 feat: 新增 Norman 键盘布局支持
 fix: 修复 CompositeSession 负数输入失效
@@ -475,7 +483,6 @@ refactor: PracticeSession handleKeydown 改用 keymap 模块
 
 - 通过 GitHub Issue / PR 沟通
 - 安全漏洞请按 [SECURITY.md](SECURITY.md) 流程报告，勿在公开 Issue 提交
-
 ````
 
 - [ ] **步骤 2: 创建 SECURITY.md**
@@ -489,10 +496,10 @@ refactor: PracticeSession handleKeydown 改用 keymap 模块
 
 本项目仅对最新 release 提供安全更新。
 
-| 版本 | 支持状态 |
-|---|---|
-| 最新 release | ✅ 支持 |
-| 旧版本 | ❌ 不支持 |
+| 版本         | 支持状态  |
+| ------------ | --------- |
+| 最新 release | ✅ 支持   |
+| 旧版本       | ❌ 不支持 |
 
 ## 报告安全漏洞
 
@@ -506,10 +513,10 @@ refactor: PracticeSession handleKeydown 改用 keymap 模块
 
 ### 响应时间
 
-| 阶段 | 时间 |
-|---|---|
-| 确认收到报告 | 72 小时内 |
-| 初步评估 | 7 天内 |
+| 阶段         | 时间                           |
+| ------------ | ------------------------------ |
+| 确认收到报告 | 72 小时内                      |
+| 初步评估     | 7 天内                         |
 | 修复版本发布 | 视严重程度而定（高危 30 天内） |
 
 ### 公开披露
@@ -532,6 +539,7 @@ Watch 本仓库或订阅 [GitHub Security Advisories](https://github.com/linksli
 - [ ] **步骤 3: 下载 Contributor Covenant 2.1 标准模板**
 
 运行：
+
 ```bash
 curl -sL https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md -o CODE_OF_CONDUCT.md
 ```
@@ -539,12 +547,14 @@ curl -sL https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_o
 - [ ] **步骤 4: 在 CODE_OF_CONDUCT.md 顶部添加项目说明**
 
 在文件最顶部插入：
+
 ```
 # Contributor Covenant Code of Conduct
 
 ```
 
 如果下载的文件已有此标题，跳过此步骤。否则运行：
+
 ```bash
 head -1 CODE_OF_CONDUCT.md | grep -q "Contributor Covenant Code of Conduct" || printf '# Contributor Covenant Code of Conduct\n\n' | cat - CODE_OF_CONDUCT.md > CODE_OF_CONDUCT.md.tmp && mv CODE_OF_CONDUCT.md.tmp CODE_OF_CONDUCT.md
 ```
@@ -568,6 +578,7 @@ git commit -m "docs: 添加 CONTRIBUTING / SECURITY / CODE_OF_CONDUCT"
 ### 任务 4: 创建 .editorconfig + Prettier 配置
 
 **文件：**
+
 - 创建：`.editorconfig`
 - 创建：`.prettierrc.json`
 - 创建：`.prettierignore`
@@ -688,6 +699,7 @@ git commit -m "chore: 添加 .editorconfig 与 Prettier 配置"
 ### 任务 5: 创建 ESLint flat config
 
 **文件：**
+
 - 创建：`eslint.config.js`
 
 - [ ] **步骤 1: 创建 eslint.config.js**
@@ -762,6 +774,7 @@ git commit -m "chore: 添加 ESLint flat config（TS + Vue3 + Prettier）"
 ### 任务 6: 安装依赖 + 配置 husky + lint-staged + commitlint
 
 **文件：**
+
 - 修改：`package.json`
 - 创建：`commitlint.config.js`
 - 创建：`lint-staged.config.js`
@@ -771,6 +784,7 @@ git commit -m "chore: 添加 ESLint flat config（TS + Vue3 + Prettier）"
 - [ ] **步骤 1: 安装 devDependencies**
 
 运行：
+
 ```bash
 pnpm add -D eslint@^9 @eslint/js typescript-eslint@^8 eslint-plugin-vue@^9 eslint-config-prettier prettier husky lint-staged @commitlint/cli @commitlint/config-conventional
 ```
@@ -869,6 +883,7 @@ pnpm commitlint --edit
 - [ ] **步骤 9: 确保 husky 钩子可执行**
 
 运行：
+
 ```bash
 chmod +x .husky/pre-commit .husky/commit-msg
 ```
@@ -876,15 +891,19 @@ chmod +x .husky/pre-commit .husky/commit-msg
 - [ ] **步骤 10: 验证 commitlint 可拒绝错误格式**
 
 运行（应失败）：
+
 ```bash
 echo "bad message format" | pnpm commitlint
 ```
+
 预期：非零退出码。
 
 运行（应通过）：
+
 ```bash
 echo "feat: 测试消息" | pnpm commitlint
 ```
+
 预期：退出码 0。
 
 - [ ] **步骤 11: Commit**
@@ -899,6 +918,7 @@ git commit -m "chore: 集成 husky + lint-staged + commitlint 工程化链路"
 ### 任务 7: 一次性格式化 + 验证 lint/test/typecheck 通过
 
 **文件：**
+
 - 修改：所有源码文件（一次性 Prettier 格式化）
 
 - [ ] **步骤 1: 运行 Prettier 一次性格式化**
@@ -936,9 +956,11 @@ git commit -m "style: 应用 Prettier 一次性格式化"
 - [ ] **步骤 7: 验证 commitlint 钩子生效**
 
 尝试运行（应被拒绝）：
+
 ```bash
 git commit -m "bad format" --allow-empty 2>&1 || true
 ```
+
 预期：commitlint 拒绝，非零退出码。
 
 ---
@@ -948,6 +970,7 @@ git commit -m "bad format" --allow-empty 2>&1 || true
 ### 任务 8: 创建跨平台 CI workflow
 
 **文件：**
+
 - 创建：`.github/workflows/ci.yml`
 
 - [ ] **步骤 1: 创建 ci.yml**
@@ -1034,6 +1057,7 @@ git commit -m "ci: 添加跨平台 lint+test+typecheck CI（mac/win/ubuntu）"
 ### 任务 9: 创建 Release workflow + 删除 build-windows.yml
 
 **文件：**
+
 - 创建：`.github/workflows/release.yml`
 - 删除：`.github/workflows/build-windows.yml`
 
@@ -1123,6 +1147,7 @@ jobs:
 - [ ] **步骤 2: 删除 build-windows.yml**
 
 运行：
+
 ```bash
 git rm .github/workflows/build-windows.yml
 ```
@@ -1144,6 +1169,7 @@ git commit -m "ci: 合并 build-windows 到 release workflow，新增 macOS 构�
 ### 任务 10: 创建 CodeQL workflow + Dependabot
 
 **文件：**
+
 - 创建：`.github/workflows/codeql.yml`
 - 创建：`.github/dependabot.yml`
 
@@ -1276,6 +1302,7 @@ git commit -m "ci: 添加 CodeQL 静态分析与 Dependabot 依赖监控"
 ### 任务 11: 创建 Issue 模板 + PR 模板
 
 **文件：**
+
 - 创建：`.github/ISSUE_TEMPLATE/bug_report.yml`
 - 创建：`.github/ISSUE_TEMPLATE/feature_request.yml`
 - 创建：`.github/ISSUE_TEMPLATE/config.yml`
@@ -1422,7 +1449,7 @@ contact_links:
 
 写入文件 `.github/PULL_REQUEST_TEMPLATE.md`：
 
-````markdown
+```markdown
 ## 概述
 
 <!-- 一段话描述本 PR 做了什么 -->
@@ -1455,7 +1482,7 @@ contact_links:
 - [ ] 文档已更新（如有需要）
 - [ ] commit message 遵循 Conventional Commits
 - [ ] 无 `console.log` / `debugger` 残留
-````
+```
 
 - [ ] **步骤 5: 验证 4 个文件存在**
 
@@ -1480,6 +1507,7 @@ git commit -m "docs: 添加 Issue 模板与 PR 模板"
 - [ ] **步骤 1: 验证所有新增文件存在**
 
 运行：
+
 ```bash
 ls -la LICENSE CHANGELOG.md README.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUCT.md \
   .editorconfig .prettierrc.json .prettierignore eslint.config.js commitlint.config.js \
@@ -1489,6 +1517,7 @@ ls -la LICENSE CHANGELOG.md README.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUC
   .github/ISSUE_TEMPLATE/feature_request.yml .github/ISSUE_TEMPLATE/config.yml \
   .github/PULL_REQUEST_TEMPLATE.md
 ```
+
 预期：所有文件存在。
 
 - [ ] **步骤 2: 验证 build-windows.yml 已删除**
@@ -1499,25 +1528,31 @@ ls -la LICENSE CHANGELOG.md README.md CONTRIBUTING.md SECURITY.md CODE_OF_CONDUC
 - [ ] **步骤 3: 运行完整验证套件**
 
 运行：
+
 ```bash
 pnpm lint && pnpm typecheck && pnpm test
 ```
+
 预期：全部通过，323/323 测试通过。
 
 - [ ] **步骤 4: 验证 husky 钩子可执行**
 
 运行：
+
 ```bash
 ls -la .husky/pre-commit .husky/commit-msg | grep -E '^[^d].*x'
 ```
+
 预期：两个文件均有可执行权限。
 
 - [ ] **步骤 5: 验证 commitlint 拒绝错误格式**
 
 运行：
+
 ```bash
 echo "bad format" | pnpm commitlint && echo "❌ 应被拒绝" || echo "✓ 已拒绝"
 ```
+
 预期：输出 `✓ 已拒绝`。
 
 - [ ] **步骤 6: 查看提交历史**
@@ -1539,13 +1574,13 @@ git status
 
 ### 规格覆盖度
 
-| 规格章节 | 任务 |
-|---|---|
-| 阶段 1: 文档门面 | 任务 1, 2, 3 |
+| 规格章节           | 任务            |
+| ------------------ | --------------- |
+| 阶段 1: 文档门面   | 任务 1, 2, 3    |
 | 阶段 2: 工程化文件 | 任务 4, 5, 6, 7 |
-| 阶段 3: CI/CD | 任务 8, 9, 10 |
-| 阶段 4: 社区文件 | 任务 11 |
-| 验收标准 | 任务 12 |
+| 阶段 3: CI/CD      | 任务 8, 9, 10   |
+| 阶段 4: 社区文件   | 任务 11         |
+| 验收标准           | 任务 12         |
 
 ### 占位符扫描
 

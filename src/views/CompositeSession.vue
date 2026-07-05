@@ -1,234 +1,232 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import TopBar from "@/components/TopBar.vue";
-import Numpad from "@/components/Numpad.vue";
-import KeymapGuideModal from "@/components/KeymapGuideModal.vue";
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import TopBar from '@/components/TopBar.vue'
+import Numpad from '@/components/Numpad.vue'
+import KeymapGuideModal from '@/components/KeymapGuideModal.vue'
 import {
   generateComposite,
   COMPOSITE_FIELDS,
   type CompositeData,
   type CompositeAnswers,
-} from "@/generators/compositeAnalysis";
-import {
-  insertSession,
-  insertRecord,
-  updateSession,
-} from "@/db/index";
-import { resolveNumpadKey } from "@/utils/keymap";
-import { useSettingsStore } from "@/stores/settings";
+} from '@/generators/compositeAnalysis'
+import { insertSession, insertRecord, updateSession } from '@/db/index'
+import { resolveNumpadKey } from '@/utils/keymap'
+import { useSettingsStore } from '@/stores/settings'
 
-const router = useRouter();
-const settings = useSettingsStore();
+const router = useRouter()
+const settings = useSettingsStore()
 
 // 键盘指引弹窗：首次进入自动显示，之后可点 ? 按钮呼出
-const GUIDE_SHOWN_KEY = "keymap:guideShown";
-const guideVisible = ref(false);
+const GUIDE_SHOWN_KEY = 'keymap:guideShown'
+const guideVisible = ref(false)
 
 function openGuide() {
-  guideVisible.value = true;
+  guideVisible.value = true
 }
 
 function closeGuide() {
-  guideVisible.value = false;
+  guideVisible.value = false
   try {
-    localStorage.setItem(GUIDE_SHOWN_KEY, "1");
+    localStorage.setItem(GUIDE_SHOWN_KEY, '1')
   } catch {
     // localStorage 不可用，忽略
   }
 }
 
 function goSettingsFromGuide() {
-  guideVisible.value = false;
+  guideVisible.value = false
   try {
-    localStorage.setItem(GUIDE_SHOWN_KEY, "1");
+    localStorage.setItem(GUIDE_SHOWN_KEY, '1')
   } catch {
     // 忽略
   }
-  router.push("/settings");
+  router.push('/settings')
 }
 
-const data = ref<CompositeData | null>(null);
-const answers = ref<Partial<Record<keyof CompositeAnswers, string>>>({});
-const activeField = ref<keyof CompositeAnswers | null>(null);
-const submitted = ref(false);
-const results = ref<Partial<Record<keyof CompositeAnswers, boolean>>>({});
-const elapsedMs = ref(0);
-const startedAt = ref<number | null>(null);
-let timerId: number | null = null;
-const trueAnswers = ref<CompositeAnswers | null>(null);
+const data = ref<CompositeData | null>(null)
+const answers = ref<Partial<Record<keyof CompositeAnswers, string>>>({})
+const activeField = ref<keyof CompositeAnswers | null>(null)
+const submitted = ref(false)
+const results = ref<Partial<Record<keyof CompositeAnswers, boolean>>>({})
+const elapsedMs = ref(0)
+const startedAt = ref<number | null>(null)
+let timerId: number | null = null
+const trueAnswers = ref<CompositeAnswers | null>(null)
 
 const knownFields = computed<{ label: string; value: string }[]>(() => {
-  if (!data.value) return [];
-  const d = data.value;
+  if (!data.value) return []
+  const d = data.value
   return [
-    { label: "现期 A", value: String(d.currentA) },
-    { label: "现期 B", value: String(d.currentB) },
-    { label: "增长率 r1", value: `${d.r1}%` },
-    { label: "增长率 r2", value: `${d.r2}%` },
-  ];
-});
+    { label: '现期 A', value: String(d.currentA) },
+    { label: '现期 B', value: String(d.currentB) },
+    { label: '增长率 r1', value: `${d.r1}%` },
+    { label: '增长率 r2', value: `${d.r2}%` },
+  ]
+})
 
 function tick() {
   if (startedAt.value !== null) {
-    elapsedMs.value = Math.floor(performance.now() - startedAt.value);
+    elapsedMs.value = Math.floor(performance.now() - startedAt.value)
   }
 }
 
 function startTimer() {
-  startedAt.value = performance.now();
-  if (timerId !== null) window.clearInterval(timerId);
-  timerId = window.setInterval(tick, 100);
+  startedAt.value = performance.now()
+  if (timerId !== null) window.clearInterval(timerId)
+  timerId = window.setInterval(tick, 100)
 }
 
 function stopTimer() {
   if (timerId !== null) {
-    window.clearInterval(timerId);
-    timerId = null;
+    window.clearInterval(timerId)
+    timerId = null
   }
 }
 
 function refreshData() {
-  const q = generateComposite();
-  data.value = q.data;
-  trueAnswers.value = q.answers;
-  answers.value = {};
-  submitted.value = false;
-  results.value = {};
-  activeField.value = null;
-  startTimer();
+  const q = generateComposite()
+  data.value = q.data
+  trueAnswers.value = q.answers
+  answers.value = {}
+  submitted.value = false
+  results.value = {}
+  activeField.value = null
+  startTimer()
 }
 
 function onInput(char: string) {
-  if (activeField.value === null) return;
-  const k = activeField.value;
-  answers.value[k] = (answers.value[k] ?? "") + char;
+  if (activeField.value === null) return
+  const k = activeField.value
+  answers.value[k] = (answers.value[k] ?? '') + char
 }
 
 function onBackspace() {
-  if (activeField.value === null) return;
-  const k = activeField.value;
-  const cur = answers.value[k] ?? "";
-  answers.value[k] = cur.slice(0, -1);
+  if (activeField.value === null) return
+  const k = activeField.value
+  const cur = answers.value[k] ?? ''
+  answers.value[k] = cur.slice(0, -1)
 }
 
 function onClear() {
-  if (activeField.value === null) return;
-  answers.value[activeField.value] = "";
+  if (activeField.value === null) return
+  answers.value[activeField.value] = ''
 }
 
 function onSubmit() {
-  if (submitted.value) return;
-  if (!trueAnswers.value || !data.value) return;
-  const ta = trueAnswers.value;
-  let correctCount = 0;
+  if (submitted.value) return
+  if (!trueAnswers.value || !data.value) return
+  const ta = trueAnswers.value
+  let correctCount = 0
   for (const f of COMPOSITE_FIELDS) {
-    const raw = answers.value[f.key];
-    const userAns = raw === undefined || raw === "" ? NaN : Number(raw);
-    const trueAns = ta[f.key];
+    const raw = answers.value[f.key]
+    const userAns = raw === undefined || raw === '' ? NaN : Number(raw)
+    const trueAns = ta[f.key]
     const isCorrect =
       !isNaN(userAns) &&
-      (trueAns === 0 ? userAns === 0 : Math.abs(userAns - trueAns) / Math.abs(trueAns) <= 0.05);
-    results.value[f.key] = isCorrect;
-    if (isCorrect) correctCount++;
+      (trueAns === 0 ? userAns === 0 : Math.abs(userAns - trueAns) / Math.abs(trueAns) <= 0.05)
+    results.value[f.key] = isCorrect
+    if (isCorrect) correctCount++
   }
-  submitted.value = true;
-  void persistSession(correctCount);
+  submitted.value = true
+  void persistSession(correctCount)
 }
 
 async function persistSession(correctCount: number) {
   try {
     const sessionId = await insertSession({
-      type: "composite",
-      subtype: "一表通算",
-      difficulty: "normal",
+      type: 'composite',
+      subtype: '一表通算',
+      difficulty: 'normal',
       total: 13,
       nback: 0,
-    });
+    })
     for (let i = 0; i < COMPOSITE_FIELDS.length; i++) {
-      const f = COMPOSITE_FIELDS[i];
+      const f = COMPOSITE_FIELDS[i]
       await insertRecord({
         sessionId,
         qIndex: i,
         question: f.label,
-        userAnswer: String(answers.value[f.key] ?? ""),
-        trueAnswer: String(trueAnswers.value?.[f.key] ?? ""),
+        userAnswer: String(answers.value[f.key] ?? ''),
+        trueAnswer: String(trueAnswers.value?.[f.key] ?? ''),
         isCorrect: results.value[f.key] ?? false,
         tolerance: 0.05,
         timeSpentMs: 0,
-      });
+      })
     }
     await updateSession(sessionId, {
       correct: correctCount,
       durationMs: elapsedMs.value,
-    });
+    })
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : String(e));
+    ElMessage.error(e instanceof Error ? e.message : String(e))
   }
 }
 
 function onBack() {
-  router.push("/practice/data-analysis");
+  router.push('/practice/data-analysis')
 }
 
 onMounted(() => {
-  refreshData();
-  window.addEventListener("keydown", handleKeydown);
+  refreshData()
+  window.addEventListener('keydown', handleKeydown)
   // 首次进入时自动弹出键盘指引
   try {
     if (!localStorage.getItem(GUIDE_SHOWN_KEY)) {
-      guideVisible.value = true;
+      guideVisible.value = true
     }
   } catch {
     // localStorage 不可用，忽略
   }
-});
+})
 
 onBeforeUnmount(() => {
-  stopTimer();
-  window.removeEventListener("keydown", handleKeydown);
-});
+  stopTimer()
+  window.removeEventListener('keydown', handleKeydown)
+})
 
 function handleKeydown(e: KeyboardEvent) {
   // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发，以及 Space 在按钮上触发点击
-  if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space")
-      && e.target instanceof HTMLButtonElement) {
-    return;
+  if (
+    (e.code === 'Enter' || e.code === 'Escape' || e.code === 'Space') &&
+    e.target instanceof HTMLButtonElement
+  ) {
+    return
   }
 
-  const r = resolveNumpadKey(e, settings.global.keyboardInputLayout);
-  if (r.type === "input") {
-    e.preventDefault();
-    onInput(r.payload);
-  } else if (r.type === "function") {
-    e.preventDefault();
-    if (r.payload === "backspace") onBackspace();
-    else if (r.payload === "submit") onSubmit();
-    else if (r.payload === "clear") onClear();
-    else if (r.payload === "toggle-sign") onInput("-");
+  const r = resolveNumpadKey(e, settings.global.keyboardInputLayout)
+  if (r.type === 'input') {
+    e.preventDefault()
+    onInput(r.payload)
+  } else if (r.type === 'function') {
+    e.preventDefault()
+    if (r.payload === 'backspace') onBackspace()
+    else if (r.payload === 'submit') onSubmit()
+    else if (r.payload === 'clear') onClear()
+    else if (r.payload === 'toggle-sign') onInput('-')
     // composite 用 onInput("-") 追加负号（与旧 e.key==='-' 行为一致）；不处理 restart（用 onBack 返回）
   }
 }
 
-const correctCount = computed(() =>
-  Object.values(results.value).filter(Boolean).length
-);
+const correctCount = computed(() => Object.values(results.value).filter(Boolean).length)
 </script>
 
 <template>
   <div class="composite-session">
-    <TopBar
-      title="一表通算"
-      :progress="''"
-      :elapsed-ms="elapsedMs"
-      @back="onBack"
-    >
+    <TopBar title="一表通算" :progress="''" :elapsed-ms="elapsedMs" @back="onBack">
       <template #left>
         <button class="back-btn glass-button" @click="onBack">‹</button>
       </template>
       <template #right>
-        <button class="guide-btn glass-button" aria-label="键盘输入指引" title="键盘输入指引" @click="openGuide">?</button>
+        <button
+          class="guide-btn glass-button"
+          aria-label="键盘输入指引"
+          title="键盘输入指引"
+          @click="openGuide"
+        >
+          ?
+        </button>
       </template>
     </TopBar>
 
@@ -274,9 +272,7 @@ const correctCount = computed(() =>
     </div>
 
     <!-- 已提交反馈 -->
-    <div v-if="submitted" class="feedback">
-      正确 {{ correctCount }}/13
-    </div>
+    <div v-if="submitted" class="feedback">正确 {{ correctCount }}/13</div>
 
     <!-- Numpad -->
     <Numpad

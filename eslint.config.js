@@ -3,6 +3,36 @@ import tseslint from 'typescript-eslint'
 import pluginVue from 'eslint-plugin-vue'
 import eslintConfigPrettier from 'eslint-config-prettier'
 
+// 浏览器全局变量（Vue 组件中使用 window / localStorage / HTMLElement 等）
+const browserGlobals = {
+  window: 'readonly',
+  document: 'readonly',
+  localStorage: 'readonly',
+  sessionStorage: 'readonly',
+  performance: 'readonly',
+  navigator: 'readonly',
+  location: 'readonly',
+  history: 'readonly',
+  console: 'readonly',
+  setTimeout: 'readonly',
+  clearTimeout: 'readonly',
+  setInterval: 'readonly',
+  clearInterval: 'readonly',
+  requestAnimationFrame: 'readonly',
+  cancelAnimationFrame: 'readonly',
+  HTMLElement: 'readonly',
+  HTMLButtonElement: 'readonly',
+  HTMLInputElement: 'readonly',
+  HTMLDivElement: 'readonly',
+  HTMLCanvasElement: 'readonly',
+  HTMLSpanElement: 'readonly',
+  Event: 'readonly',
+  KeyboardEvent: 'readonly',
+  PointerEvent: 'readonly',
+  MouseEvent: 'readonly',
+  CustomEvent: 'readonly',
+}
+
 export default [
   {
     ignores: [
@@ -12,9 +42,11 @@ export default [
       'coverage/**',
       'ref/**',
       'docs/superpowers/**',
+      // superpowers 技能框架脚本为 CommonJS，使用 require/console/process，非项目源码
+      '.trae/**',
       '.vite/**',
       '.vitest/**',
-      '*.d.ts',
+      '**/*.d.ts',
     ],
   },
   js.configs.recommended,
@@ -23,6 +55,7 @@ export default [
   {
     files: ['**/*.vue'],
     languageOptions: {
+      globals: browserGlobals,
       parserOptions: {
         parser: tseslint.parser,
       },

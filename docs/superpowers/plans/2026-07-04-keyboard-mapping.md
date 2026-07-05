@@ -15,14 +15,17 @@
 ## 文件结构
 
 **新增文件：**
+
 - `src/utils/keymap.ts` — 键位映射常量 + 查询纯函数
 - `src/utils/__tests__/keymap.test.ts` — keymap.ts 的单元测试
 
 **修改文件：**
+
 - `src/views/PracticeSession.vue` — `handleKeydown` 改用 resolve 函数
 - `src/views/CompositeSession.vue` — `handleKeydown` 改用 resolve 函数
 
 **不改文件：**
+
 - `src/components/Numpad.vue` / `src/components/CompareKeypad.vue` — 浮窗点击交互不变
 - `src/stores/practice.ts` — store 接口不变
 
@@ -31,6 +34,7 @@
 ## 任务 1：创建 keymap.ts 模块（TDD）
 
 **文件：**
+
 - 创建：`src/utils/keymap.ts`
 - 测试：`src/utils/__tests__/keymap.test.ts`
 
@@ -39,88 +43,88 @@
 创建 `src/utils/__tests__/keymap.test.ts`：
 
 ```typescript
-import { describe, it, expect } from "vitest";
-import { resolveNumpadKey, resolveCompareKey } from "@/utils/keymap";
+import { describe, it, expect } from 'vitest'
+import { resolveNumpadKey, resolveCompareKey } from '@/utils/keymap'
 
-describe("resolveNumpadKey - 数字题模式", () => {
+describe('resolveNumpadKey - 数字题模式', () => {
   // 右手小键盘区映射（方案 A 核心）
-  it("KeyU → 7", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyU" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "7" });
-  });
+  it('KeyU → 7', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyU' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '7' })
+  })
 
-  it("KeyI → 8", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyI" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "8" });
-  });
+  it('KeyI → 8', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyI' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '8' })
+  })
 
-  it("KeyO → 9", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyO" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "9" });
-  });
+  it('KeyO → 9', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyO' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '9' })
+  })
 
-  it("KeyJ → 4", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyJ" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "4" });
-  });
+  it('KeyJ → 4', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyJ' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '4' })
+  })
 
-  it("KeyK → 5", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyK" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "5" });
-  });
+  it('KeyK → 5', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyK' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '5' })
+  })
 
-  it("KeyL → 6", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyL" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "6" });
-  });
+  it('KeyL → 6', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyL' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '6' })
+  })
 
-  it("KeyM → 1", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyM" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "1" });
-  });
+  it('KeyM → 1', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyM' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '1' })
+  })
 
-  it("Comma → 2", () => {
-    const e = new KeyboardEvent("keydown", { code: "Comma" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "2" });
-  });
+  it('Comma → 2', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Comma' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '2' })
+  })
 
-  it("Period → 3", () => {
-    const e = new KeyboardEvent("keydown", { code: "Period" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "3" });
-  });
+  it('Period → 3', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Period' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '3' })
+  })
 
-  it("Space → 0", () => {
-    const e = new KeyboardEvent("keydown", { code: "Space" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "0" });
-  });
+  it('Space → 0', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Space' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '0' })
+  })
 
-  it("Slash → .（小数点）", () => {
-    const e = new KeyboardEvent("keydown", { code: "Slash" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "." });
-  });
+  it('Slash → .（小数点）', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Slash' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '.' })
+  })
 
   // 横排数字键（备用）
-  it("Digit1 → 1", () => {
-    const e = new KeyboardEvent("keydown", { code: "Digit1" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "1" });
-  });
+  it('Digit1 → 1', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Digit1' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '1' })
+  })
 
-  it("Digit0 → 0", () => {
-    const e = new KeyboardEvent("keydown", { code: "Digit0" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "0" });
-  });
+  it('Digit0 → 0', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Digit0' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '0' })
+  })
 
-  it("Digit9 → 9", () => {
-    const e = new KeyboardEvent("keydown", { code: "Digit9" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "9" });
-  });
+  it('Digit9 → 9', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Digit9' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '9' })
+  })
 
   // 小数点兼容（外接小键盘）
-  it("NumpadDecimal → .", () => {
-    const e = new KeyboardEvent("keydown", { code: "NumpadDecimal" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "." });
-  });
-});
+  it('NumpadDecimal → .', () => {
+    const e = new KeyboardEvent('keydown', { code: 'NumpadDecimal' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '.' })
+  })
+})
 ```
 
 - [ ] **步骤 2：运行测试验证失败**
@@ -136,42 +140,55 @@ describe("resolveNumpadKey - 数字题模式", () => {
 // 物理键 → 数字题输入字符（数字或小数点）
 export const NUMPAD_KEYMAP: Record<string, string> = {
   // 右手小键盘区（方案 A 核心）
-  KeyU: "7", KeyI: "8", KeyO: "9",
-  KeyJ: "4", KeyK: "5", KeyL: "6",
-  KeyM: "1", Comma: "2", Period: "3",
-  Space: "0", Slash: ".",
+  KeyU: '7',
+  KeyI: '8',
+  KeyO: '9',
+  KeyJ: '4',
+  KeyK: '5',
+  KeyL: '6',
+  KeyM: '1',
+  Comma: '2',
+  Period: '3',
+  Space: '0',
+  Slash: '.',
   // 横排数字键（备用）
-  Digit1: "1", Digit2: "2", Digit3: "3", Digit4: "4", Digit5: "5",
-  Digit6: "6", Digit7: "7", Digit8: "8", Digit9: "9", Digit0: "0",
+  Digit1: '1',
+  Digit2: '2',
+  Digit3: '3',
+  Digit4: '4',
+  Digit5: '5',
+  Digit6: '6',
+  Digit7: '7',
+  Digit8: '8',
+  Digit9: '9',
+  Digit0: '0',
   // 小数点兼容（外接小键盘）
-  NumpadDecimal: ".",
-};
+  NumpadDecimal: '.',
+}
 
 // compare 题物理键映射
-export const COMPARE_KEYMAP: Record<string, ">" | "<"> = {
-  Comma: "<",
-  Period: ">",
-};
+export const COMPARE_KEYMAP: Record<string, '>' | '<'> = {
+  Comma: '<',
+  Period: '>',
+}
 
 // 功能键 → 功能名
 export const FUNCTION_KEYS: Record<string, string> = {
-  Backspace: "backspace",
-  Enter: "submit",
-  Escape: "restart",
-  Delete: "clear",
-  Minus: "toggle-sign",
-};
+  Backspace: 'backspace',
+  Enter: 'submit',
+  Escape: 'restart',
+  Delete: 'clear',
+  Minus: 'toggle-sign',
+}
 
 export type NumpadResolveResult =
-  | { type: "input"; payload: string }
-  | { type: "function"; payload: string }
-  | { type: "ignore" };
+  { type: 'input'; payload: string } | { type: 'function'; payload: string } | { type: 'ignore' }
 
 export type CompareResolveResult =
-  | { type: "select"; payload: ">" | "<" }
-  | { type: "submit" }
-  | { type: "restart" }
-  | { type: "ignore" };
+  | { type: 'select'; payload: '>' | '<' }
+  | { type: 'submit' }
+  | { type: 'restart' }
+  | { type: 'ignore' }
 
 /**
  * 数字题模式按键解析。
@@ -180,14 +197,14 @@ export type CompareResolveResult =
  * - type="ignore"：未识别的键，调用方应跳过
  */
 export function resolveNumpadKey(e: KeyboardEvent): NumpadResolveResult {
-  const code = e.code;
+  const code = e.code
   if (NUMPAD_KEYMAP[code]) {
-    return { type: "input", payload: NUMPAD_KEYMAP[code] };
+    return { type: 'input', payload: NUMPAD_KEYMAP[code] }
   }
   if (FUNCTION_KEYS[code]) {
-    return { type: "function", payload: FUNCTION_KEYS[code] };
+    return { type: 'function', payload: FUNCTION_KEYS[code] }
   }
-  return { type: "ignore" };
+  return { type: 'ignore' }
 }
 
 /**
@@ -200,18 +217,18 @@ export function resolveNumpadKey(e: KeyboardEvent): NumpadResolveResult {
  * 注：同时保留 e.key 字符检测（< > 《 》）作为兼容，因为这些字符键的物理位置随布局变化。
  */
 export function resolveCompareKey(e: KeyboardEvent): CompareResolveResult {
-  const code = e.code;
+  const code = e.code
   if (COMPARE_KEYMAP[code]) {
-    return { type: "select", payload: COMPARE_KEYMAP[code] };
+    return { type: 'select', payload: COMPARE_KEYMAP[code] }
   }
   // 兼容：e.key 字符检测（用户主动按 < > 《 》 字符键）
-  const k = e.key;
-  if (k === "<" || k === ">" || k === "《" || k === "》") {
-    return { type: "select", payload: k === "<" || k === "《" ? "<" : ">" };
+  const k = e.key
+  if (k === '<' || k === '>' || k === '《' || k === '》') {
+    return { type: 'select', payload: k === '<' || k === '《' ? '<' : '>' }
   }
-  if (code === "Enter") return { type: "submit" };
-  if (code === "Escape") return { type: "restart" };
-  return { type: "ignore" };
+  if (code === 'Enter') return { type: 'submit' }
+  if (code === 'Escape') return { type: 'restart' }
+  return { type: 'ignore' }
 }
 ```
 
@@ -225,44 +242,44 @@ export function resolveCompareKey(e: KeyboardEvent): CompareResolveResult {
 在 `src/utils/__tests__/keymap.test.ts` 末尾追加：
 
 ```typescript
-describe("resolveNumpadKey - 功能键", () => {
-  it("Backspace → function/backspace", () => {
-    const e = new KeyboardEvent("keydown", { code: "Backspace" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "function", payload: "backspace" });
-  });
+describe('resolveNumpadKey - 功能键', () => {
+  it('Backspace → function/backspace', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Backspace' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'function', payload: 'backspace' })
+  })
 
-  it("Enter → function/submit", () => {
-    const e = new KeyboardEvent("keydown", { code: "Enter" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "function", payload: "submit" });
-  });
+  it('Enter → function/submit', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Enter' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'function', payload: 'submit' })
+  })
 
-  it("Escape → function/restart", () => {
-    const e = new KeyboardEvent("keydown", { code: "Escape" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "function", payload: "restart" });
-  });
+  it('Escape → function/restart', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Escape' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'function', payload: 'restart' })
+  })
 
-  it("Delete → function/clear", () => {
-    const e = new KeyboardEvent("keydown", { code: "Delete" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "function", payload: "clear" });
-  });
+  it('Delete → function/clear', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Delete' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'function', payload: 'clear' })
+  })
 
-  it("Minus → function/toggle-sign", () => {
-    const e = new KeyboardEvent("keydown", { code: "Minus" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "function", payload: "toggle-sign" });
-  });
-});
+  it('Minus → function/toggle-sign', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Minus' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'function', payload: 'toggle-sign' })
+  })
+})
 
-describe("resolveNumpadKey - 未知键", () => {
-  it("KeyA → ignore", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyA" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "ignore" });
-  });
+describe('resolveNumpadKey - 未知键', () => {
+  it('KeyA → ignore', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyA' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'ignore' })
+  })
 
-  it("Tab → ignore", () => {
-    const e = new KeyboardEvent("keydown", { code: "Tab" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "ignore" });
-  });
-});
+  it('Tab → ignore', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Tab' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'ignore' })
+  })
+})
 ```
 
 - [ ] **步骤 6：运行测试验证通过**
@@ -275,53 +292,53 @@ describe("resolveNumpadKey - 未知键", () => {
 在 `src/utils/__tests__/keymap.test.ts` 末尾追加：
 
 ```typescript
-describe("resolveCompareKey", () => {
-  it("Comma → select/<", () => {
-    const e = new KeyboardEvent("keydown", { code: "Comma" });
-    expect(resolveCompareKey(e)).toEqual({ type: "select", payload: "<" });
-  });
+describe('resolveCompareKey', () => {
+  it('Comma → select/<', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Comma' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'select', payload: '<' })
+  })
 
-  it("Period → select/>", () => {
-    const e = new KeyboardEvent("keydown", { code: "Period" });
-    expect(resolveCompareKey(e)).toEqual({ type: "select", payload: ">" });
-  });
+  it('Period → select/>', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Period' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'select', payload: '>' })
+  })
 
-  it("Enter → submit", () => {
-    const e = new KeyboardEvent("keydown", { code: "Enter" });
-    expect(resolveCompareKey(e)).toEqual({ type: "submit" });
-  });
+  it('Enter → submit', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Enter' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'submit' })
+  })
 
-  it("Escape → restart", () => {
-    const e = new KeyboardEvent("keydown", { code: "Escape" });
-    expect(resolveCompareKey(e)).toEqual({ type: "restart" });
-  });
+  it('Escape → restart', () => {
+    const e = new KeyboardEvent('keydown', { code: 'Escape' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'restart' })
+  })
 
   // 兼容：e.key 字符检测
   it("e.key='<' → select/<", () => {
-    const e = new KeyboardEvent("keydown", { code: "", key: "<" });
-    expect(resolveCompareKey(e)).toEqual({ type: "select", payload: "<" });
-  });
+    const e = new KeyboardEvent('keydown', { code: '', key: '<' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'select', payload: '<' })
+  })
 
   it("e.key='>' → select/>", () => {
-    const e = new KeyboardEvent("keydown", { code: "", key: ">" });
-    expect(resolveCompareKey(e)).toEqual({ type: "select", payload: ">" });
-  });
+    const e = new KeyboardEvent('keydown', { code: '', key: '>' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'select', payload: '>' })
+  })
 
   it("e.key='《' → select/<", () => {
-    const e = new KeyboardEvent("keydown", { code: "", key: "《" });
-    expect(resolveCompareKey(e)).toEqual({ type: "select", payload: "<" });
-  });
+    const e = new KeyboardEvent('keydown', { code: '', key: '《' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'select', payload: '<' })
+  })
 
   it("e.key='》' → select/>", () => {
-    const e = new KeyboardEvent("keydown", { code: "", key: "》" });
-    expect(resolveCompareKey(e)).toEqual({ type: "select", payload: ">" });
-  });
+    const e = new KeyboardEvent('keydown', { code: '', key: '》' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'select', payload: '>' })
+  })
 
-  it("KeyA → ignore", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyA" });
-    expect(resolveCompareKey(e)).toEqual({ type: "ignore" });
-  });
-});
+  it('KeyA → ignore', () => {
+    const e = new KeyboardEvent('keydown', { code: 'KeyA' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'ignore' })
+  })
+})
 ```
 
 - [ ] **步骤 8：运行测试验证通过**
@@ -334,45 +351,45 @@ describe("resolveCompareKey", () => {
 在 `src/utils/__tests__/keymap.test.ts` 末尾追加：
 
 ```typescript
-describe("Norman 布局兼容性", () => {
+describe('Norman 布局兼容性', () => {
   // Norman 布局下，物理键位置不变（e.code 不变），但产生的字符（e.key）不同。
   // 映射应只看 e.code，不看 e.key。
   it("物理 KeyJ 位置（Norman 产生 'n' 字符）→ 4", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyJ", key: "n" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "4" });
-  });
+    const e = new KeyboardEvent('keydown', { code: 'KeyJ', key: 'n' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '4' })
+  })
 
   it("物理 KeyK 位置（Norman 产生 'e' 字符）→ 5", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyK", key: "e" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "5" });
-  });
+    const e = new KeyboardEvent('keydown', { code: 'KeyK', key: 'e' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '5' })
+  })
 
   it("物理 KeyL 位置（Norman 产生 'i' 字符）→ 6", () => {
-    const e = new KeyboardEvent("keydown", { code: "KeyL", key: "i" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "6" });
-  });
+    const e = new KeyboardEvent('keydown', { code: 'KeyL', key: 'i' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '6' })
+  })
 
   it("物理 Comma 位置（Norman 产生 'w' 字符）→ 2", () => {
-    const e = new KeyboardEvent("keydown", { code: "Comma", key: "w" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "2" });
-  });
+    const e = new KeyboardEvent('keydown', { code: 'Comma', key: 'w' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '2' })
+  })
 
   it("物理 Period 位置（Norman 产生 'v' 字符）→ 3", () => {
-    const e = new KeyboardEvent("keydown", { code: "Period", key: "v" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "3" });
-  });
+    const e = new KeyboardEvent('keydown', { code: 'Period', key: 'v' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '3' })
+  })
 
   it("物理 Slash 位置（Norman 产生 'z' 字符）→ .", () => {
-    const e = new KeyboardEvent("keydown", { code: "Slash", key: "z" });
-    expect(resolveNumpadKey(e)).toEqual({ type: "input", payload: "." });
-  });
+    const e = new KeyboardEvent('keydown', { code: 'Slash', key: 'z' })
+    expect(resolveNumpadKey(e)).toEqual({ type: 'input', payload: '.' })
+  })
 
   // compare 题同样只看 e.code
   it("compare 题物理 Comma 位置（Norman 产生 'w'）→ select/<", () => {
-    const e = new KeyboardEvent("keydown", { code: "Comma", key: "w" });
-    expect(resolveCompareKey(e)).toEqual({ type: "select", payload: "<" });
-  });
-});
+    const e = new KeyboardEvent('keydown', { code: 'Comma', key: 'w' })
+    expect(resolveCompareKey(e)).toEqual({ type: 'select', payload: '<' })
+  })
+})
 ```
 
 - [ ] **步骤 10：运行测试验证通过**
@@ -397,6 +414,7 @@ git commit -m "feat: 新增 keymap 模块（方案 A 右手小键盘映射 + e.c
 ## 任务 2：重构 PracticeSession.vue 的 handleKeydown
 
 **文件：**
+
 - 修改：`src/views/PracticeSession.vue:36-82`（handleKeydown 函数）
 
 - [ ] **步骤 1：在 PracticeSession.vue 顶部添加 keymap 导入**
@@ -404,7 +422,7 @@ git commit -m "feat: 新增 keymap 模块（方案 A 右手小键盘映射 + e.c
 在 `src/views/PracticeSession.vue` 的 `<script setup>` 块中，找到现有的 import 区块（第 1-12 行），在最后一个 import 之后添加：
 
 ```typescript
-import { resolveNumpadKey, resolveCompareKey } from "@/utils/keymap";
+import { resolveNumpadKey, resolveCompareKey } from '@/utils/keymap'
 ```
 
 - [ ] **步骤 2：替换 handleKeydown 函数体**
@@ -413,34 +431,43 @@ import { resolveNumpadKey, resolveCompareKey } from "@/utils/keymap";
 
 ```typescript
 function handleKeydown(e: KeyboardEvent) {
-  if (store.phase !== "running") return;
+  if (store.phase !== 'running') return
 
   // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发，以及 Space 在按钮上触发点击
-  if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space")
-      && e.target instanceof HTMLButtonElement) {
-    return;
+  if (
+    (e.code === 'Enter' || e.code === 'Escape' || e.code === 'Space') &&
+    e.target instanceof HTMLButtonElement
+  ) {
+    return
   }
 
-  if (store.questionCategory === "compare") {
-    const r = resolveCompareKey(e);
-    if (r.type === "select") { e.preventDefault(); store.selectCompare(r.payload); }
-    else if (r.type === "submit") { e.preventDefault(); void onSubmit(); }
-    else if (r.type === "restart") { e.preventDefault(); void onRestart(); }
-    return;
+  if (store.questionCategory === 'compare') {
+    const r = resolveCompareKey(e)
+    if (r.type === 'select') {
+      e.preventDefault()
+      store.selectCompare(r.payload)
+    } else if (r.type === 'submit') {
+      e.preventDefault()
+      void onSubmit()
+    } else if (r.type === 'restart') {
+      e.preventDefault()
+      void onRestart()
+    }
+    return
   }
 
   // 数字题模式
-  const r = resolveNumpadKey(e);
-  if (r.type === "input") {
-    e.preventDefault();
-    store.inputChar(r.payload);
-  } else if (r.type === "function") {
-    e.preventDefault();
-    if (r.payload === "backspace") store.backspace();
-    else if (r.payload === "submit") void onSubmit();
-    else if (r.payload === "restart") void onRestart();
-    else if (r.payload === "clear") store.clearAnswer();
-    else if (r.payload === "toggle-sign") store.toggleSign();
+  const r = resolveNumpadKey(e)
+  if (r.type === 'input') {
+    e.preventDefault()
+    store.inputChar(r.payload)
+  } else if (r.type === 'function') {
+    e.preventDefault()
+    if (r.payload === 'backspace') store.backspace()
+    else if (r.payload === 'submit') void onSubmit()
+    else if (r.payload === 'restart') void onRestart()
+    else if (r.payload === 'clear') store.clearAnswer()
+    else if (r.payload === 'toggle-sign') store.toggleSign()
   }
 }
 ```
@@ -471,6 +498,7 @@ git commit -m "refactor: PracticeSession handleKeydown 改用 keymap 模块
 ## 任务 3：重构 CompositeSession.vue 的 handleKeydown
 
 **文件：**
+
 - 修改：`src/views/CompositeSession.vue:154-176`（handleKeydown 函数）
 
 - [ ] **步骤 1：在 CompositeSession.vue 顶部添加 keymap 导入**
@@ -478,7 +506,7 @@ git commit -m "refactor: PracticeSession handleKeydown 改用 keymap 模块
 在 `src/views/CompositeSession.vue` 的 `<script setup>` 块中，找到现有的 import 区块（第 1-17 行），在最后一个 import 之后添加：
 
 ```typescript
-import { resolveNumpadKey } from "@/utils/keymap";
+import { resolveNumpadKey } from '@/utils/keymap'
 ```
 
 - [ ] **步骤 2：替换 handleKeydown 函数体**
@@ -488,20 +516,22 @@ import { resolveNumpadKey } from "@/utils/keymap";
 ```typescript
 function handleKeydown(e: KeyboardEvent) {
   // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发，以及 Space 在按钮上触发点击
-  if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space")
-      && e.target instanceof HTMLButtonElement) {
-    return;
+  if (
+    (e.code === 'Enter' || e.code === 'Escape' || e.code === 'Space') &&
+    e.target instanceof HTMLButtonElement
+  ) {
+    return
   }
 
-  const r = resolveNumpadKey(e);
-  if (r.type === "input") {
-    e.preventDefault();
-    onInput(r.payload);
-  } else if (r.type === "function") {
-    e.preventDefault();
-    if (r.payload === "backspace") onBackspace();
-    else if (r.payload === "submit") onSubmit();
-    else if (r.payload === "clear") onClear();
+  const r = resolveNumpadKey(e)
+  if (r.type === 'input') {
+    e.preventDefault()
+    onInput(r.payload)
+  } else if (r.type === 'function') {
+    e.preventDefault()
+    if (r.payload === 'backspace') onBackspace()
+    else if (r.payload === 'submit') onSubmit()
+    else if (r.payload === 'clear') onClear()
     // composite 无 toggle-sign / restart（composite 用 onBack 返回，不绑定 Esc）
   }
 }
@@ -580,6 +610,7 @@ git status  # 确认无意外文件
 ## 自检
 
 **1. 规格覆盖度：**
+
 - §5.1 数字题模式映射 → 任务 1 步骤 1-4
 - §5.2 compare 题模式映射 → 任务 1 步骤 7-8
 - §5.3 功能键 → 任务 1 步骤 5-6
@@ -597,6 +628,7 @@ git status  # 确认无意外文件
 **2. 占位符扫描：** 无 TODO/待定/类似任务 N 等占位符。每个步骤都有完整代码。
 
 **3. 类型一致性：**
+
 - `NumpadResolveResult` 在任务 1 步骤 3 定义，任务 2/3 使用 `r.type === "input"` / `r.type === "function"` 与定义一致
 - `CompareResolveResult` 在任务 1 步骤 3 定义，任务 2 使用 `r.type === "select"` / `"submit"` / `"restart"` 与定义一致
 - `resolveNumpadKey` / `resolveCompareKey` 函数名在所有任务中一致
