@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue'
 
 interface Props {
-  title: string;
-  progress: string;
-  elapsedMs: number;
+  title: string
+  progress: string
+  elapsedMs: number
 }
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 const elapsedDisplay = computed(() => {
-  const totalSec = Math.floor(props.elapsedMs / 1000);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  return `0:${m}:${s}`;
-});
+  const totalSec = Math.floor(props.elapsedMs / 1000)
+  const m = Math.floor((totalSec % 3600) / 60)
+  const s = totalSec % 60
+  return `0:${m}:${s}`
+})
 </script>
 
 <template>

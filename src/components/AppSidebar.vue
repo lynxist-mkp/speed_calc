@@ -1,20 +1,20 @@
 <script setup lang="ts">
 // 浮动玻璃 sidebar - 左侧导航
-import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { House, Clock, DataLine, Setting } from "@element-plus/icons-vue";
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { House, Clock, DataLine, Setting } from '@element-plus/icons-vue'
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
 const items = [
-  { path: "/home", label: "主页", icon: House },
-  { path: "/history", label: "历史", icon: Clock },
-  { path: "/stats", label: "统计", icon: DataLine },
-  { path: "/settings", label: "设置", icon: Setting },
-] as const;
+  { path: '/home', label: '主页', icon: House },
+  { path: '/history', label: '历史', icon: Clock },
+  { path: '/stats', label: '统计', icon: DataLine },
+  { path: '/settings', label: '设置', icon: Setting },
+] as const
 
-const activePath = computed(() => route.path);
+const activePath = computed(() => route.path)
 </script>
 
 <template>
@@ -71,11 +71,7 @@ const activePath = computed(() => route.path);
     width: 40px;
     height: 40px;
     border-radius: 12px;
-    background: linear-gradient(
-      135deg,
-      var(--app-color-primary),
-      var(--app-color-success)
-    );
+    background: linear-gradient(135deg, var(--app-color-primary), var(--app-color-success));
     color: var(--app-bg-page);
     font-size: 20px;
     font-weight: 700;

@@ -43,54 +43,55 @@
 
 **右手小键盘区（方案 A 核心）**：
 
-| 物理键 (e.code) | QWERTY 字符 | Norman 字符 | 映射输入 |
-|---|---|---|---|
-| `KeyU` | u | u | `7` |
-| `KeyI` | i | i | `8` |
-| `KeyO` | o | o | `9` |
-| `KeyJ` | j | n | `4` |
-| `KeyK` | k | e | `5` |
-| `KeyL` | l | i | `6` |
-| `KeyM` | m | m | `1` |
-| `Comma` | , | w | `2` |
-| `Period` | . | v | `3` |
-| `Space` | Space | Space | `0` |
-| `Slash` | / | z | `.`（小数点） |
+| 物理键 (e.code) | QWERTY 字符 | Norman 字符 | 映射输入      |
+| --------------- | ----------- | ----------- | ------------- |
+| `KeyU`          | u           | u           | `7`           |
+| `KeyI`          | i           | i           | `8`           |
+| `KeyO`          | o           | o           | `9`           |
+| `KeyJ`          | j           | n           | `4`           |
+| `KeyK`          | k           | e           | `5`           |
+| `KeyL`          | l           | i           | `6`           |
+| `KeyM`          | m           | m           | `1`           |
+| `Comma`         | ,           | w           | `2`           |
+| `Period`        | .           | v           | `3`           |
+| `Space`         | Space       | Space       | `0`           |
+| `Slash`         | /           | z           | `.`（小数点） |
 
 **横排数字键（备用，保留）**：
 
-| 物理键 (e.code) | 映射输入 |
-|---|---|
+| 物理键 (e.code)     | 映射输入  |
+| ------------------- | --------- |
 | `Digit1` ~ `Digit9` | `1` ~ `9` |
-| `Digit0` | `0` |
+| `Digit0`            | `0`       |
 
 > 注：数字行不受键盘布局影响，`e.code` 与 `e.key` 在数字行一致；但统一用 `e.code` 保持代码风格一致。
 
 **小数点备用输入**：当前 `,` 和 `.` 都输入小数点。重构后：
+
 - `,`/`.` 物理键在数字题模式下映射为 `2`/`3`，不再作小数点
 - 小数点改为 `Slash`（物理 `/` 键）
 - 保留 `NumpadDecimal`（外接小键盘的 `.` 键）作兼容
 
 ### 5.2 compare 题模式
 
-| 物理键 (e.code) | 字符 (e.key, 兼容) | 映射 |
-|---|---|---|
-| `Comma` | `,` `，` | 小于 `<` |
-| `Period` | `.` `。` | 大于 `>` |
-| `Enter` | Enter | 提交 |
-| `Escape` | Esc | 重开 |
+| 物理键 (e.code) | 字符 (e.key, 兼容) | 映射     |
+| --------------- | ------------------ | -------- |
+| `Comma`         | `,` `，`           | 小于 `<` |
+| `Period`        | `.` `。`           | 大于 `>` |
+| `Enter`         | Enter              | 提交     |
+| `Escape`        | Esc                | 重开     |
 
 > 注：compare 题同时保留 `e.key` 的 `<` `>` `《` `》` 字符检测作为兼容（这些字符键位置不固定，但用户主动按 `<` `>` 字符键时仍生效）。
 
 ### 5.3 功能键（所有模式通用）
 
-| 物理键 (e.code) | 功能 |
-|---|---|
-| `Backspace` | 退格 |
-| `Enter` | 提交 |
-| `Escape` | 重开 |
-| `Delete` | 清空 |
-| `Minus` | 切换正负号（仅 numpad） |
+| 物理键 (e.code) | 功能                    |
+| --------------- | ----------------------- |
+| `Backspace`     | 退格                    |
+| `Enter`         | 提交                    |
+| `Escape`        | 重开                    |
+| `Delete`        | 清空                    |
+| `Minus`         | 切换正负号（仅 numpad） |
 
 > `Minus` 物理键在 QWERTY 和 Norman 下都产生 `-`，但统一用 `e.code`。
 
@@ -103,46 +104,62 @@
 ```typescript
 // 物理键 → 数字题输入字符
 export const NUMPAD_KEYMAP: Record<string, string> = {
-  KeyU: "7", KeyI: "8", KeyO: "9",
-  KeyJ: "4", KeyK: "5", KeyL: "6",
-  KeyM: "1", Comma: "2", Period: "3",
-  Space: "0", Slash: ".",
+  KeyU: '7',
+  KeyI: '8',
+  KeyO: '9',
+  KeyJ: '4',
+  KeyK: '5',
+  KeyL: '6',
+  KeyM: '1',
+  Comma: '2',
+  Period: '3',
+  Space: '0',
+  Slash: '.',
   // 横排备用
-  Digit1: "1", Digit2: "2", Digit3: "3", Digit4: "4", Digit5: "5",
-  Digit6: "6", Digit7: "7", Digit8: "8", Digit9: "9", Digit0: "0",
+  Digit1: '1',
+  Digit2: '2',
+  Digit3: '3',
+  Digit4: '4',
+  Digit5: '5',
+  Digit6: '6',
+  Digit7: '7',
+  Digit8: '8',
+  Digit9: '9',
+  Digit0: '0',
   // 小数点兼容
-  NumpadDecimal: ".",
-};
+  NumpadDecimal: '.',
+}
 
 // compare 题物理键映射
-export const COMPARE_KEYMAP: Record<string, ">" | "<"> = {
-  Comma: "<",
-  Period: ">",
-};
+export const COMPARE_KEYMAP: Record<string, '>' | '<'> = {
+  Comma: '<',
+  Period: '>',
+}
 
 // 功能键
 export const FUNCTION_KEYS = {
-  Backspace: "backspace",
-  Enter: "submit",
-  Escape: "restart",
-  Delete: "clear",
-  Minus: "toggle-sign",
-} as const;
+  Backspace: 'backspace',
+  Enter: 'submit',
+  Escape: 'restart',
+  Delete: 'clear',
+  Minus: 'toggle-sign',
+} as const
 
 // 模式判定与映射查询
 // resolveNumpadKey: type="input" 时 payload 为待输入字符（数字或小数点）；
 //                   type="function" 时 payload 为功能名（backspace/submit/restart/clear/toggle-sign）
 export function resolveNumpadKey(e: KeyboardEvent): {
-  type: "input" | "function" | "ignore";
-  payload?: string;
-};
+  type: 'input' | 'function' | 'ignore'
+  payload?: string
+}
 export function resolveCompareKey(e: KeyboardEvent): {
-  type: "select" | "submit" | "restart" | "ignore";
-  payload?: ">" | "<";
-};
+  type: 'select' | 'submit' | 'restart' | 'ignore'
+  payload?: '>' | '<'
+}
 ```
 
 **职责**：
+
 - 集中管理所有键位映射，便于测试和维护
 - 提供纯函数查询接口，调用方只需传入 `KeyboardEvent`
 - 与 Vue 组件解耦，可独立单元测试
@@ -153,30 +170,42 @@ export function resolveCompareKey(e: KeyboardEvent): {
 
 ```typescript
 function handleKeydown(e: KeyboardEvent) {
-  if (store.phase !== "running") return;
-  
+  if (store.phase !== 'running') return
+
   // 防止 Numpad 按钮聚焦时 Enter/Escape 双触发，以及 Space 在按钮上触发点击
-  if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space")
-      && e.target instanceof HTMLButtonElement) return;
-  
-  if (store.questionCategory === "compare") {
-    const r = resolveCompareKey(e);
-    if (r.type === "select") { e.preventDefault(); store.selectCompare(r.payload); }
-    else if (r.type === "submit") { e.preventDefault(); void onSubmit(); }
-    else if (r.type === "restart") { e.preventDefault(); void onRestart(); }
-    return;
+  if (
+    (e.code === 'Enter' || e.code === 'Escape' || e.code === 'Space') &&
+    e.target instanceof HTMLButtonElement
+  )
+    return
+
+  if (store.questionCategory === 'compare') {
+    const r = resolveCompareKey(e)
+    if (r.type === 'select') {
+      e.preventDefault()
+      store.selectCompare(r.payload)
+    } else if (r.type === 'submit') {
+      e.preventDefault()
+      void onSubmit()
+    } else if (r.type === 'restart') {
+      e.preventDefault()
+      void onRestart()
+    }
+    return
   }
-  
+
   // 数字题模式
-  const r = resolveNumpadKey(e);
-  if (r.type === "input") { e.preventDefault(); store.inputChar(r.payload); }
-  else if (r.type === "function") {
-    e.preventDefault();
-    if (r.payload === "backspace") store.backspace();
-    else if (r.payload === "submit") void onSubmit();
-    else if (r.payload === "restart") void onRestart();
-    else if (r.payload === "clear") store.clearAnswer();
-    else if (r.payload === "toggle-sign") store.toggleSign();
+  const r = resolveNumpadKey(e)
+  if (r.type === 'input') {
+    e.preventDefault()
+    store.inputChar(r.payload)
+  } else if (r.type === 'function') {
+    e.preventDefault()
+    if (r.payload === 'backspace') store.backspace()
+    else if (r.payload === 'submit') void onSubmit()
+    else if (r.payload === 'restart') void onRestart()
+    else if (r.payload === 'clear') store.clearAnswer()
+    else if (r.payload === 'toggle-sign') store.toggleSign()
   }
 }
 ```
@@ -201,20 +230,22 @@ if (k === "." || k === "," || k === "，") ...
 ```
 
 **保留**：
+
 - compare 题的 `<` `>` `《` `》` 字符检测（用户主动按这些字符键时仍生效，作为兼容输入方式）
 - `NumpadDecimal` 物理键（外接小键盘用户）
 
 ### 7.2 Enter/Escape 双触发防护
 
 当前代码：
+
 ```typescript
-if ((k === "Enter" || k === "Escape") && e.target instanceof HTMLButtonElement) return;
+if ((k === 'Enter' || k === 'Escape') && e.target instanceof HTMLButtonElement) return
 ```
 
 改为：
+
 ```typescript
-if ((e.code === "Enter" || e.code === "Escape") 
-    && e.target instanceof HTMLButtonElement) return;
+if ((e.code === 'Enter' || e.code === 'Escape') && e.target instanceof HTMLButtonElement) return
 ```
 
 ## 8. 测试策略
@@ -246,26 +277,29 @@ if ((e.code === "Enter" || e.code === "Escape")
 ## 9. 影响范围
 
 **新增文件**：
+
 - `src/utils/keymap.ts`
 - `src/utils/keymap.test.ts`
 
 **修改文件**：
+
 - `src/views/PracticeSession.vue` — `handleKeydown` 改用 `resolveNumpadKey` / `resolveCompareKey`
 - `src/views/CompositeSession.vue` — `handleKeydown` 改用 `resolveNumpadKey`
 
 **不改文件**：
+
 - `src/components/Numpad.vue` — 浮窗点击交互不变（仍通过 emit 触发，不经过键盘事件）
 - `src/components/CompareKeypad.vue` — 同上
 - `src/stores/practice.ts` — store 接口不变（`inputChar` / `selectCompare` 等签名不变）
 
 ## 10. 风险与权衡
 
-| 风险 | 缓解措施 |
-|---|---|
-| 用户已习惯横排输入，方案 A 增加学习成本 | 保留横排作为备用，不强制使用方案 A |
-| Norman 下 `,` 产生 `w` 字符，可能引起混淆 | 用 `e.code` 完全规避字符差异 |
+| 风险                                                               | 缓解措施                                                                                                                   |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| 用户已习惯横排输入，方案 A 增加学习成本                            | 保留横排作为备用，不强制使用方案 A                                                                                         |
+| Norman 下 `,` 产生 `w` 字符，可能引起混淆                          | 用 `e.code` 完全规避字符差异                                                                                               |
 | `Space` 映射为 `0` 可能与 UI 焦点冲突（按钮激活时 Space 触发点击） | 在 `handleKeydown` 中检测 `e.target`，若为 `HTMLButtonElement` 则跳过 Space→0 映射（与现有 Enter/Escape 双触发防护同模式） |
-| compare 题保留 `e.key` 字符检测（`<` `>`）与 `e.code` 双轨 | 文档明确：`e.code` 为主，`e.key` 字符为兼容补丁 |
+| compare 题保留 `e.key` 字符检测（`<` `>`）与 `e.code` 双轨         | 文档明确：`e.code` 为主，`e.key` 字符为兼容补丁                                                                            |
 
 ## 11. 未来扩展
 

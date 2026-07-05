@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>行测小助手 · Demo</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.8.8/dist/index.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.8.8/theme-chalk/dark/css-vars.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/element-plus@2.8.8/theme-chalk/dark/css-vars.css"
+    />
     <style>
       /* ===== Solarized Tokens (from tokens.scss) ===== */
       :root {
@@ -58,8 +61,8 @@
         --app-radius-button: 8px;
         --app-radius-small: 6px;
 
-        --app-font-cn: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
-        --app-font-mono: "SF Mono", "JetBrains Mono", "Fira Code", monospace;
+        --app-font-cn: 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+        --app-font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
 
         --key-bg: rgba(7, 54, 66, 0.7);
         --key-bg-hover: rgba(95, 175, 111, 0.12);
@@ -102,32 +105,66 @@
         --el-fill-color-blank: transparent;
       }
 
-      * { box-sizing: border-box; }
-      html, body, #app {
-        margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden;
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body,
+      #app {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
       }
       body {
         font-family: var(--app-font-cn);
-        font-size: 14px; line-height: 1.6;
+        font-size: 14px;
+        line-height: 1.6;
         color: var(--app-text-primary);
         background: var(--app-bg-page);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
       }
-      ::-webkit-scrollbar { width: 8px; height: 8px; }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: rgba(147, 161, 161, 0.18); border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background: rgba(147, 161, 161, 0.28); }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(147, 161, 161, 0.18);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(147, 161, 161, 0.28);
+      }
 
-      .text-mono { font-family: var(--app-font-mono); }
-      .text-bright { color: var(--app-text-bright); }
-      .text-secondary { color: var(--app-text-secondary); }
-      .text-muted { color: var(--app-text-muted); }
-      .text-primary { color: var(--app-color-primary); }
+      .text-mono {
+        font-family: var(--app-font-mono);
+      }
+      .text-bright {
+        color: var(--app-text-bright);
+      }
+      .text-secondary {
+        color: var(--app-text-secondary);
+      }
+      .text-muted {
+        color: var(--app-text-muted);
+      }
+      .text-primary {
+        color: var(--app-color-primary);
+      }
 
-      :focus-visible { outline: 2px solid var(--app-color-primary); outline-offset: 2px; }
+      :focus-visible {
+        outline: 2px solid var(--app-color-primary);
+        outline-offset: 2px;
+      }
       @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
           animation-duration: 0.01ms !important;
           animation-iteration-count: 1 !important;
           transition-duration: 0.01ms !important;
@@ -141,7 +178,9 @@
         backdrop-filter: blur(28px) saturate(1.4);
         -webkit-backdrop-filter: blur(28px) saturate(1.4);
         border: 1px solid var(--app-glass-border);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.06);
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.36),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
         border-radius: var(--app-radius-window);
       }
       .glass-toolbar {
@@ -149,7 +188,9 @@
         backdrop-filter: blur(20px) saturate(1.4);
         -webkit-backdrop-filter: blur(20px) saturate(1.4);
         border: 1px solid var(--app-glass-border);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.06);
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.36),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
         border-radius: var(--app-radius-card);
       }
       .glass-card {
@@ -157,7 +198,9 @@
         backdrop-filter: blur(16px) saturate(1.4);
         -webkit-backdrop-filter: blur(16px) saturate(1.4);
         border: 1px solid var(--app-glass-border);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.06);
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.36),
+          inset 0 1px 0 rgba(255, 255, 255, 0.06);
         border-radius: var(--app-radius-card);
       }
       .glass-button {
@@ -166,13 +209,19 @@
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid var(--app-glass-border);
         border-radius: var(--app-radius-button);
-        transition: background 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+        transition:
+          background 0.2s ease,
+          border-color 0.2s ease,
+          transform 0.1s ease;
       }
       .glass-button:hover {
         background: rgba(95, 175, 111, 0.18);
         border-color: var(--app-color-primary);
       }
-      .glass-button:active { background: rgba(95, 175, 111, 0.28); transform: scale(0.98); }
+      .glass-button:active {
+        background: rgba(95, 175, 111, 0.28);
+        transform: scale(0.98);
+      }
       .glass-button.is-active {
         background: rgba(95, 175, 111, 0.22);
         border-color: var(--app-color-primary);
@@ -181,280 +230,740 @@
 
       /* ===== App Shell ===== */
       .app-shell {
-        display: flex; width: 100%; height: 100%;
+        display: flex;
+        width: 100%;
+        height: 100%;
         background: var(--app-bg-page);
-        background-image: radial-gradient(ellipse at top left, rgba(95,175,111,0.06), transparent 60%);
+        background-image: radial-gradient(
+          ellipse at top left,
+          rgba(95, 175, 111, 0.06),
+          transparent 60%
+        );
       }
-      .app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+      .app-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
       .app-content {
-        flex: 1; overflow: auto;
+        flex: 1;
+        overflow: auto;
         padding: 88px 24px 24px 96px;
       }
-      .app-content.answer-mode { padding-top: 24px; }
+      .app-content.answer-mode {
+        padding-top: 24px;
+      }
 
       /* ===== Sidebar ===== */
       .app-sidebar {
-        position: fixed; top: 16px; left: 16px; bottom: 16px;
-        width: 72px; padding: 16px 8px;
-        display: flex; flex-direction: column; gap: 8px;
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        bottom: 16px;
+        width: 72px;
+        padding: 16px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
         z-index: 100;
       }
-      .brand { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0 16px; cursor: default; }
+      .brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 0 16px;
+        cursor: default;
+      }
       .brand-mark {
-        width: 40px; height: 40px; border-radius: 12px;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
         background: linear-gradient(135deg, var(--app-color-primary), var(--app-color-success));
         color: var(--app-bg-page);
-        font-size: 20px; font-weight: 700;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 4px 12px rgba(95,175,111,0.3);
+        font-size: 20px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(95, 175, 111, 0.3);
       }
-      .nav-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+      .nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+      }
       .nav-item {
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-        padding: 12px 4px; cursor: pointer;
-        color: var(--app-text-secondary); font-size: 11px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 12px 4px;
+        cursor: pointer;
+        color: var(--app-text-secondary);
+        font-size: 11px;
       }
-      .nav-item .nav-label { font-size: 11px; line-height: 1; }
-      .nav-item.is-active { color: var(--app-text-bright); }
-      .sidebar-footer { text-align: center; font-size: 10px; line-height: 1.4; padding-top: 8px; border-top: 1px solid var(--app-glass-border); }
-      .sidebar-footer .text-version { color: var(--app-color-primary); font-weight: 600; }
+      .nav-item .nav-label {
+        font-size: 11px;
+        line-height: 1;
+      }
+      .nav-item.is-active {
+        color: var(--app-text-bright);
+      }
+      .sidebar-footer {
+        text-align: center;
+        font-size: 10px;
+        line-height: 1.4;
+        padding-top: 8px;
+        border-top: 1px solid var(--app-glass-border);
+      }
+      .sidebar-footer .text-version {
+        color: var(--app-color-primary);
+        font-weight: 600;
+      }
 
       /* ===== Toolbar ===== */
       .app-toolbar {
-        position: fixed; top: 16px; left: 96px; right: 16px;
-        height: 56px; padding: 0 20px;
-        display: flex; align-items: center; justify-content: space-between;
+        position: fixed;
+        top: 16px;
+        left: 96px;
+        right: 16px;
+        height: 56px;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         z-index: 99;
       }
-      .toolbar-title { font-size: 16px; font-weight: 600; color: var(--app-text-bright); letter-spacing: 0.5px; }
-      .toolbar-right { font-size: 12px; color: var(--app-text-secondary); }
+      .toolbar-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--app-text-bright);
+        letter-spacing: 0.5px;
+      }
+      .toolbar-right {
+        font-size: 12px;
+        color: var(--app-text-secondary);
+      }
 
       /* ===== Home ===== */
-      .home { max-width: 960px; margin: 0 auto; }
-      .home-header { margin-bottom: 32px; }
-      .home-title { font-size: 32px; font-weight: 700; color: var(--app-text-bright); margin: 0 0 8px; letter-spacing: 1px; }
-      .home-subtitle { margin: 0; font-size: 14px; }
-      .entry-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .home {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .home-header {
+        margin-bottom: 32px;
+      }
+      .home-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--app-text-bright);
+        margin: 0 0 8px;
+        letter-spacing: 1px;
+      }
+      .home-subtitle {
+        margin: 0;
+        font-size: 14px;
+      }
+      .entry-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
       .entry-card {
-        padding: 20px; display: flex; align-items: center; gap: 16px;
-        cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        transition:
+          transform 0.2s ease,
+          border-color 0.2s ease;
       }
-      .entry-card:hover:not(.is-disabled) { transform: translateY(-2px); border-color: var(--app-color-primary); }
-      .entry-card.is-disabled { opacity: 0.5; cursor: not-allowed; }
+      .entry-card:hover:not(.is-disabled) {
+        transform: translateY(-2px);
+        border-color: var(--app-color-primary);
+      }
+      .entry-card.is-disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
       .entry-icon {
-        width: 56px; height: 56px; border-radius: var(--app-radius-card);
-        background: linear-gradient(135deg, rgba(95,175,111,0.18), rgba(133,153,0,0.12));
-        display: flex; align-items: center; justify-content: center;
-        color: var(--app-color-primary); flex-shrink: 0; font-size: 28px;
+        width: 56px;
+        height: 56px;
+        border-radius: var(--app-radius-card);
+        background: linear-gradient(135deg, rgba(95, 175, 111, 0.18), rgba(133, 153, 0, 0.12));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--app-color-primary);
+        flex-shrink: 0;
+        font-size: 28px;
       }
-      .entry-body { flex: 1; min-width: 0; }
-      .entry-title { font-size: 16px; font-weight: 600; color: var(--app-text-bright); margin-bottom: 4px; }
-      .entry-desc { font-size: 12px; line-height: 1.4; }
-      .entry-tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; flex-shrink: 0; }
-      .entry-tag.tag-on { background: rgba(95,175,111,0.18); color: var(--app-color-primary); }
-      .entry-tag.tag-off { background: rgba(147,161,161,0.1); color: var(--app-text-muted); }
-      .home-foot { margin-top: 40px; text-align: center; font-size: 12px; }
+      .entry-body {
+        flex: 1;
+        min-width: 0;
+      }
+      .entry-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--app-text-bright);
+        margin-bottom: 4px;
+      }
+      .entry-desc {
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .entry-tag {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        flex-shrink: 0;
+      }
+      .entry-tag.tag-on {
+        background: rgba(95, 175, 111, 0.18);
+        color: var(--app-color-primary);
+      }
+      .entry-tag.tag-off {
+        background: rgba(147, 161, 161, 0.1);
+        color: var(--app-text-muted);
+      }
+      .home-foot {
+        margin-top: 40px;
+        text-align: center;
+        font-size: 12px;
+      }
 
       /* ===== Practice Settings ===== */
-      .practice-settings { max-width: 960px; margin: 0 auto; }
-      .settings-section { margin-bottom: 24px; }
+      .practice-settings {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .settings-section {
+        margin-bottom: 24px;
+      }
       .settings-section-title {
-        font-size: 13px; color: var(--app-text-bright);
-        margin-bottom: 12px; padding-bottom: 6px;
+        font-size: 13px;
+        color: var(--app-text-bright);
+        margin-bottom: 12px;
+        padding-bottom: 6px;
         border-bottom: 1px solid var(--app-glass-border);
-        display: flex; align-items: center; gap: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       .settings-section-title::before {
-        content: ""; width: 3px; height: 14px;
-        background: var(--app-color-primary); border-radius: 2px;
+        content: '';
+        width: 3px;
+        height: 14px;
+        background: var(--app-color-primary);
+        border-radius: 2px;
       }
-      .type-section { margin-bottom: 14px; }
+      .type-section {
+        margin-bottom: 14px;
+      }
       .type-section .section-title {
-        font-size: 11px; color: var(--app-text-bright); margin-bottom: 6px; padding-bottom: 4px;
+        font-size: 11px;
+        color: var(--app-text-bright);
+        margin-bottom: 6px;
+        padding-bottom: 4px;
         border-bottom: 1px solid var(--type-section-border);
-        display: flex; align-items: center; gap: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
       }
       .type-section .section-title::before {
-        content: ""; width: 3px; height: 12px; background: var(--app-color-primary); border-radius: 2px;
+        content: '';
+        width: 3px;
+        height: 12px;
+        background: var(--app-color-primary);
+        border-radius: 2px;
       }
-      .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      .type-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
       .type-cell {
-        background: var(--type-cell-bg); border: 1px solid var(--type-cell-border);
-        border-radius: 6px; padding: 10px 6px; text-align: center;
-        font-size: 11px; color: var(--app-text-primary); cursor: pointer;
-        transition: border-color 0.15s, background 0.15s;
+        background: var(--type-cell-bg);
+        border: 1px solid var(--type-cell-border);
+        border-radius: 6px;
+        padding: 10px 6px;
+        text-align: center;
+        font-size: 11px;
+        color: var(--app-text-primary);
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
         font-family: inherit;
       }
-      .type-cell:hover:not(.disabled) { border-color: var(--type-cell-border-selected); }
+      .type-cell:hover:not(.disabled) {
+        border-color: var(--type-cell-border-selected);
+      }
       .type-cell.selected {
         background: var(--type-cell-bg-selected);
         border-color: var(--type-cell-border-selected);
         color: var(--app-text-bright);
       }
       .segmented {
-        display: inline-flex; background: var(--seg-bg);
-        border: 1px solid var(--seg-border); border-radius: 8px; padding: 3px; gap: 2px;
+        display: inline-flex;
+        background: var(--seg-bg);
+        border: 1px solid var(--seg-border);
+        border-radius: 8px;
+        padding: 3px;
+        gap: 2px;
       }
       .seg-item {
-        padding: 6px 16px; border: none; background: transparent;
-        color: var(--app-text-secondary); cursor: pointer;
-        border-radius: 6px; font-size: 13px; font-family: inherit;
-        transition: background 0.15s, color 0.15s;
+        padding: 6px 16px;
+        border: none;
+        background: transparent;
+        color: var(--app-text-secondary);
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: inherit;
+        transition:
+          background 0.15s,
+          color 0.15s;
       }
-      .seg-item.is-active { background: var(--seg-bg-selected); color: var(--app-text-bright); }
+      .seg-item.is-active {
+        background: var(--seg-bg-selected);
+        color: var(--app-text-bright);
+      }
       .start-btn {
-        width: 100%; padding: 14px; border: none;
-        background: var(--app-color-primary); color: #fff;
-        border-radius: 8px; font-size: 16px; font-weight: 600;
-        cursor: pointer; font-family: inherit;
+        width: 100%;
+        padding: 14px;
+        border: none;
+        background: var(--app-color-primary);
+        color: #fff;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
         transition: background 0.15s;
       }
-      .start-btn:hover { background: var(--app-color-primary-hover); }
-      .setting-row {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 10px 0; gap: 12px;
+      .start-btn:hover {
+        background: var(--app-color-primary-hover);
       }
-      .setting-row .label { color: var(--app-text-primary); font-size: 14px; }
+      .setting-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        gap: 12px;
+      }
+      .setting-row .label {
+        color: var(--app-text-primary);
+        font-size: 14px;
+      }
       .custom-count-input {
-        width: 80px; padding: 6px 10px;
-        background: var(--app-bg-surface); color: var(--app-text-bright);
-        border: 1px solid var(--app-glass-border); border-radius: 6px;
-        font-size: 14px; font-family: inherit;
+        width: 80px;
+        padding: 6px 10px;
+        background: var(--app-bg-surface);
+        color: var(--app-text-bright);
+        border: 1px solid var(--app-glass-border);
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
       }
 
       /* ===== TopBar (answer mode) ===== */
       .topbar {
-        display: flex; align-items: center; gap: 16px;
-        padding: 0 20px; height: 56px; font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 0 20px;
+        height: 56px;
+        font-size: 15px;
         color: var(--app-text-primary);
         margin-bottom: 16px;
       }
       .back-btn {
-        width: 32px; height: 32px; border-radius: 8px; border: none;
-        background: rgba(255,255,255,0.06); color: var(--app-text-primary);
-        font-size: 22px; cursor: pointer; font-family: inherit;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--app-text-primary);
+        font-size: 22px;
+        cursor: pointer;
+        font-family: inherit;
       }
-      .back-btn:hover { background: rgba(255,255,255,0.12); }
-      .topbar-title { font-weight: 600; }
-      .topbar-progress { color: var(--app-text-secondary); font-variant-numeric: tabular-nums; }
-      .topbar-timer { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--app-text-secondary); }
+      .back-btn:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .topbar-title {
+        font-weight: 600;
+      }
+      .topbar-progress {
+        color: var(--app-text-secondary);
+        font-variant-numeric: tabular-nums;
+      }
+      .topbar-timer {
+        margin-left: auto;
+        font-variant-numeric: tabular-nums;
+        color: var(--app-text-secondary);
+      }
 
       /* ===== Answer Session ===== */
       .answer-session {
-        display: flex; gap: 24px; align-items: flex-start;
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
         min-height: calc(100vh - 140px);
       }
-      .answer-left { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding-top: 40px; }
-      .answer-right { flex-shrink: 0; }
-      .question-area { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+      .answer-left {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding-top: 40px;
+      }
+      .answer-right {
+        flex-shrink: 0;
+      }
+      .question-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
       .formula {
-        font-size: 40px; font-family: "JetBrains Mono", "SF Mono", monospace;
-        color: var(--app-text-primary); display: flex; align-items: baseline; gap: 4px;
+        font-size: 40px;
+        font-family: 'JetBrains Mono', 'SF Mono', monospace;
+        color: var(--app-text-primary);
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
       }
       .answer-inline {
-        color: var(--app-color-primary); font-weight: 600;
-        min-width: 60px; display: inline-block; text-align: left;
+        color: var(--app-color-primary);
+        font-weight: 600;
+        min-width: 60px;
+        display: inline-block;
+        text-align: left;
       }
-      .cursor { color: var(--app-color-primary); animation: blink 1s infinite; }
-      @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
-      .context { font-size: 15px; color: var(--app-text-secondary); }
-      .tolerance { font-size: 14px; color: var(--app-text-secondary); }
-      .hint { font-size: 13px; color: var(--app-text-secondary); font-style: italic; }
-      .standard { font-size: 15px; color: var(--app-text-secondary); font-variant-numeric: tabular-nums; }
+      .cursor {
+        color: var(--app-color-primary);
+        animation: blink 1s infinite;
+      }
+      @keyframes blink {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        51%,
+        100% {
+          opacity: 0;
+        }
+      }
+      .context {
+        font-size: 15px;
+        color: var(--app-text-secondary);
+      }
+      .tolerance {
+        font-size: 14px;
+        color: var(--app-text-secondary);
+      }
+      .hint {
+        font-size: 13px;
+        color: var(--app-text-secondary);
+        font-style: italic;
+      }
+      .standard {
+        font-size: 15px;
+        color: var(--app-text-secondary);
+        font-variant-numeric: tabular-nums;
+      }
 
-      .flash-correct { animation: flashGreen 0.2s; }
-      .flash-wrong { animation: flashRed 0.2s; }
-      @keyframes flashGreen { 0%,100% { background: transparent; } 50% { background: rgba(95,175,111,0.15); } }
-      @keyframes flashRed { 0%,100% { background: transparent; } 50% { background: rgba(220,50,47,0.15); } }
+      .flash-correct {
+        animation: flashGreen 0.2s;
+      }
+      .flash-wrong {
+        animation: flashRed 0.2s;
+      }
+      @keyframes flashGreen {
+        0%,
+        100% {
+          background: transparent;
+        }
+        50% {
+          background: rgba(95, 175, 111, 0.15);
+        }
+      }
+      @keyframes flashRed {
+        0%,
+        100% {
+          background: transparent;
+        }
+        50% {
+          background: rgba(220, 50, 47, 0.15);
+        }
+      }
 
       /* ===== Numpad ===== */
       .numpad-container {
-        display: inline-block; padding: 12px;
-        border-radius: var(--app-radius-card); user-select: none; position: relative;
+        display: inline-block;
+        padding: 12px;
+        border-radius: var(--app-radius-card);
+        user-select: none;
+        position: relative;
       }
       .drag-handle {
-        display: flex; align-items: center; justify-content: space-between; gap: 8px;
-        padding: 6px 10px; cursor: grab; font-size: 12px;
-        color: var(--app-text-secondary); border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 10px;
+        cursor: grab;
+        font-size: 12px;
+        color: var(--app-text-secondary);
+        border-radius: 8px;
       }
-      .drag-handle:active { cursor: grabbing; }
-      .handle-icon { font-size: 14px; letter-spacing: 1px; }
+      .drag-handle:active {
+        cursor: grabbing;
+      }
+      .handle-icon {
+        font-size: 14px;
+        letter-spacing: 1px;
+      }
       .handle-restart {
-        background: rgba(42,161,152,0.3); color: var(--app-color-info);
-        border: 1px solid rgba(42,161,152,0.4); border-radius: 4px;
-        padding: 2px 8px; font-size: 10px; cursor: pointer; font-family: inherit;
+        background: rgba(42, 161, 152, 0.3);
+        color: var(--app-color-info);
+        border: 1px solid rgba(42, 161, 152, 0.4);
+        border-radius: 4px;
+        padding: 2px 8px;
+        font-size: 10px;
+        cursor: pointer;
+        font-family: inherit;
       }
-      .handle-restart:hover { background: rgba(42,161,152,0.5); }
-      .keypad-grid { display: grid; grid-template-columns: repeat(3, 64px); grid-auto-rows: 56px; gap: 8px; }
+      .handle-restart:hover {
+        background: rgba(42, 161, 152, 0.5);
+      }
+      .keypad-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 64px);
+        grid-auto-rows: 56px;
+        gap: 8px;
+      }
       .key-cell {
-        border: 1px solid var(--app-glass-border); border-radius: 8px;
-        background: var(--key-bg); color: var(--key-text);
-        font-size: 20px; font-weight: 500; cursor: pointer;
-        transition: background 0.15s, transform 0.05s; font-family: inherit;
+        border: 1px solid var(--app-glass-border);
+        border-radius: 8px;
+        background: var(--key-bg);
+        color: var(--key-text);
+        font-size: 20px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          background 0.15s,
+          transform 0.05s;
+        font-family: inherit;
       }
-      .key-cell:hover { background: var(--key-bg-hover); }
-      .key-cell:active { transform: scale(0.96); }
-      .key-submit { background: var(--key-submit-bg); color: #fff; }
-      .key-submit:hover { background: rgba(95,175,111,0.95); }
+      .key-cell:hover {
+        background: var(--key-bg-hover);
+      }
+      .key-cell:active {
+        transform: scale(0.96);
+      }
+      .key-submit {
+        background: var(--key-submit-bg);
+        color: #fff;
+      }
+      .key-submit:hover {
+        background: rgba(95, 175, 111, 0.95);
+      }
 
       /* ===== Result ===== */
-      .practice-result { max-width: 900px; margin: 0 auto; }
-      .result-title { color: var(--app-text-primary); margin-bottom: 16px; font-size: 24px; }
-      .summary { display: flex; gap: 24px; padding: 20px; margin-bottom: 24px; }
-      .summary-item { flex: 1; text-align: center; }
-      .summary-label { font-size: 13px; color: var(--app-text-secondary); margin-bottom: 6px; }
-      .summary-value { font-size: 28px; font-weight: 600; color: var(--app-text-primary); }
-      .summary-value.error { color: #ff6e8c; }
-      .record-list { background: var(--app-bg-surface); border-radius: 10px; overflow: hidden; }
-      .record-header, .record-row {
-        display: grid; grid-template-columns: 60px 1.5fr 1fr 1fr 80px;
-        gap: 12px; padding: 12px 16px; font-size: 14px; color: var(--app-text-primary);
+      .practice-result {
+        max-width: 900px;
+        margin: 0 auto;
       }
-      .record-header { background: rgba(255,255,255,0.04); font-weight: 600; color: var(--app-text-secondary); }
-      .record-row { border-top: 1px solid rgba(255,255,255,0.05); }
-      .record-row.wrong { background: rgba(255,110,140,0.05); }
-      .ans-correct { color: var(--app-color-primary); font-weight: 600; }
-      .ans-wrong { color: #ff6e8c; font-weight: 600; }
-      .actions { display: flex; gap: 12px; margin-top: 24px; }
+      .result-title {
+        color: var(--app-text-primary);
+        margin-bottom: 16px;
+        font-size: 24px;
+      }
+      .summary {
+        display: flex;
+        gap: 24px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      .summary-item {
+        flex: 1;
+        text-align: center;
+      }
+      .summary-label {
+        font-size: 13px;
+        color: var(--app-text-secondary);
+        margin-bottom: 6px;
+      }
+      .summary-value {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--app-text-primary);
+      }
+      .summary-value.error {
+        color: #ff6e8c;
+      }
+      .record-list {
+        background: var(--app-bg-surface);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .record-header,
+      .record-row {
+        display: grid;
+        grid-template-columns: 60px 1.5fr 1fr 1fr 80px;
+        gap: 12px;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: var(--app-text-primary);
+      }
+      .record-header {
+        background: rgba(255, 255, 255, 0.04);
+        font-weight: 600;
+        color: var(--app-text-secondary);
+      }
+      .record-row {
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .record-row.wrong {
+        background: rgba(255, 110, 140, 0.05);
+      }
+      .ans-correct {
+        color: var(--app-color-primary);
+        font-weight: 600;
+      }
+      .ans-wrong {
+        color: #ff6e8c;
+        font-weight: 600;
+      }
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
       .action-btn {
-        flex: 1; padding: 12px; border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 8px; background: var(--app-bg-surface);
-        color: var(--app-text-primary); cursor: pointer; font-size: 15px; font-family: inherit;
+        flex: 1;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        background: var(--app-bg-surface);
+        color: var(--app-text-primary);
+        cursor: pointer;
+        font-size: 15px;
+        font-family: inherit;
       }
-      .action-btn.primary { background: var(--app-color-primary); color: #fff; border-color: var(--app-color-primary); }
-      .action-btn.primary:hover { background: #6fbf7f; }
-      .action-btn:hover { background: rgba(255,255,255,0.08); }
+      .action-btn.primary {
+        background: var(--app-color-primary);
+        color: #fff;
+        border-color: var(--app-color-primary);
+      }
+      .action-btn.primary:hover {
+        background: #6fbf7f;
+      }
+      .action-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
 
       /* ===== History ===== */
-      .history-view { max-width: 960px; margin: 0 auto; }
-      .history-empty { text-align: center; padding: 60px 20px; color: var(--app-text-muted); }
-      .history-item {
-        padding: 16px 20px; margin-bottom: 12px;
-        display: flex; align-items: center; justify-content: space-between;
-        cursor: pointer; transition: border-color 0.2s;
+      .history-view {
+        max-width: 960px;
+        margin: 0 auto;
       }
-      .history-item:hover { border-color: var(--app-color-primary); }
-      .history-meta { font-size: 12px; color: var(--app-text-secondary); margin-top: 4px; }
-      .history-stats { display: flex; gap: 16px; font-size: 13px; }
-      .history-stats .stat-val { color: var(--app-text-bright); font-weight: 600; font-variant-numeric: tabular-nums; }
+      .history-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--app-text-muted);
+      }
+      .history-item {
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        transition: border-color 0.2s;
+      }
+      .history-item:hover {
+        border-color: var(--app-color-primary);
+      }
+      .history-meta {
+        font-size: 12px;
+        color: var(--app-text-secondary);
+        margin-top: 4px;
+      }
+      .history-stats {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+      }
+      .history-stats .stat-val {
+        color: var(--app-text-bright);
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
 
       /* ===== Stats / Settings static ===== */
-      .static-view { max-width: 960px; margin: 0 auto; }
-      .static-card { padding: 24px; margin-bottom: 16px; }
-      .static-card h3 { margin: 0 0 12px; color: var(--app-text-bright); font-size: 16px; }
-      .static-card p { margin: 4px 0; color: var(--app-text-secondary); font-size: 13px; }
-      .static-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(147,161,161,0.08); font-size: 13px; }
-      .static-row:last-child { border-bottom: none; }
-      .static-row .k { color: var(--app-text-secondary); }
-      .static-row .v { color: var(--app-text-bright); }
+      .static-view {
+        max-width: 960px;
+        margin: 0 auto;
+      }
+      .static-card {
+        padding: 24px;
+        margin-bottom: 16px;
+      }
+      .static-card h3 {
+        margin: 0 0 12px;
+        color: var(--app-text-bright);
+        font-size: 16px;
+      }
+      .static-card p {
+        margin: 4px 0;
+        color: var(--app-text-secondary);
+        font-size: 13px;
+      }
+      .static-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(147, 161, 161, 0.08);
+        font-size: 13px;
+      }
+      .static-row:last-child {
+        border-bottom: none;
+      }
+      .static-row .k {
+        color: var(--app-text-secondary);
+      }
+      .static-row .v {
+        color: var(--app-text-bright);
+      }
 
       .demo-badge {
-        position: fixed; bottom: 16px; right: 16px; z-index: 200;
-        padding: 6px 12px; border-radius: 999px;
-        background: rgba(181,137,0,0.85); color: #fff;
-        font-size: 11px; font-weight: 600;
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        z-index: 200;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(181, 137, 0, 0.85);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 600;
         backdrop-filter: blur(8px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       }
     </style>
   </head>
@@ -466,102 +975,187 @@
     <script src="https://cdn.jsdelivr.net/npm/element-plus@2.8.8/dist/index.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@element-plus/icons-vue@2.3.1/dist/index.iife.min.js"></script>
     <script>
-      const { createApp, ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } = Vue;
+      const { createApp, ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } =
+        Vue
 
       // ===== 题型生成器（移植自 src/generators/basic.ts） =====
-      function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+      function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min
+      }
 
       function genAddsub2d() {
-        const op = Math.random() < 0.5 ? "+" : "-";
-        let a = randInt(10, 99), b = randInt(10, 99);
-        if (op === "-" && a < b) [a, b] = [b, a];
-        return { a, b, op, answer: op === "+" ? a + b : a - b, display: `${a}${op}${b}=` };
+        const op = Math.random() < 0.5 ? '+' : '-'
+        let a = randInt(10, 99),
+          b = randInt(10, 99)
+        if (op === '-' && a < b) [a, b] = [b, a]
+        return { a, b, op, answer: op === '+' ? a + b : a - b, display: `${a}${op}${b}=` }
       }
       function genRound100() {
-        const a = randInt(10, 90), b = 100 - a;
-        return { a, b, op: "+", answer: 100, display: `${a}+${b}=` };
+        const a = randInt(10, 90),
+          b = 100 - a
+        return { a, b, op: '+', answer: 100, display: `${a}+${b}=` }
       }
       function genAdd3d() {
-        const a = randInt(100, 999), b = randInt(100, 999);
-        return { a, b, op: "+", answer: a + b, display: `${a}+${b}=` };
+        const a = randInt(100, 999),
+          b = randInt(100, 999)
+        return { a, b, op: '+', answer: a + b, display: `${a}+${b}=` }
       }
       function genSub3d() {
-        let a = randInt(100, 999), b = randInt(100, 999);
-        if (a < b) [a, b] = [b, a];
-        return { a, b, op: "-", answer: a - b, display: `${a}-${b}=` };
+        let a = randInt(100, 999),
+          b = randInt(100, 999)
+        if (a < b) [a, b] = [b, a]
+        return { a, b, op: '-', answer: a - b, display: `${a}-${b}=` }
       }
       function genAddsub3d() {
-        const op = Math.random() < 0.5 ? "+" : "-";
-        let a = randInt(100, 999), b = randInt(100, 999);
-        if (op === "-" && a < b) [a, b] = [b, a];
-        return { a, b, op, answer: op === "+" ? a + b : a - b, display: `${a}${op}${b}=` };
+        const op = Math.random() < 0.5 ? '+' : '-'
+        let a = randInt(100, 999),
+          b = randInt(100, 999)
+        if (op === '-' && a < b) [a, b] = [b, a]
+        return { a, b, op, answer: op === '+' ? a + b : a - b, display: `${a}${op}${b}=` }
       }
       function genAddMulti() {
-        const n = Math.random() < 0.5 ? 3 : 4;
-        const nums = [];
-        for (let i = 0; i < n; i++) nums.push(randInt(10, 99));
-        const answer = nums.reduce((s, x) => s + x, 0);
-        return { a: nums[0], b: nums[1], op: "+", answer, display: nums.join("+") + "=" };
+        const n = Math.random() < 0.5 ? 3 : 4
+        const nums = []
+        for (let i = 0; i < n; i++) nums.push(randInt(10, 99))
+        const answer = nums.reduce((s, x) => s + x, 0)
+        return { a: nums[0], b: nums[1], op: '+', answer, display: nums.join('+') + '=' }
       }
       function genAddsubMix() {
-        const a = randInt(10, 99), b = randInt(10, 99), c = randInt(10, 99);
-        const op2 = Math.random() < 0.5 ? "+" : "-";
-        let answer = a + b;
-        if (op2 === "-") answer = answer - c; else answer = answer + c;
-        if (answer < 0) return { a, b, op: "+", answer: a + b + c, display: `${a}+${b}+${c}=` };
-        return { a, b, op: "+", answer, display: `${a}+${b}${op2}${c}=` };
+        const a = randInt(10, 99),
+          b = randInt(10, 99),
+          c = randInt(10, 99)
+        const op2 = Math.random() < 0.5 ? '+' : '-'
+        let answer = a + b
+        if (op2 === '-') answer = answer - c
+        else answer = answer + c
+        if (answer < 0) return { a, b, op: '+', answer: a + b + c, display: `${a}+${b}+${c}=` }
+        return { a, b, op: '+', answer, display: `${a}+${b}${op2}${c}=` }
       }
-      function genMul2x1() { const a = randInt(10, 99), b = randInt(2, 9); return { a, b, op: "×", answer: a * b, display: `${a}×${b}=` }; }
-      function genMul3x1() { const a = randInt(100, 999), b = randInt(2, 9); return { a, b, op: "×", answer: a * b, display: `${a}×${b}=` }; }
-      function genMul2x11() { const a = randInt(10, 99); return { a, b: 11, op: "×", answer: a * 11, display: `${a}×11=` }; }
-      function genMul2x15() { const a = randInt(10, 99); return { a, b: 15, op: "×", answer: a * 15, display: `${a}×15=` }; }
-      function genMul2x2() { const a = randInt(10, 99), b = randInt(10, 99); return { a, b, op: "×", answer: a * b, display: `${a}×${b}=` }; }
-      function genDiv3x1() { const b = randInt(2, 9), q = randInt(50, 111), a = b * q; return { a, b, op: "÷", answer: q, display: `${a}÷${b}=` }; }
+      function genMul2x1() {
+        const a = randInt(10, 99),
+          b = randInt(2, 9)
+        return { a, b, op: '×', answer: a * b, display: `${a}×${b}=` }
+      }
+      function genMul3x1() {
+        const a = randInt(100, 999),
+          b = randInt(2, 9)
+        return { a, b, op: '×', answer: a * b, display: `${a}×${b}=` }
+      }
+      function genMul2x11() {
+        const a = randInt(10, 99)
+        return { a, b: 11, op: '×', answer: a * 11, display: `${a}×11=` }
+      }
+      function genMul2x15() {
+        const a = randInt(10, 99)
+        return { a, b: 15, op: '×', answer: a * 15, display: `${a}×15=` }
+      }
+      function genMul2x2() {
+        const a = randInt(10, 99),
+          b = randInt(10, 99)
+        return { a, b, op: '×', answer: a * b, display: `${a}×${b}=` }
+      }
+      function genDiv3x1() {
+        const b = randInt(2, 9),
+          q = randInt(50, 111),
+          a = b * q
+        return { a, b, op: '÷', answer: q, display: `${a}÷${b}=` }
+      }
       function genDiv3x2() {
-        let a = 0, b = 0, q = 0;
-        do { b = randInt(10, 99); q = randInt(2, 9); a = b * q; } while (a < 100);
-        return { a, b, op: "÷", answer: q, display: `${a}÷${b}=` };
+        let a = 0,
+          b = 0,
+          q = 0
+        do {
+          b = randInt(10, 99)
+          q = randInt(2, 9)
+          a = b * q
+        } while (a < 100)
+        return { a, b, op: '÷', answer: q, display: `${a}÷${b}=` }
       }
       function genMulEst() {
-        const a = randInt(100, 999), b = randInt(10, 99);
-        const exact = a * b;
-        const answer = Math.round(exact / 10) * 10;
-        return { a, b, op: "×", answer, display: `${a}×${b}≈`, tolerance: 0.02 };
+        const a = randInt(100, 999),
+          b = randInt(10, 99)
+        const exact = a * b
+        const answer = Math.round(exact / 10) * 10
+        return { a, b, op: '×', answer, display: `${a}×${b}≈`, tolerance: 0.02 }
       }
       function genDiv5x3() {
-        let a = 0, b = 0, q = 0;
-        do { b = randInt(100, 999); q = randInt(10, 99); a = b * q; } while (a < 10000);
-        return { a, b, op: "÷", answer: q, display: `${a}÷${b}=` };
+        let a = 0,
+          b = 0,
+          q = 0
+        do {
+          b = randInt(100, 999)
+          q = randInt(10, 99)
+          a = b * q
+        } while (a < 10000)
+        return { a, b, op: '÷', answer: q, display: `${a}÷${b}=` }
       }
       function genDiv3x4() {
-        const a = randInt(100, 999), bb = randInt(1000, 9999);
-        const answer = a / bb;
-        return { a, b: bb, op: "÷", answer: Number(answer.toFixed(4)), display: `${a}÷${bb}≈`, preset: "0." };
+        const a = randInt(100, 999),
+          bb = randInt(1000, 9999)
+        const answer = a / bb
+        return {
+          a,
+          b: bb,
+          op: '÷',
+          answer: Number(answer.toFixed(4)),
+          display: `${a}÷${bb}≈`,
+          preset: '0.',
+        }
       }
 
       const GENERATORS = {
-        addsub_2d: genAddsub2d, round_100: genRound100, add_3d: genAdd3d, sub_3d: genSub3d,
-        addsub_3d: genAddsub3d, add_multi: genAddMulti, addsub_mix: genAddsubMix,
-        mul_2x1: genMul2x1, mul_3x1: genMul3x1, mul_2x11: genMul2x11, mul_2x15: genMul2x15, mul_2x2: genMul2x2,
-        div_3x1: genDiv3x1, div_3x2: genDiv3x2, mul_est: genMulEst, div_5x3: genDiv5x3, div_3x4: genDiv3x4,
-      };
+        addsub_2d: genAddsub2d,
+        round_100: genRound100,
+        add_3d: genAdd3d,
+        sub_3d: genSub3d,
+        addsub_3d: genAddsub3d,
+        add_multi: genAddMulti,
+        addsub_mix: genAddsubMix,
+        mul_2x1: genMul2x1,
+        mul_3x1: genMul3x1,
+        mul_2x11: genMul2x11,
+        mul_2x15: genMul2x15,
+        mul_2x2: genMul2x2,
+        div_3x1: genDiv3x1,
+        div_3x2: genDiv3x2,
+        mul_est: genMulEst,
+        div_5x3: genDiv5x3,
+        div_3x4: genDiv3x4,
+      }
 
       const SECTIONS = [
-        { title: "加减法", types: [
-          { key: "addsub_2d", label: "两位数加减" }, { key: "round_100", label: "凑整百练习" },
-          { key: "add_3d", label: "三位数加法" }, { key: "sub_3d", label: "三位数减法" },
-          { key: "addsub_3d", label: "三位数加减" }, { key: "add_multi", label: "多数相加" },
-          { key: "addsub_mix", label: "混合加减" },
-        ]},
-        { title: "乘除法", types: [
-          { key: "mul_2x1", label: "两位数乘一位数" }, { key: "mul_3x1", label: "三位数乘一位数" },
-          { key: "mul_2x11", label: "两位数乘11" }, { key: "mul_2x15", label: "两位数乘15" },
-          { key: "mul_2x2", label: "两位数乘两位数" }, { key: "div_3x1", label: "三位数除一位数" },
-          { key: "div_3x2", label: "三位数除两位数" }, { key: "mul_est", label: "乘法估算" },
-          { key: "div_5x3", label: "五位数除三位数" }, { key: "div_3x4", label: "三位数除四位数" },
-        ]},
-      ];
-      const TYPE_LABELS = SECTIONS.flatMap(s => s.types).reduce((m, t) => { m[t.key] = t.label; return m; }, {});
+        {
+          title: '加减法',
+          types: [
+            { key: 'addsub_2d', label: '两位数加减' },
+            { key: 'round_100', label: '凑整百练习' },
+            { key: 'add_3d', label: '三位数加法' },
+            { key: 'sub_3d', label: '三位数减法' },
+            { key: 'addsub_3d', label: '三位数加减' },
+            { key: 'add_multi', label: '多数相加' },
+            { key: 'addsub_mix', label: '混合加减' },
+          ],
+        },
+        {
+          title: '乘除法',
+          types: [
+            { key: 'mul_2x1', label: '两位数乘一位数' },
+            { key: 'mul_3x1', label: '三位数乘一位数' },
+            { key: 'mul_2x11', label: '两位数乘11' },
+            { key: 'mul_2x15', label: '两位数乘15' },
+            { key: 'mul_2x2', label: '两位数乘两位数' },
+            { key: 'div_3x1', label: '三位数除一位数' },
+            { key: 'div_3x2', label: '三位数除两位数' },
+            { key: 'mul_est', label: '乘法估算' },
+            { key: 'div_5x3', label: '五位数除三位数' },
+            { key: 'div_3x4', label: '三位数除四位数' },
+          ],
+        },
+      ]
+      const TYPE_LABELS = SECTIONS.flatMap((s) => s.types).reduce((m, t) => {
+        m[t.key] = t.label
+        return m
+      }, {})
 
       // 时间标准（简化版，参考 time_standards 表）
       const TIME_STANDARDS = {
@@ -582,130 +1176,139 @@
         mul_est: { pass: 12, good: 9, excellent: 7 },
         div_5x3: { pass: 20, good: 16, excellent: 12 },
         div_3x4: { pass: 10, good: 8, excellent: 6 },
-      };
+      }
 
       // ===== 评分逻辑 =====
       function isCorrect(userAns, q) {
-        if (userAns === "" || userAns === null || userAns === undefined) return false;
-        const u = Number(userAns);
-        if (Number.isNaN(u)) return false;
+        if (userAns === '' || userAns === null || userAns === undefined) return false
+        const u = Number(userAns)
+        if (Number.isNaN(u)) return false
         if (q.tolerance) {
-          return Math.abs(u - q.answer) <= Math.abs(q.answer) * q.tolerance;
+          return Math.abs(u - q.answer) <= Math.abs(q.answer) * q.tolerance
         }
-        return u === q.answer;
+        return u === q.answer
       }
 
       // ===== 主 App 组件 =====
       const App = {
         setup() {
-          const currentView = ref("home");
-          const history = ref([]); // 内存历史
+          const currentView = ref('home')
+          const history = ref([]) // 内存历史
 
           // 设置页状态
-          const selectedType = ref("addsub_2d");
-          const countMode = ref("10");
-          const customCount = ref(10);
+          const selectedType = ref('addsub_2d')
+          const countMode = ref('10')
+          const customCount = ref(10)
 
           // 答题会话状态
           const session = reactive({
-            phase: "idle", // idle | running | finished
+            phase: 'idle', // idle | running | finished
             questions: [],
             currentIdx: 0,
-            currentAnswer: "",
+            currentAnswer: '',
             startTime: 0,
             elapsedMs: 0,
             records: [],
             questionStart: 0,
             error: null,
-          });
-          const flashState = ref("none");
-          let flashTimer = null;
-          let timerHandle = null;
+          })
+          const flashState = ref('none')
+          let flashTimer = null
+          let timerHandle = null
 
           // Numpad 拖拽
-          const numpadPos = reactive({ x: 0, y: 0, scale: 1 });
-          let dragState = null;
+          const numpadPos = reactive({ x: 0, y: 0, scale: 1 })
+          let dragState = null
 
           const count = computed(() => {
-            if (countMode.value === "custom") {
-              const n = Number(customCount.value);
-              return Number.isFinite(n) && n > 0 ? Math.min(n, 100) : 10;
+            if (countMode.value === 'custom') {
+              const n = Number(customCount.value)
+              return Number.isFinite(n) && n > 0 ? Math.min(n, 100) : 10
             }
-            return Number(countMode.value);
-          });
+            return Number(countMode.value)
+          })
 
-          const currentQuestion = computed(() => session.questions[session.currentIdx] || null);
+          const currentQuestion = computed(() => session.questions[session.currentIdx] || null)
           const standardText = computed(() => {
-            const s = TIME_STANDARDS[selectedType.value];
-            return s ? `合格 ${s.pass}s  良好 ${s.good}s  优秀 ${s.excellent}s` : null;
-          });
+            const s = TIME_STANDARDS[selectedType.value]
+            return s ? `合格 ${s.pass}s  良好 ${s.good}s  优秀 ${s.excellent}s` : null
+          })
           const progressText = computed(() => {
-            if (session.phase === "idle") return "";
-            return `${session.currentIdx + 1} / ${session.questions.length}`;
-          });
+            if (session.phase === 'idle') return ''
+            return `${session.currentIdx + 1} / ${session.questions.length}`
+          })
           const elapsedDisplay = computed(() => {
-            const totalSec = Math.floor(session.elapsedMs / 1000);
-            const m = Math.floor((totalSec % 3600) / 60);
-            const s = totalSec % 60;
-            return `0:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-          });
+            const totalSec = Math.floor(session.elapsedMs / 1000)
+            const m = Math.floor((totalSec % 3600) / 60)
+            const s = totalSec % 60
+            return `0:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+          })
 
           function startSession() {
-            const qs = [];
-            const gen = GENERATORS[selectedType.value];
-            for (let i = 0; i < count.value; i++) qs.push(gen());
-            session.questions = qs;
-            session.currentIdx = 0;
-            session.currentAnswer = qs[0] && qs[0].preset ? qs[0].preset : "";
-            session.records = [];
-            session.startTime = Date.now();
-            session.elapsedMs = 0;
-            session.questionStart = Date.now();
-            session.phase = "running";
-            session.error = null;
-            flashState.value = "none";
-            currentView.value = "session";
-            startTimer();
+            const qs = []
+            const gen = GENERATORS[selectedType.value]
+            for (let i = 0; i < count.value; i++) qs.push(gen())
+            session.questions = qs
+            session.currentIdx = 0
+            session.currentAnswer = qs[0] && qs[0].preset ? qs[0].preset : ''
+            session.records = []
+            session.startTime = Date.now()
+            session.elapsedMs = 0
+            session.questionStart = Date.now()
+            session.phase = 'running'
+            session.error = null
+            flashState.value = 'none'
+            currentView.value = 'session'
+            startTimer()
           }
 
           function startTimer() {
-            stopTimer();
+            stopTimer()
             timerHandle = setInterval(() => {
-              session.elapsedMs = Date.now() - session.startTime;
-            }, 100);
+              session.elapsedMs = Date.now() - session.startTime
+            }, 100)
           }
           function stopTimer() {
-            if (timerHandle) { clearInterval(timerHandle); timerHandle = null; }
+            if (timerHandle) {
+              clearInterval(timerHandle)
+              timerHandle = null
+            }
           }
 
           function inputChar(c) {
-            session.currentAnswer += c;
+            session.currentAnswer += c
           }
           function backspace() {
-            session.currentAnswer = session.currentAnswer.slice(0, -1);
+            session.currentAnswer = session.currentAnswer.slice(0, -1)
           }
           function clearAnswer() {
-            session.currentAnswer = currentQuestion.value && currentQuestion.value.preset ? currentQuestion.value.preset : "";
+            session.currentAnswer =
+              currentQuestion.value && currentQuestion.value.preset
+                ? currentQuestion.value.preset
+                : ''
           }
           function toggleSign() {
-            if (session.currentAnswer.startsWith("-")) {
-              session.currentAnswer = session.currentAnswer.slice(1);
-            } else if (session.currentAnswer !== "") {
-              session.currentAnswer = "-" + session.currentAnswer;
+            if (session.currentAnswer.startsWith('-')) {
+              session.currentAnswer = session.currentAnswer.slice(1)
+            } else if (session.currentAnswer !== '') {
+              session.currentAnswer = '-' + session.currentAnswer
             }
           }
           function restartQuestion() {
-            session.currentAnswer = currentQuestion.value && currentQuestion.value.preset ? currentQuestion.value.preset : "";
-            session.questionStart = Date.now();
+            session.currentAnswer =
+              currentQuestion.value && currentQuestion.value.preset
+                ? currentQuestion.value.preset
+                : ''
+            session.questionStart = Date.now()
           }
 
           function submit() {
-            if (session.phase !== "running") return;
-            const q = currentQuestion.value;
-            if (!q) return;
-            const userAns = session.currentAnswer;
-            const correct = isCorrect(userAns, q);
-            const timeSpent = Date.now() - session.questionStart;
+            if (session.phase !== 'running') return
+            const q = currentQuestion.value
+            if (!q) return
+            const userAns = session.currentAnswer
+            const correct = isCorrect(userAns, q)
+            const timeSpent = Date.now() - session.questionStart
             session.records.push({
               qIndex: session.currentIdx,
               question: q.display,
@@ -714,18 +1317,21 @@
               isCorrect: correct,
               timeSpentMs: timeSpent,
               tolerance: q.tolerance || null,
-            });
+            })
 
             // 闪烁反馈
-            if (flashTimer) clearTimeout(flashTimer);
-            flashState.value = correct ? "correct" : "wrong";
-            flashTimer = setTimeout(() => { flashState.value = "none"; flashTimer = null; }, 200);
+            if (flashTimer) clearTimeout(flashTimer)
+            flashState.value = correct ? 'correct' : 'wrong'
+            flashTimer = setTimeout(() => {
+              flashState.value = 'none'
+              flashTimer = null
+            }, 200)
 
             if (session.currentIdx + 1 >= session.questions.length) {
-              session.phase = "finished";
-              stopTimer();
+              session.phase = 'finished'
+              stopTimer()
               // 写入内存历史
-              const correctCount = session.records.filter(r => r.isCorrect).length;
+              const correctCount = session.records.filter((r) => r.isCorrect).length
               history.value.unshift({
                 id: Date.now(),
                 type: selectedType.value,
@@ -734,134 +1340,212 @@
                 accuracy: correctCount / session.questions.length,
                 errorCount: session.questions.length - correctCount,
                 elapsedMs: session.elapsedMs,
-                createdAt: new Date().toLocaleString("zh-CN"),
+                createdAt: new Date().toLocaleString('zh-CN'),
                 records: [...session.records],
-              });
-              currentView.value = "result";
+              })
+              currentView.value = 'result'
             } else {
-              session.currentIdx += 1;
-              const nq = session.questions[session.currentIdx];
-              session.currentAnswer = nq && nq.preset ? nq.preset : "";
-              session.questionStart = Date.now();
+              session.currentIdx += 1
+              const nq = session.questions[session.currentIdx]
+              session.currentAnswer = nq && nq.preset ? nq.preset : ''
+              session.questionStart = Date.now()
             }
           }
 
           function restartSession() {
-            startSession();
+            startSession()
           }
           function backToSettings() {
-            stopTimer();
-            session.phase = "idle";
-            currentView.value = "practice-settings";
+            stopTimer()
+            session.phase = 'idle'
+            currentView.value = 'practice-settings'
           }
           function goHistory() {
-            currentView.value = "history";
+            currentView.value = 'history'
           }
 
           // 键盘
           function handleKeydown(e) {
-            if (currentView.value !== "session" || session.phase !== "running") return;
-            if ((e.code === "Enter" || e.code === "Escape" || e.code === "Space") && e.target instanceof HTMLButtonElement) return;
-            if (e.code === "Backspace") { e.preventDefault(); backspace(); return; }
-            if (e.code === "Enter") { e.preventDefault(); submit(); return; }
-            if (e.code === "Escape") { e.preventDefault(); restartQuestion(); return; }
-            if (e.code === "Delete") { e.preventDefault(); clearAnswer(); return; }
-            if (e.key >= "0" && e.key <= "9") { e.preventDefault(); inputChar(e.key); return; }
-            if (e.key === ".") { e.preventDefault(); inputChar("."); return; }
-            if (e.key === "-") { e.preventDefault(); toggleSign(); return; }
+            if (currentView.value !== 'session' || session.phase !== 'running') return
+            if (
+              (e.code === 'Enter' || e.code === 'Escape' || e.code === 'Space') &&
+              e.target instanceof HTMLButtonElement
+            )
+              return
+            if (e.code === 'Backspace') {
+              e.preventDefault()
+              backspace()
+              return
+            }
+            if (e.code === 'Enter') {
+              e.preventDefault()
+              submit()
+              return
+            }
+            if (e.code === 'Escape') {
+              e.preventDefault()
+              restartQuestion()
+              return
+            }
+            if (e.code === 'Delete') {
+              e.preventDefault()
+              clearAnswer()
+              return
+            }
+            if (e.key >= '0' && e.key <= '9') {
+              e.preventDefault()
+              inputChar(e.key)
+              return
+            }
+            if (e.key === '.') {
+              e.preventDefault()
+              inputChar('.')
+              return
+            }
+            if (e.key === '-') {
+              e.preventDefault()
+              toggleSign()
+              return
+            }
           }
 
           onMounted(() => {
-            window.addEventListener("keydown", handleKeydown);
+            window.addEventListener('keydown', handleKeydown)
             try {
-              const px = localStorage.getItem("demo:numpadX");
-              const py = localStorage.getItem("demo:numpadY");
-              const sc = localStorage.getItem("demo:numpadScale");
-              if (px !== null) numpadPos.x = Number(px);
-              if (py !== null) numpadPos.y = Number(py);
-              if (sc !== null) numpadPos.scale = Number(sc);
+              const px = localStorage.getItem('demo:numpadX')
+              const py = localStorage.getItem('demo:numpadY')
+              const sc = localStorage.getItem('demo:numpadScale')
+              if (px !== null) numpadPos.x = Number(px)
+              if (py !== null) numpadPos.y = Number(py)
+              if (sc !== null) numpadPos.scale = Number(sc)
             } catch {}
-          });
+          })
           onBeforeUnmount(() => {
-            window.removeEventListener("keydown", handleKeydown);
-            stopTimer();
-            if (flashTimer) clearTimeout(flashTimer);
-          });
+            window.removeEventListener('keydown', handleKeydown)
+            stopTimer()
+            if (flashTimer) clearTimeout(flashTimer)
+          })
 
           // Numpad 拖拽
           function onNumpadPointerDown(e) {
             dragState = {
-              startX: e.clientX, startY: e.clientY,
-              posX: numpadPos.x, posY: numpadPos.y, scale: numpadPos.scale,
+              startX: e.clientX,
+              startY: e.clientY,
+              posX: numpadPos.x,
+              posY: numpadPos.y,
+              scale: numpadPos.scale,
               axis: null,
-            };
-            (e.target).setPointerCapture(e.pointerId);
+            }
+            e.target.setPointerCapture(e.pointerId)
           }
           function onNumpadPointerMove(e) {
-            if (!dragState) return;
-            const dx = e.clientX - dragState.startX;
-            const dy = e.clientY - dragState.startY;
+            if (!dragState) return
+            const dx = e.clientX - dragState.startX
+            const dy = e.clientY - dragState.startY
             if (dragState.axis === null && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
-              dragState.axis = Math.abs(dy) > Math.abs(dx) ? "v" : "h";
+              dragState.axis = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h'
             }
-            if (dragState.axis === "v") {
-              const newScale = dragState.scale + dy / 200;
-              numpadPos.scale = Math.max(0.7, Math.min(1.5, newScale));
-            } else if (dragState.axis === "h") {
-              numpadPos.x = dragState.posX + dx;
-              numpadPos.y = dragState.posY + dy;
+            if (dragState.axis === 'v') {
+              const newScale = dragState.scale + dy / 200
+              numpadPos.scale = Math.max(0.7, Math.min(1.5, newScale))
+            } else if (dragState.axis === 'h') {
+              numpadPos.x = dragState.posX + dx
+              numpadPos.y = dragState.posY + dy
             }
           }
           function onNumpadPointerUp() {
             if (dragState) {
-              dragState = null;
+              dragState = null
               try {
-                localStorage.setItem("demo:numpadX", String(numpadPos.x));
-                localStorage.setItem("demo:numpadY", String(numpadPos.y));
-                localStorage.setItem("demo:numpadScale", String(numpadPos.scale));
+                localStorage.setItem('demo:numpadX', String(numpadPos.x))
+                localStorage.setItem('demo:numpadY', String(numpadPos.y))
+                localStorage.setItem('demo:numpadScale', String(numpadPos.scale))
               } catch {}
             }
           }
           function onNumpadDblClick() {
-            numpadPos.x = 0; numpadPos.y = 0; numpadPos.scale = 1;
+            numpadPos.x = 0
+            numpadPos.y = 0
+            numpadPos.scale = 1
             try {
-              localStorage.removeItem("demo:numpadX");
-              localStorage.removeItem("demo:numpadY");
-              localStorage.removeItem("demo:numpadScale");
+              localStorage.removeItem('demo:numpadX')
+              localStorage.removeItem('demo:numpadY')
+              localStorage.removeItem('demo:numpadScale')
             } catch {}
           }
 
           // 统计
           const resultAccuracy = computed(() => {
-            if (!session.records.length) return "0%";
-            const correct = session.records.filter(r => r.isCorrect).length;
-            return `${Math.round((correct / session.records.length) * 100)}%`;
-          });
-          const resultErrorCount = computed(() => session.records.filter(r => !r.isCorrect).length);
+            if (!session.records.length) return '0%'
+            const correct = session.records.filter((r) => r.isCorrect).length
+            return `${Math.round((correct / session.records.length) * 100)}%`
+          })
+          const resultErrorCount = computed(
+            () => session.records.filter((r) => !r.isCorrect).length,
+          )
           const resultDuration = computed(() => {
-            const totalSec = Math.floor(session.elapsedMs / 1000);
-            const m = Math.floor(totalSec / 60);
-            const s = totalSec % 60;
-            return `0:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-          });
-          function formatTime(ms) { return `${(ms / 1000).toFixed(1)}s`; }
+            const totalSec = Math.floor(session.elapsedMs / 1000)
+            const m = Math.floor(totalSec / 60)
+            const s = totalSec % 60
+            return `0:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+          })
+          function formatTime(ms) {
+            return `${(ms / 1000).toFixed(1)}s`
+          }
 
           // 导航
-          function goHome() { currentView.value = "home"; }
-          function goPractice() { currentView.value = "practice-settings"; }
-          function goStats() { currentView.value = "stats"; }
-          function goSettings() { currentView.value = "settings"; }
+          function goHome() {
+            currentView.value = 'home'
+          }
+          function goPractice() {
+            currentView.value = 'practice-settings'
+          }
+          function goStats() {
+            currentView.value = 'stats'
+          }
+          function goSettings() {
+            currentView.value = 'settings'
+          }
 
           return {
-            currentView, history, selectedType, countMode, customCount, count,
-            session, flashState, numpadPos, currentQuestion, standardText,
-            progressText, elapsedDisplay, resultAccuracy, resultErrorCount, resultDuration,
-            SECTIONS, TYPE_LABELS,
-            startSession, submit, inputChar, backspace, clearAnswer, toggleSign, restartQuestion,
-            restartSession, backToSettings, goHistory, goHome, goPractice, goStats, goSettings,
-            onNumpadPointerDown, onNumpadPointerMove, onNumpadPointerUp, onNumpadDblClick,
+            currentView,
+            history,
+            selectedType,
+            countMode,
+            customCount,
+            count,
+            session,
+            flashState,
+            numpadPos,
+            currentQuestion,
+            standardText,
+            progressText,
+            elapsedDisplay,
+            resultAccuracy,
+            resultErrorCount,
+            resultDuration,
+            SECTIONS,
+            TYPE_LABELS,
+            startSession,
+            submit,
+            inputChar,
+            backspace,
+            clearAnswer,
+            toggleSign,
+            restartQuestion,
+            restartSession,
+            backToSettings,
+            goHistory,
+            goHome,
+            goPractice,
+            goStats,
+            goSettings,
+            onNumpadPointerDown,
+            onNumpadPointerMove,
+            onNumpadPointerUp,
+            onNumpadDblClick,
             formatTime,
-          };
+          }
         },
         template: `
         <div class="app-shell">
@@ -1158,15 +1842,15 @@
           </div>
         </div>
         `,
-      };
+      }
 
-      const app = createApp(App);
-      app.use(ElementPlus);
+      const app = createApp(App)
+      app.use(ElementPlus)
       // 注册图标组件（全局）
       for (const [key, comp] of Object.entries(ElementPlusIconsVue)) {
-        app.component(key, comp);
+        app.component(key, comp)
       }
-      app.mount("#app");
+      app.mount('#app')
     </script>
   </body>
 </html>

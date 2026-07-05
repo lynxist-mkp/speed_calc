@@ -12,10 +12,10 @@
 
 ## 文件结构
 
-| 文件 | 操作 | 职责 |
-|------|------|------|
-| `.github/workflows/build-windows.yml` | 创建 | Windows 构建 workflow：依赖安装、tauri build、产物上传 |
-| `docs/superpowers/specs/2026-07-05-windows-build-design.md` | 已存在 | 设计规格（已 commit） |
+| 文件                                                        | 操作   | 职责                                                   |
+| ----------------------------------------------------------- | ------ | ------------------------------------------------------ |
+| `.github/workflows/build-windows.yml`                       | 创建   | Windows 构建 workflow：依赖安装、tauri build、产物上传 |
+| `docs/superpowers/specs/2026-07-05-windows-build-design.md` | 已存在 | 设计规格（已 commit）                                  |
 
 **关于测试：** workflow 文件无法做单元测试，验证方式为：(1) YAML 语法检查；(2) 推送后在 GitHub Actions 页面手动触发并观察构建日志；(3) 验证 Artifacts 包含 3 个产物文件。
 
@@ -24,6 +24,7 @@
 ### 任务 1：创建 GitHub Actions workflow 文件
 
 **文件：**
+
 - 创建：`.github/workflows/build-windows.yml`
 
 - [ ] **步骤 1：确认 `.github/workflows/` 目录存在**
@@ -31,6 +32,7 @@
 运行：`ls -la /Users/linkslinks/project/speed_calc/.github/workflows/ 2>/dev/null || echo "目录不存在"`
 
 如果输出 "目录不存在"，创建目录：
+
 ```bash
 mkdir -p /Users/linkslinks/project/speed_calc/.github/workflows
 ```
@@ -107,6 +109,7 @@ jobs:
 - [ ] **步骤 3：验证 YAML 语法**
 
 运行：
+
 ```bash
 python3 -c "import yaml; yaml.safe_load(open('/Users/linkslinks/project/speed_calc/.github/workflows/build-windows.yml'))" && echo "YAML OK"
 ```
@@ -144,6 +147,7 @@ git push origin main
 - [ ] **步骤 1：引导用户触发 workflow**
 
 向用户说明：
+
 1. 打开 https://github.com/lynxist-mkp/speed_calc/actions
 2. 左侧找到 "Build Windows" workflow
 3. 点击右侧 "Run workflow" → 选择 main 分支 → 点击绿色 "Run workflow" 按钮
@@ -152,6 +156,7 @@ git push origin main
 - [ ] **步骤 2：用户反馈构建结果**
 
 预期：
+
 - 构建状态从黄色（进行中）变为绿色（成功）
 - 构建运行页面底部出现 `speed-calc-windows` artifact
 - 如果构建失败，请用户提供失败日志最后 50 行
@@ -159,6 +164,7 @@ git push origin main
 - [ ] **步骤 3：用户下载并验证 artifact 内容**
 
 引导用户：
+
 1. 在构建运行页面点击 `speed-calc-windows` artifact 下载
 2. 解压 zip 文件
 3. 确认包含 3 个文件：
@@ -171,6 +177,7 @@ git push origin main
 - [ ] **步骤 4：在 Windows 机器上验证可运行**
 
 用户在 Windows 设备上：
+
 1. 双击 `.msi` 或 `-setup.exe` 安装应用
 2. 启动应用，确认窗口标题为「行测小助手」
 3. 进入任一练习模式，确认 SQLite 数据库初始化成功（无报错弹窗）
@@ -182,6 +189,7 @@ git push origin main
 ## 自检
 
 **1. 规格覆盖度：**
+
 - ✓ workflow 文件创建（任务 1 步骤 1-2）
 - ✓ YAML 语法验证（任务 1 步骤 3）
 - ✓ commit + push（任务 1 步骤 5-6）
@@ -193,6 +201,7 @@ git push origin main
 **2. 占位符扫描：** 无 TODO/待定内容，所有步骤都包含完整代码或命令 ✓
 
 **3. 类型一致性：** workflow 文件中：
+
 - artifact 名 `speed-calc-windows` 在 workflow 和验证步骤中一致 ✓
 - portable 路径 `src-tauri/target/release/speed-calc.exe`（cargo 包名 `speed-calc`）在 workflow 和规格中一致 ✓
 - workflow 名称 `Build Windows` 在文件和验证步骤中一致 ✓

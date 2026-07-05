@@ -33,6 +33,7 @@ migrations/
 现有 `CREATE TABLE settings ( key TEXT PRIMARY KEY, value TEXT )`，KV 结构，无需迁移。
 
 **Key 命名**：`<scope>.<field>`，value 存 `JSON.stringify`。
+
 - `basic.keyboardLayout` → `"\"normal\""`
 - `basic.touchPen` → `"false"`
 - `basic.selectedType` → `"0"`
@@ -45,45 +46,46 @@ migrations/
 
 ```typescript
 interface BasicSettings {
-  keyboardLayout: "normal" | "reverse" | "shuffle";
-  touchPen: boolean;
-  selectedType: number;      // 0-17，18 题型索引（17 = 自定义）
-  countMode: "quick" | "normal" | "custom";
-  count: number;             // 5-100
-  nback: 0 | 1 | 2;
+  keyboardLayout: 'normal' | 'reverse' | 'shuffle'
+  touchPen: boolean
+  selectedType: number // 0-17，18 题型索引（17 = 自定义）
+  countMode: 'quick' | 'normal' | 'custom'
+  count: number // 5-100
+  nback: 0 | 1 | 2
 }
 
 interface DASettings {
-  selectedFillType: number;    // 9 填空题索引
-  selectedCompareType: number; // 3 比较题索引
-  count: number;               // 5-100
-  difficulty: "easy" | "normal" | "hard";
-  displayMode: "chart" | "formula";
-  nback: 0 | 1 | 2;
+  selectedFillType: number // 9 填空题索引
+  selectedCompareType: number // 3 比较题索引
+  count: number // 5-100
+  difficulty: 'easy' | 'normal' | 'hard'
+  displayMode: 'chart' | 'formula'
+  nback: 0 | 1 | 2
 }
 
-export const useSettingsStore = defineStore("settings", () => {
-  const basic = ref<BasicSettings>({ /* 默认值 */ });
-  const dataAnalysis = ref<DASettings>({ /* 默认值 */ });
-  const loaded = ref(false);
+export const useSettingsStore = defineStore('settings', () => {
+  const basic = ref<BasicSettings>({/* 默认值 */})
+  const dataAnalysis = ref<DASettings>({/* 默认值 */})
+  const loaded = ref(false)
 
-  async function load(): Promise<void>;          // SELECT * FROM settings，按 key 前缀分发
-  async function saveBasic(patch: Partial<BasicSettings>): Promise<void>;
-  async function saveDataAnalysis(patch: Partial<DASettings>): Promise<void>;
+  async function load(): Promise<void> // SELECT * FROM settings，按 key 前缀分发
+  async function saveBasic(patch: Partial<BasicSettings>): Promise<void>
+  async function saveDataAnalysis(patch: Partial<DASettings>): Promise<void>
 
-  return { basic, dataAnalysis, loaded, load, saveBasic, saveDataAnalysis };
-});
+  return { basic, dataAnalysis, loaded, load, saveBasic, saveDataAnalysis }
+})
 ```
 
 **默认值**（与现有设置页 ref 默认值一致）：
+
 - basic: `{ keyboardLayout: "normal", touchPen: false, selectedType: 0, countMode: "quick", count: 10, nback: 0 }`
 - dataAnalysis: `{ selectedFillType: 0, selectedCompareType: 0, count: 10, difficulty: "normal", displayMode: "chart", nback: 0 }`
 
 ### 2.3 db/index.ts 新增
 
 ```typescript
-export async function getSetting(key: string): Promise<string | null>;
-export async function setSetting(key: string, value: string): Promise<void>;
+export async function getSetting(key: string): Promise<string | null>
+export async function setSetting(key: string, value: string): Promise<void>
 // upsert 用 INSERT OR REPLACE
 ```
 
@@ -100,45 +102,58 @@ export async function setSetting(key: string, value: string): Promise<void>;
 
 与 PracticeSettings.vue 18 网格对应（第 18 项"自定义"独立路由）：
 
-| 索引 | 题型 ID | 中文名 | 生成逻辑 |
-|---|---|---|---|
-| 0 | `addsub_2d` | 两位数加减 | 现有 generateBasicAddSub |
-| 1 | `round_100` | 凑整百练习 | a∈[10,99]，b=100-a，问 a+b |
-| 2 | `add_3d` | 三位数加法 | a,b∈[100,999]，a+b |
-| 3 | `sub_3d` | 三位数减法 | a,b∈[100,999]，a-b 非负 |
-| 4 | `addsub_3d` | 三位数加减 | 随机 + 或 −，非负 |
-| 5 | `add_multi` | 多数相加 | 3-4 个两位数相加 |
-| 6 | `addsub_mix` | 混合加减 | 3 个两位数，± 混合 |
-| 7 | `mul_2x1` | 两位数乘一位数 | a∈[10,99]，b∈[2,9] |
-| 8 | `mul_3x1` | 三位数乘一位数 | a∈[100,999]，b∈[2,9] |
-| 9 | `mul_2x11` | 两位数乘11 | a∈[10,99]，b=11 |
-| 10 | `mul_2x15` | 两位数乘15 | a∈[10,99]，b=15 |
-| 11 | `mul_2x2` | 两位数乘两位数 | a,b∈[10,99] |
-| 12 | `div_3x1` | 三位数除一位数 | a∈[100,999]，b∈[2,9]，整除 |
-| 13 | `div_3x2` | 三位数除两位数 | a∈[100,999]，b∈[10,99]，整除 |
-| 14 | `mul_est` | 乘法估算 | a∈[100,999]，b∈[10,99]，答案取整到十位 |
-| 15 | `div_5x3` | 五位数除三位数 | a∈[10000,99999]，b∈[100,999]，整除 |
-| 16 | `div_3x4` | 三位数除四位数 | a∈[1000,9999]，b∈[100,999]，结果必 <1，预填 "0." |
+| 索引 | 题型 ID      | 中文名         | 生成逻辑                                         |
+| ---- | ------------ | -------------- | ------------------------------------------------ |
+| 0    | `addsub_2d`  | 两位数加减     | 现有 generateBasicAddSub                         |
+| 1    | `round_100`  | 凑整百练习     | a∈[10,99]，b=100-a，问 a+b                       |
+| 2    | `add_3d`     | 三位数加法     | a,b∈[100,999]，a+b                               |
+| 3    | `sub_3d`     | 三位数减法     | a,b∈[100,999]，a-b 非负                          |
+| 4    | `addsub_3d`  | 三位数加减     | 随机 + 或 −，非负                                |
+| 5    | `add_multi`  | 多数相加       | 3-4 个两位数相加                                 |
+| 6    | `addsub_mix` | 混合加减       | 3 个两位数，± 混合                               |
+| 7    | `mul_2x1`    | 两位数乘一位数 | a∈[10,99]，b∈[2,9]                               |
+| 8    | `mul_3x1`    | 三位数乘一位数 | a∈[100,999]，b∈[2,9]                             |
+| 9    | `mul_2x11`   | 两位数乘11     | a∈[10,99]，b=11                                  |
+| 10   | `mul_2x15`   | 两位数乘15     | a∈[10,99]，b=15                                  |
+| 11   | `mul_2x2`    | 两位数乘两位数 | a,b∈[10,99]                                      |
+| 12   | `div_3x1`    | 三位数除一位数 | a∈[100,999]，b∈[2,9]，整除                       |
+| 13   | `div_3x2`    | 三位数除两位数 | a∈[100,999]，b∈[10,99]，整除                     |
+| 14   | `mul_est`    | 乘法估算       | a∈[100,999]，b∈[10,99]，答案取整到十位           |
+| 15   | `div_5x3`    | 五位数除三位数 | a∈[10000,99999]，b∈[100,999]，整除               |
+| 16   | `div_3x4`    | 三位数除四位数 | a∈[1000,9999]，b∈[100,999]，结果必 <1，预填 "0." |
 
 ### 3.2 接口（src/generators/basic.ts 扩展）
 
 ```typescript
 export type BasicType =
-  | "addsub_2d" | "round_100" | "add_3d" | "sub_3d" | "addsub_3d"
-  | "add_multi" | "addsub_mix"
-  | "mul_2x1" | "mul_3x1" | "mul_2x11" | "mul_2x15" | "mul_2x2"
-  | "div_3x1" | "div_3x2" | "mul_est" | "div_5x3" | "div_3x4";
+  | 'addsub_2d'
+  | 'round_100'
+  | 'add_3d'
+  | 'sub_3d'
+  | 'addsub_3d'
+  | 'add_multi'
+  | 'addsub_mix'
+  | 'mul_2x1'
+  | 'mul_3x1'
+  | 'mul_2x11'
+  | 'mul_2x15'
+  | 'mul_2x2'
+  | 'div_3x1'
+  | 'div_3x2'
+  | 'mul_est'
+  | 'div_5x3'
+  | 'div_3x4'
 
 export interface BasicQuestion {
-  a: number;
-  b: number;
-  op: "+" | "-" | "×" | "÷";
-  answer: number;
-  display: string;       // 如 "61+84="
-  preset?: string;       // 仅 div_3x4 预填 "0."
+  a: number
+  b: number
+  op: '+' | '-' | '×' | '÷'
+  answer: number
+  display: string // 如 "61+84="
+  preset?: string // 仅 div_3x4 预填 "0."
 }
 
-export function generateBasic(type: BasicType, count: number): BasicQuestion[];
+export function generateBasic(type: BasicType, count: number): BasicQuestion[]
 ```
 
 ### 3.3 生成规则要点
@@ -156,22 +171,38 @@ export function generateBasic(type: BasicType, count: number): BasicQuestion[];
 
 ```typescript
 const BASIC_TYPES: Set<string> = new Set([
-  "addsub_2d", "round_100", "add_3d", "sub_3d", "addsub_3d",
-  "add_multi", "addsub_mix",
-  "mul_2x1", "mul_3x1", "mul_2x11", "mul_2x15", "mul_2x2",
-  "div_3x1", "div_3x2", "mul_est", "div_5x3", "div_3x4",
-]);
+  'addsub_2d',
+  'round_100',
+  'add_3d',
+  'sub_3d',
+  'addsub_3d',
+  'add_multi',
+  'addsub_mix',
+  'mul_2x1',
+  'mul_3x1',
+  'mul_2x11',
+  'mul_2x15',
+  'mul_2x2',
+  'div_3x1',
+  'div_3x2',
+  'mul_est',
+  'div_5x3',
+  'div_3x4',
+])
 
 async function init(cfg: SessionConfig) {
-  let qs: AnyQuestion[];
-  if (cfg.type === "custom_standard") {
-    qs = generateCustomStandard(cfg.customConfig as CustomStandardConfig, cfg.count);
-  } else if (cfg.type === "custom_power") {
-    qs = generateCustomPower(cfg.customConfig as CustomPowerConfig, cfg.count);
+  let qs: AnyQuestion[]
+  if (cfg.type === 'custom_standard') {
+    qs = generateCustomStandard(cfg.customConfig as CustomStandardConfig, cfg.count)
+  } else if (cfg.type === 'custom_power') {
+    qs = generateCustomPower(cfg.customConfig as CustomPowerConfig, cfg.count)
   } else if (BASIC_TYPES.has(cfg.type)) {
-    qs = generateBasic(cfg.type as BasicType, cfg.count);
-  } else if (cfg.type.startsWith("compare_")) { /* 现有 */ }
-  else { /* data 现有 */ }
+    qs = generateBasic(cfg.type as BasicType, cfg.count)
+  } else if (cfg.type.startsWith('compare_')) {
+    /* 现有 */
+  } else {
+    /* data 现有 */
+  }
   // ...
 }
 ```
@@ -180,12 +211,12 @@ async function init(cfg: SessionConfig) {
 
 ```typescript
 export interface SessionConfig {
-  type: string;
-  subtype: string;
-  count: number;
-  difficulty?: "easy" | "normal" | "hard";
-  nback?: 0 | 1 | 2;
-  customConfig?: CustomStandardConfig | CustomPowerConfig;
+  type: string
+  subtype: string
+  count: number
+  difficulty?: 'easy' | 'normal' | 'hard'
+  nback?: 0 | 1 | 2
+  customConfig?: CustomStandardConfig | CustomPowerConfig
 }
 ```
 
@@ -221,19 +252,20 @@ lib.rs 注册 migration 0005。
 
 ```typescript
 export interface CustomStandardConfig {
-  firstDigits: 1 | 2 | 3 | 4;
-  operators: Array<"+" | "-" | "×" | "÷">;
-  secondMode: "random_digits" | "fixed" | "range";
-  secondDigits?: 1 | 2 | 3 | 4;   // random_digits
-  secondFixed?: number;            // fixed
-  secondMin?: number;              // range
-  secondMax?: number;              // range
+  firstDigits: 1 | 2 | 3 | 4
+  operators: Array<'+' | '-' | '×' | '÷'>
+  secondMode: 'random_digits' | 'fixed' | 'range'
+  secondDigits?: 1 | 2 | 3 | 4 // random_digits
+  secondFixed?: number // fixed
+  secondMin?: number // range
+  secondMax?: number // range
 }
 
-export function generateCustomStandard(cfg: CustomStandardConfig, count: number): BasicQuestion[];
+export function generateCustomStandard(cfg: CustomStandardConfig, count: number): BasicQuestion[]
 ```
 
 **生成规则**：
+
 - `firstDigits`：按位数生成（1 位 [2,9]，2 位 [10,99]，3 位 [100,999]，4 位 [1000,9999]）
 - `operators`：每题随机抽一个选中的运算符
 - `secondMode`：
@@ -247,17 +279,18 @@ export function generateCustomStandard(cfg: CustomStandardConfig, count: number)
 
 ```typescript
 export interface CustomPowerConfig {
-  baseMode: "range" | "digits";
-  baseMin?: number;
-  baseMax?: number;
-  baseDigits?: 1 | 2 | 3;
-  powerTypes: Array<2 | 3>;
+  baseMode: 'range' | 'digits'
+  baseMin?: number
+  baseMax?: number
+  baseDigits?: 1 | 2 | 3
+  powerTypes: Array<2 | 3>
 }
 
-export function generateCustomPower(cfg: CustomPowerConfig, count: number): BasicQuestion[];
+export function generateCustomPower(cfg: CustomPowerConfig, count: number): BasicQuestion[]
 ```
 
 **生成规则**：
+
 - `baseMode=range`：底数 ∈ [baseMin, baseMax]
 - `baseMode=digits`：按位数生成底数
 - `powerTypes`：每题随机抽一个指数
@@ -269,6 +302,7 @@ export function generateCustomPower(cfg: CustomPowerConfig, count: number): Basi
 存 `custom_presets` 表（`name/config/used_at`）。
 
 **name 格式**（截图 #24 实证）：
+
 - 标准运算：`4位数-4位数` / `2位数×1位数` / `2位数-15~99`（range）/ `2位数-15`（fixed）
 - 幂运算：`2位数²` / `3位数³`
 
@@ -282,14 +316,14 @@ export function generateCustomPower(cfg: CustomPowerConfig, count: number): Basi
 
 ```typescript
 export interface CustomPreset {
-  id: number;
-  name: string;
-  config: string;
-  usedAt: number;
+  id: number
+  name: string
+  config: string
+  usedAt: number
 }
 
-export async function listCustomPresets(limit = 10): Promise<CustomPreset[]>;
-export async function upsertCustomPreset(name: string, config: string): Promise<void>;
+export async function listCustomPresets(limit = 10): Promise<CustomPreset[]>
+export async function upsertCustomPreset(name: string, config: string): Promise<void>
 // upsert 逻辑：先按 config 查，有则更新 used_at，无则插入
 ```
 
@@ -366,8 +400,13 @@ async function submit() {
 ### 5.4 NbackPrompt 组件（src/components/NbackPrompt.vue，新建）
 
 ```vue
-<el-dialog v-model="visible" :show-close="false" :close-on-click-modal="false"
-           title="N-back 回忆" width="320px">
+<el-dialog
+  v-model="visible"
+  :show-close="false"
+  :close-on-click-modal="false"
+  title="N-back 回忆"
+  width="320px"
+>
   <p>第 {{ target.index + 1 }} 题的答案是？</p>
   <Numpad v-model="answer" :has-sign="true" @submit="onSubmit" />
   <template #footer>
@@ -377,6 +416,7 @@ async function submit() {
 ```
 
 **交互**：
+
 - 复用 Numpad（带 ±，答案可能负）
 - "跳过"= 答错处理
 - 提交调 store.submitNback(answer)，store 判分并关闭弹窗
@@ -402,25 +442,25 @@ async function submit() {
 
 ### 6.1 PracticeSettings.vue 扩展
 
-| 区块 | 改动 |
-|---|---|
-| 键盘布局开关 | 接 settings.basic.keyboardLayout，点击即时 saveBasic；移除 onPlaceholderClick |
-| 触控笔开关 | 接 settings.basic.touchPen |
-| 题型网格 18 项 | 17 项可选（切换 selectedType 并 saveBasic）；"自定义"点击打开自定义运算弹窗 |
-| 题量 | 现有逻辑保留，确认时 saveBasic({ countMode, count }) |
-| N-back 角标 | 点击弹窗（#22 复刻），关/1-back/2-back，确认 saveBasic({ nback }) |
-| 开始练习 | 读 settings.basic.selectedType 调 generateBasic，nback 传入 |
-| 导出题目 | L4 仍占位（验收未列） |
+| 区块           | 改动                                                                          |
+| -------------- | ----------------------------------------------------------------------------- |
+| 键盘布局开关   | 接 settings.basic.keyboardLayout，点击即时 saveBasic；移除 onPlaceholderClick |
+| 触控笔开关     | 接 settings.basic.touchPen                                                    |
+| 题型网格 18 项 | 17 项可选（切换 selectedType 并 saveBasic）；"自定义"点击打开自定义运算弹窗   |
+| 题量           | 现有逻辑保留，确认时 saveBasic({ countMode, count })                          |
+| N-back 角标    | 点击弹窗（#22 复刻），关/1-back/2-back，确认 saveBasic({ nback })             |
+| 开始练习       | 读 settings.basic.selectedType 调 generateBasic，nback 传入                   |
+| 导出题目       | L4 仍占位（验收未列）                                                         |
 
 ### 6.2 DataAnalysisSettings.vue 扩展
 
-| 区块 | 改动 |
-|---|---|
-| 难度三按钮 | 新增区块，接 settings.dataAnalysis.difficulty |
-| 呈现方式 | 新增区块，生成文字图表 / 直接显示公式，接 displayMode |
-| N-back | 填空题 tab 显示，比较题 tab 隐藏 |
-| 题量/题型 | 接 settings.dataAnalysis 各字段 |
-| 开始练习 | 传 difficulty/nback 给 store.init |
+| 区块       | 改动                                                  |
+| ---------- | ----------------------------------------------------- |
+| 难度三按钮 | 新增区块，接 settings.dataAnalysis.difficulty         |
+| 呈现方式   | 新增区块，生成文字图表 / 直接显示公式，接 displayMode |
+| N-back     | 填空题 tab 显示，比较题 tab 隐藏                      |
+| 题量/题型  | 接 settings.dataAnalysis 各字段                       |
+| 开始练习   | 传 difficulty/nback 给 store.init                     |
 
 ### 6.3 难度影响生成器
 
@@ -462,6 +502,7 @@ difficulty 作为参数传入生成器函数：`generateDataQuestion(type, count
 ```
 
 **确定按钮流程**：
+
 1. 校验（运算符至少 1 个；幂运算至少 1 个）
 2. upsertCustomPreset(name, config) 记录最近使用
 3. saveBasic({ selectedType: 17 })
@@ -475,15 +516,15 @@ difficulty 作为参数传入生成器函数：`generateDataQuestion(type, count
 
 ## 8. 测试策略
 
-| 层 | 测试 |
-|---|---|
-| generators/basic.ts | 17 题型各 1 生成测试 + 整除/非负保证 + 边界（1 位数不含 0） |
-| generators/custom.ts | 标准 4 种 secondMode + 幂 range/digits + 运算符多选 + name 格式化 |
-| generators/dataAnalysis.ts | 现有测试不动；新增 difficulty 参数传递测试（不破坏向后兼容） |
-| stores/settings.ts | load/save 往返 + 默认值 + key 命名 |
-| stores/practice.ts | N-back 状态机：nback=0 不变 / nback=1 前 1 题延迟入库 / 末尾回收 / 跳过计错 |
-| db/index.ts | upsertCustomPreset 重复 config 更新 used_at / listCustomPresets limit |
-| 组件 | NbackPrompt 弹窗显示/提交/跳过 |
+| 层                         | 测试                                                                        |
+| -------------------------- | --------------------------------------------------------------------------- |
+| generators/basic.ts        | 17 题型各 1 生成测试 + 整除/非负保证 + 边界（1 位数不含 0）                 |
+| generators/custom.ts       | 标准 4 种 secondMode + 幂 range/digits + 运算符多选 + name 格式化           |
+| generators/dataAnalysis.ts | 现有测试不动；新增 difficulty 参数传递测试（不破坏向后兼容）                |
+| stores/settings.ts         | load/save 往返 + 默认值 + key 命名                                          |
+| stores/practice.ts         | N-back 状态机：nback=0 不变 / nback=1 前 1 题延迟入库 / 末尾回收 / 跳过计错 |
+| db/index.ts                | upsertCustomPreset 重复 config 更新 used_at / listCustomPresets limit       |
+| 组件                       | NbackPrompt 弹窗显示/提交/跳过                                              |
 
 **N-back 状态机单测要点**（store 测试）：
 
@@ -511,6 +552,7 @@ nback=1, count=3:
 ## 11. 验收清单对应
 
 levels.md L4 验收：
+
 - [ ] 设置全可配置并持久化 → §2 + §6.1 + §6.2
 - [ ] 配置生效到出题 → §3.4 + §6.1 开始练习 + §6.2 难度传递
 - [ ] 自定义运算(标准+幂)能生成 → §4

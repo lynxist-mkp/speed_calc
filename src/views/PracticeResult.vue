@@ -1,55 +1,55 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
-import { usePracticeStore } from "@/stores/practice";
-import Katex from "@/components/Katex.vue";
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { usePracticeStore } from '@/stores/practice'
+import Katex from '@/components/Katex.vue'
 
-const router = useRouter();
-const store = usePracticeStore();
+const router = useRouter()
+const store = usePracticeStore()
 
 const totalDurationText = computed(() => {
-  const totalSec = Math.floor(store.elapsedMs / 1000);
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  return `0:${m}:${s}`;
-});
+  const totalSec = Math.floor(store.elapsedMs / 1000)
+  const m = Math.floor(totalSec / 60)
+  const s = totalSec % 60
+  return `0:${m}:${s}`
+})
 
 const accuracyText = computed(() => {
-  return `${Math.round(store.accuracy * 100)}%`;
-});
+  return `${Math.round(store.accuracy * 100)}%`
+})
 
 function formatTime(ms: number) {
-  const sec = (ms / 1000).toFixed(1);
-  return `${sec}s`;
+  const sec = (ms / 1000).toFixed(1)
+  return `${sec}s`
 }
 
 function restart() {
   void store.restart().then(() => {
-    router.push("/practice/session");
-  });
+    router.push('/practice/session')
+  })
 }
 
 function backToSettings() {
-  const target = store.isDataType ? "/practice/data-analysis" : "/practice";
-  store.reset();
-  router.push(target);
+  const target = store.isDataType ? '/practice/data-analysis' : '/practice'
+  store.reset()
+  router.push(target)
 }
 
 function goHistory() {
-  router.push("/history");
+  router.push('/history')
 }
 
 onMounted(() => {
   // 若会话未结束（如直接访问 URL），回设置页
-  if (store.phase !== "finished") {
-    router.replace("/practice");
-    return;
+  if (store.phase !== 'finished') {
+    router.replace('/practice')
+    return
   }
   if (store.error) {
-    ElMessage.warning("会话保存失败，历史记录可能不完整");
+    ElMessage.warning('会话保存失败，历史记录可能不完整')
   }
-});
+})
 </script>
 
 <template>
@@ -87,8 +87,10 @@ onMounted(() => {
       >
         <span>{{ r.qIndex + 1 }}</span>
         <span><Katex :tex="r.question" /></span>
-        <span>{{ r.trueAnswer }}{{ r.unit || "" }}</span>
-        <span :class="r.isCorrect ? 'ans-correct' : 'ans-wrong'">{{ r.userAnswer ? r.userAnswer + (r.unit || "") : "（空）" }}</span>
+        <span>{{ r.trueAnswer }}{{ r.unit || '' }}</span>
+        <span :class="r.isCorrect ? 'ans-correct' : 'ans-wrong'">{{
+          r.userAnswer ? r.userAnswer + (r.unit || '') : '（空）'
+        }}</span>
         <span>{{ formatTime(r.timeSpentMs) }}</span>
       </div>
     </div>

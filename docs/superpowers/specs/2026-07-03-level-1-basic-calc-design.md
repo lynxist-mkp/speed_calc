@@ -68,11 +68,11 @@
 
 `src/router/index.ts` 新增（替换 L0 占位）：
 
-| 路径 | 组件 | meta.title |
-|---|---|---|
-| /practice | PracticeSettings.vue | 基础计算 |
-| /practice/session | PracticeSession.vue | 答题中 |
-| /practice/result | PracticeResult.vue | 结算 |
+| 路径              | 组件                 | meta.title |
+| ----------------- | -------------------- | ---------- |
+| /practice         | PracticeSettings.vue | 基础计算   |
+| /practice/session | PracticeSession.vue  | 答题中     |
+| /practice/result  | PracticeResult.vue   | 结算       |
 
 `/home` 的"基础计算"卡片点击跳 `/practice`。
 
@@ -111,10 +111,12 @@ src/
 **职责**：渲染数字键盘 UI，捕获屏幕点击，emits 事件。不持有答案状态。
 
 **Props**：
+
 - `variant: 'basic' | 'data'`（L1 只用 'basic'；'data' 为 L2 预留）
 - `layout: 'normal' | 'reverse' | 'shuffle'`（L1 只用 'normal'，开关占位）
 
 **Emits**：
+
 - `input(char: string)` — 数字/小数点/符号输入
 - `submit()` — 确定键
 - `clear()` — 清空键
@@ -140,6 +142,7 @@ src/
 ```
 
 **拖拽**（computation-area.md §5.3 实证）：
+
 - 顶部拖拽手柄 + 说明文案"上下拖调大小 左右拖调位置 双击恢复"
 - pointer events 实现：垂直拖动调高度（scale transform 或 height），水平拖动调位置（translate）
 - 双击恢复默认
@@ -151,11 +154,13 @@ src/
 ### 3.2 TopBar.vue（答题顶栏）
 
 **Props**：
+
 - `title: string`
 - `progress: string`（如 "3/10"）
 - `elapsedMs: number`
 
 **Slots**：
+
 - `left` — 返回按钮
 - `right` — 笔图标占位（点击无反应或 toast"待实现"）
 
@@ -172,6 +177,7 @@ src/
 **职责**：渲染原版基础计算设置页，采集题量配置，跳转答题。
 
 **布局**（original-app.md §基础计算设置页 实证）：
+
 - 键盘布局开关：正序/倒序/乱序（默认正序，点击 toast"待 L4"）
 - 触控笔开关：占位 toast
 - 题型网格 6×3 = 18 格（computation-area.md 未给截图细节，按 original-app.md 表格）：
@@ -195,6 +201,7 @@ src/
 **职责**：展示当前题，捕获双输入，提交判分，驱动状态机。
 
 **布局**：
+
 - 顶部 TopBar（title="基础计算"，progress="x/n"，elapsedMs from store）
 - 题目区（居中）：
   - 算式行：`{a}{op}{b}=` + 内联答案输入位（光标在内联位）
@@ -204,6 +211,7 @@ src/
 - 答案字符串在 store，Numpad input 事件 append/toggle-sign，PracticeSession 渲染算式+答案
 
 **双输入**：
+
 - Numpad @input/@submit/@clear/@backspace/@restart/@toggle-sign → store 对应方法
 - window keydown 监听（mounted 注册，unmounted 移除）：
   - `0-9` / `.` → input(char)
@@ -216,6 +224,7 @@ src/
 - 同一 handler 处理两路径，状态同步天然成立（store 是单一源）
 
 **提交反馈**：
+
 - submit 后 store 判分 → 边框绿（对）/红（错）闪 200ms → setTimeout 进下一题
 - 最后一题 → store.finish() → router.push('/practice/result')
 - 不显示正确答案（结算页才显示）
@@ -227,6 +236,7 @@ src/
 **职责**：展示会话清单与汇总，提供出口。
 
 **布局**：
+
 - 汇总卡：错误数 / 正确率 / 总用时（0:H:M）
 - 清单表格：题序 / 题目 / 正确答案 / 我的答案（红绿标识）/ 每题时间
 - 三按钮：
@@ -241,6 +251,7 @@ src/
 **职责**：展示会话记录列表。
 
 **布局**（最小实现，L5 扩展分页/筛选/详情）：
+
 - 卡片列表：每条 session 显示 日期 / 题型 / 答对/总数 / 用时 / 评语（鼓励语"加油"）
 - onMounted 查 sessions 表（按 created_at DESC）
 - L1 只需"可见 1 条"验收
@@ -255,6 +266,7 @@ src/
 ```
 
 **State**：
+
 - `phase: 'idle' | 'running' | 'finished'`
 - `sessionId: number | null`
 - `config: { type: string; count: number }`
@@ -267,27 +279,32 @@ src/
 - `error: string | null`
 
 **Question 类型**（generators/basic.ts 导出）：
+
 ```typescript
 interface Question {
-  a: number; b: number; op: '+' | '-';
-  answer: number;          // 正确答案
-  display: string;         // 如 "61+84="
+  a: number
+  b: number
+  op: '+' | '-'
+  answer: number // 正确答案
+  display: string // 如 "61+84="
 }
 ```
 
 **AnswerRecord 类型**：
+
 ```typescript
 interface AnswerRecord {
-  qIndex: number;
-  question: string;        // display
-  userAnswer: string;
-  trueAnswer: string;
-  isCorrect: boolean;
-  timeSpentMs: number;
+  qIndex: number
+  question: string // display
+  userAnswer: string
+  trueAnswer: string
+  isCorrect: boolean
+  timeSpentMs: number
 }
 ```
 
 **Actions**：
+
 - `init(config)`：生成器产 N 题 → `INSERT sessions`（type/subtype/difficulty/total/nback/created_at，correct=0,duration=0 占位）拿 sessionId → startedAt=now → phase=running
 - `inputChar(c)`：currentAnswer += c
 - `toggleSign()`：currentAnswer 前缀切 ±
@@ -305,11 +322,12 @@ interface AnswerRecord {
 ```typescript
 async function getTimeStandard(
   questionType: string,
-  questionCount: number
+  questionCount: number,
 ): Promise<{ pass: number; good: number; excellent: number } | null>
 ```
 
 逻辑：
+
 1. 查 `time_standards WHERE question_type=? AND question_count=?` → 命中返回
 2. 未命中：查同 question_type 所有行，取 count 最接近且 ≤ 的档（降级）→ 返回
 3. 全无：返回 null（答题页隐藏标准行）
@@ -323,12 +341,14 @@ async function getTimeStandard(
 ### 4.4 新增 migration 0002
 
 `src-tauri/migrations/0002_add_basic_addsub_15.sql`：
+
 ```sql
 INSERT OR IGNORE INTO time_standards
   (question_type, question_count, pass_s, good_s, excellent_s)
 VALUES
   ('basic_addsub', 15, 42, 33, 27);
 ```
+
 （按 10 题标准 28/22/18 × 1.5 线性推算，用户确认）
 
 ## 5. 错误处理
@@ -394,18 +414,18 @@ VALUES
 
 ## 8. 决策记录
 
-| # | 决策点 | 取值 | 来源 |
-|---|---|---|---|
-| 1 | 入口 | 完整基础计算设置页（18 题型网格，17 格占位） | 用户确认 |
-| 2 | 题量 | 10/15/自定义5-100 生效 | 用户确认 |
-| 3 | 键盘布局开关 | L1 默认正序，开关占位 toast"待 L4" | 用户确认 |
-| 4 | 重开语义 | 整卷重开（重新出题、计时归零、从第1题） | 用户确认 |
-| 5 | 翻题箭头 <- -> | 弃用，不渲染 | 用户确认 |
-| 6 | 提交反馈 | 边框绿/红闪 200ms 消失，不显示正确答案 | 用户确认 |
-| 7 | 结算页内容 | 题序/题目/正确答案/我的答案红绿/每题时间/错误数/正确率/总用时 + 三按钮 | 用户确认 |
-| 8 | 生成器参数 | 10-99，减法非负，精确判分 | 用户确认 |
-| 9 | basic_addsub×15 标准 | 42/33/27（10题×1.5 推算） | 用户确认 |
-| 10 | 笔图标 ✏ | 占位渲染，不实现功能 | 用户确认 |
-| 11 | 自定义入口 | 占位 toast"待 L4" | 用户确认 |
-| 12 | 原生键盘提示文案 | 不渲染（原生键盘一直启用） | 用户确认 |
-| 13 | 架构方案 | 方案 A（Pinia store + 三段式路由） | 用户确认 |
+| #   | 决策点               | 取值                                                                   | 来源     |
+| --- | -------------------- | ---------------------------------------------------------------------- | -------- |
+| 1   | 入口                 | 完整基础计算设置页（18 题型网格，17 格占位）                           | 用户确认 |
+| 2   | 题量                 | 10/15/自定义5-100 生效                                                 | 用户确认 |
+| 3   | 键盘布局开关         | L1 默认正序，开关占位 toast"待 L4"                                     | 用户确认 |
+| 4   | 重开语义             | 整卷重开（重新出题、计时归零、从第1题）                                | 用户确认 |
+| 5   | 翻题箭头 <- ->       | 弃用，不渲染                                                           | 用户确认 |
+| 6   | 提交反馈             | 边框绿/红闪 200ms 消失，不显示正确答案                                 | 用户确认 |
+| 7   | 结算页内容           | 题序/题目/正确答案/我的答案红绿/每题时间/错误数/正确率/总用时 + 三按钮 | 用户确认 |
+| 8   | 生成器参数           | 10-99，减法非负，精确判分                                              | 用户确认 |
+| 9   | basic_addsub×15 标准 | 42/33/27（10题×1.5 推算）                                              | 用户确认 |
+| 10  | 笔图标 ✏             | 占位渲染，不实现功能                                                   | 用户确认 |
+| 11  | 自定义入口           | 占位 toast"待 L4"                                                      | 用户确认 |
+| 12  | 原生键盘提示文案     | 不渲染（原生键盘一直启用）                                             | 用户确认 |
+| 13  | 架构方案             | 方案 A（Pinia store + 三段式路由）                                     | 用户确认 |

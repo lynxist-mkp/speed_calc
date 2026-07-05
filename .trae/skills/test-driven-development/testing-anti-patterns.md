@@ -21,6 +21,7 @@
 ## 反模式 1：测试 Mock 行为
 
 **违规做法：**
+
 ```typescript
 // ❌ 差：测试 mock 是否存在
 test('renders sidebar', () => {
@@ -30,6 +31,7 @@ test('renders sidebar', () => {
 ```
 
 **为什么这是错误的：**
+
 - 你在验证 mock 能工作，而非组件能工作
 - mock 存在时测试通过，不存在时失败
 - 对真实行为一无所知
@@ -37,6 +39,7 @@ test('renders sidebar', () => {
 **你的人类伙伴的纠正：** "我们是在测试 mock 的行为吗？"
 
 **正确做法：**
+
 ```typescript
 // ✅ 好：测试真实组件或不要 mock 它
 test('renders sidebar', () => {
@@ -63,40 +66,44 @@ test('renders sidebar', () => {
 ## 反模式 2：在生产代码中添加仅测试用方法
 
 **违规做法：**
+
 ```typescript
 // ❌ 差：destroy() 仅在测试中使用
 class Session {
-  async destroy() {  // 看起来像生产 API！
-    await this._workspaceManager?.destroyWorkspace(this.id);
+  async destroy() {
+    // 看起来像生产 API！
+    await this._workspaceManager?.destroyWorkspace(this.id)
     // ... 清理
   }
 }
 
 // 在测试中
-afterEach(() => session.destroy());
+afterEach(() => session.destroy())
 ```
 
 **为什么这是错误的：**
+
 - 生产类被仅测试用的代码污染
 - 如果在生产环境中意外调用会很危险
 - 违反 YAGNI 和关注点分离
 - 混淆了对象生命周期和实体生命周期
 
 **正确做法：**
+
 ```typescript
 // ✅ 好：测试工具处理测试清理
 // Session 没有 destroy()——它在生产中是无状态的
 
 // 在 test-utils/ 中
 export async function cleanupSession(session: Session) {
-  const workspace = session.getWorkspaceInfo();
+  const workspace = session.getWorkspaceInfo()
   if (workspace) {
-    await workspaceManager.destroyWorkspace(workspace.id);
+    await workspaceManager.destroyWorkspace(workspace.id)
   }
 }
 
 // 在测试中
-afterEach(() => cleanupSession(session));
+afterEach(() => cleanupSession(session))
 ```
 
 ### 门控函数
@@ -118,34 +125,37 @@ afterEach(() => cleanupSession(session));
 ## 反模式 3：不理解依赖就使用 Mock
 
 **违规做法：**
+
 ```typescript
 // ❌ 差：Mock 破坏了测试逻辑
 test('detects duplicate server', () => {
   // Mock 阻止了测试依赖的配置写入！
   vi.mock('ToolCatalog', () => ({
-    discoverAndCacheTools: vi.fn().mockResolvedValue(undefined)
-  }));
+    discoverAndCacheTools: vi.fn().mockResolvedValue(undefined),
+  }))
 
-  await addServer(config);
-  await addServer(config);  // 应该抛异常——但不会！
-});
+  await addServer(config)
+  await addServer(config) // 应该抛异常——但不会！
+})
 ```
 
 **为什么这是错误的：**
+
 - 被 mock 的方法有测试依赖的副作用（写入配置）
 - "保险起见"过度 mock 破坏了实际行为
 - 测试因错误的原因通过或莫名其妙地失败
 
 **正确做法：**
+
 ```typescript
 // ✅ 好：在正确的层级 mock
 test('detects duplicate server', () => {
   // Mock 慢的部分，保留测试需要的行为
-  vi.mock('MCPServerManager'); // 只 mock 慢的服务器启动
+  vi.mock('MCPServerManager') // 只 mock 慢的服务器启动
 
-  await addServer(config);  // 配置被写入
-  await addServer(config);  // 检测到重复 ✓
-});
+  await addServer(config) // 配置被写入
+  await addServer(config) // 检测到重复 ✓
+})
 ```
 
 ### 门控函数
@@ -177,18 +187,20 @@ test('detects duplicate server', () => {
 ## 反模式 4：不完整的 Mock
 
 **违规做法：**
+
 ```typescript
 // ❌ 差：部分 mock——只包含你认为需要的字段
 const mockResponse = {
   status: 'success',
-  data: { userId: '123', name: 'Alice' }
+  data: { userId: '123', name: 'Alice' },
   // 缺失：下游代码使用的 metadata
-};
+}
 
 // 之后：代码访问 response.metadata.requestId 时崩溃
 ```
 
 **为什么这是错误的：**
+
 - **部分 mock 隐藏了结构假设** — 你只 mock 了你知道的字段
 - **下游代码可能依赖你没包含的字段** — 静默失败
 - **测试通过但集成失败** — mock 不完整，真实 API 完整
@@ -197,14 +209,15 @@ const mockResponse = {
 **铁律：** Mock 真实存在的完整数据结构，而非只包含你当前测试用到的字段。
 
 **正确做法：**
+
 ```typescript
 // ✅ 好：镜像真实 API 的完整性
 const mockResponse = {
   status: 'success',
   data: { userId: '123', name: 'Alice' },
-  metadata: { requestId: 'req-789', timestamp: 1234567890 }
+  metadata: { requestId: 'req-789', timestamp: 1234567890 },
   // 真实 API 返回的所有字段
-};
+}
 ```
 
 ### 门控函数
@@ -228,6 +241,7 @@ const mockResponse = {
 ## 反模式 5：集成测试作为事后补充
 
 **违规做法：**
+
 ```
 ✅ 实现完成
 ❌ 没写测试
@@ -235,11 +249,13 @@ const mockResponse = {
 ```
 
 **为什么这是错误的：**
+
 - 测试是实现的一部分，不是可选的后续
 - TDD 本可以防止这种情况
 - 没有测试就不能声称完成
 
 **正确做法：**
+
 ```
 TDD 循环：
 1. 编写失败的测试
@@ -251,6 +267,7 @@ TDD 循环：
 ## 当 Mock 变得过于复杂时
 
 **警告信号：**
+
 - Mock 的 setup 比测试逻辑还长
 - 为了让测试通过而 mock 一切
 - Mock 缺少真实组件拥有的方法
@@ -263,6 +280,7 @@ TDD 循环：
 ## TDD 如何防止这些反模式
 
 **TDD 有帮助的原因：**
+
 1. **先写测试** → 迫使你思考你到底在测什么
 2. **看它失败** → 确认测试测的是真实行为，不是 mock
 3. **最少实现** → 仅测试用方法不会混入
@@ -272,14 +290,14 @@ TDD 循环：
 
 ## 快速参考
 
-| 反模式 | 修复方式 |
-|--------|----------|
-| 对 mock 元素做断言 | 测试真实组件或取消 mock |
-| 生产代码中的仅测试用方法 | 移到测试工具中 |
-| 不理解就 mock | 先理解依赖，最少 mock |
-| 不完整的 mock | 完整镜像真实 API |
-| 测试作为事后补充 | TDD——先写测试 |
-| 过于复杂的 mock | 考虑集成测试 |
+| 反模式                   | 修复方式                |
+| ------------------------ | ----------------------- |
+| 对 mock 元素做断言       | 测试真实组件或取消 mock |
+| 生产代码中的仅测试用方法 | 移到测试工具中          |
+| 不理解就 mock            | 先理解依赖，最少 mock   |
+| 不完整的 mock            | 完整镜像真实 API        |
+| 测试作为事后补充         | TDD——先写测试           |
+| 过于复杂的 mock          | 考虑集成测试            |
 
 ## 危险信号
 

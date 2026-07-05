@@ -2,25 +2,25 @@
 // 分段控件 - 单选 segmented control
 // 替换 el-dialog 弹窗，用于难度/题量/N-back 等单选场景
 interface Option {
-  label: string;
-  value: string;
+  label: string
+  value: string
 }
 
 interface Props {
-  options: Option[];
-  modelValue: string;
-  disabled?: boolean;
+  options: Option[]
+  modelValue: string
+  disabled?: boolean
 }
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
-});
+})
 const emit = defineEmits<{
-  "update:modelValue": [value: string];
-}>();
+  'update:modelValue': [value: string]
+}>()
 
 function select(value: string) {
-  if (props.disabled) return;
-  emit("update:modelValue", value);
+  if (props.disabled) return
+  emit('update:modelValue', value)
 }
 </script>
 
@@ -63,7 +63,9 @@ function select(value: string) {
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 
   &:not(.last-item) {
     border-right: 1px solid var(--seg-divider);

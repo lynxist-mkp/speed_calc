@@ -12,10 +12,10 @@
 
 [上下文窗口](https://platform.claude.com/docs/en/build-with-claude/context-windows)是公共资源。你的技能与 Claude 需要知道的所有其他内容共享上下文窗口，包括：
 
-* 系统提示
-* 对话历史
-* 其他技能的元数据
-* 你的实际请求
+- 系统提示
+- 对话历史
+- 其他技能的元数据
+- 你的实际请求
 
 并非技能中的每个 token 都有即时成本。启动时，只有所有技能的元数据（name 和 description）被预加载。Claude 只在技能变得相关时才读取 SKILL.md，并且只在需要时才读取额外文件。然而，在 SKILL.md 中保持简洁仍然很重要：一旦 Claude 加载它，每个 token 都在与对话历史和其他上下文竞争。
 
@@ -23,13 +23,13 @@
 
 只添加 Claude 还不知道的上下文。对每条信息进行质疑：
 
-* "Claude 真的需要这个解释吗？"
-* "我能假设 Claude 知道这个吗？"
-* "这段话值得它的 token 成本吗？"
+- "Claude 真的需要这个解释吗？"
+- "我能假设 Claude 知道这个吗？"
+- "这段话值得它的 token 成本吗？"
 
 **好的示例：简洁**（约 50 个 token）：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 提取 PDF 文本
 
 使用 pdfplumber 进行文本提取：
@@ -44,7 +44,7 @@ with pdfplumber.open("file.pdf") as pdf:
 
 **差的示例：太冗长**（约 150 个 token）：
 
-```markdown  theme={null}
+```markdown theme={null}
 ## 提取 PDF 文本
 
 PDF（便携式文档格式）文件是一种常见的文件格式，包含文本、图像和其他内容。
@@ -63,13 +63,13 @@ PDF（便携式文档格式）文件是一种常见的文件格式，包含文�
 
 适用场景：
 
-* 多种方案都有效
-* 决策取决于上下文
-* 启发式方法指导方案
+- 多种方案都有效
+- 决策取决于上下文
+- 启发式方法指导方案
 
 示例：
 
-```markdown  theme={null}
+```markdown theme={null}
 ## 代码审查流程
 
 1. 分析代码结构和组织
@@ -82,13 +82,13 @@ PDF（便携式文档格式）文件是一种常见的文件格式，包含文�
 
 适用场景：
 
-* 存在首选模式
-* 可以接受一些变化
-* 配置影响行为
+- 存在首选模式
+- 可以接受一些变化
+- 配置影响行为
 
 示例：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 生成报告
 
 使用此模板并根据需要自定义：
@@ -105,13 +105,13 @@ def generate_report(data, format="markdown", include_charts=True):
 
 适用场景：
 
-* 操作脆弱且容易出错
-* 一致性至关重要
-* 必须遵循特定顺序
+- 操作脆弱且容易出错
+- 一致性至关重要
+- 必须遵循特定顺序
 
 示例：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 数据库迁移
 
 严格运行此脚本：
@@ -125,8 +125,8 @@ python scripts/migrate.py --verify --backup
 
 **类比**：把 Claude 想象成一个探索路径的机器人：
 
-* **两侧是悬崖的窄桥**：只有一条安全的路。提供具体的护栏和精确的指令（低自由度）。例如：必须按确切顺序运行的数据库迁移。
-* **没有障碍的开阔地**：很多路径都能成功。给出大方向，信任 Claude 找到最佳路线（高自由度）。例如：方案取决于上下文的代码审查。
+- **两侧是悬崖的窄桥**：只有一条安全的路。提供具体的护栏和精确的指令（低自由度）。例如：必须按确切顺序运行的数据库迁移。
+- **没有障碍的开阔地**：很多路径都能成功。给出大方向，信任 Claude 找到最佳路线（高自由度）。例如：方案取决于上下文的代码审查。
 
 ### 用你计划使用的所有模型测试
 
@@ -134,9 +134,9 @@ python scripts/migrate.py --verify --backup
 
 **按模型的测试考虑**：
 
-* **Claude Haiku**（快速、经济）：技能是否提供了足够的指导？
-* **Claude Sonnet**（平衡）：技能是否清晰高效？
-* **Claude Opus**（强大推理）：技能是否避免了过度解释？
+- **Claude Haiku**（快速、经济）：技能是否提供了足够的指导？
+- **Claude Sonnet**（平衡）：技能是否清晰高效？
+- **Claude Opus**（强大推理）：技能是否避免了过度解释？
 
 对 Opus 完美工作的内容可能对 Haiku 需要更多细节。如果你计划跨多个模型使用技能，瞄准对所有模型都适用的指令。
 
@@ -145,10 +145,10 @@ python scripts/migrate.py --verify --backup
 <Note>
   **YAML Frontmatter**：SKILL.md 的 frontmatter 支持两个字段：
 
-  * `name` - 技能的可读名称（最多 64 个字符）
-  * `description` - 技能做什么以及何时使用的一行描述（最多 1024 个字符）
+- `name` - 技能的可读名称（最多 64 个字符）
+- `description` - 技能做什么以及何时使用的一行描述（最多 1024 个字符）
 
-  完整的技能结构细节请参阅[技能概述](/en/docs/agents-and-tools/agent-skills/overview#skill-structure)。
+完整的技能结构细节请参阅[技能概述](/en/docs/agents-and-tools/agent-skills/overview#skill-structure)。
 </Note>
 
 ### 命名约定
@@ -157,29 +157,29 @@ python scripts/migrate.py --verify --backup
 
 **好的命名示例（动名词形式）**：
 
-* "Processing PDFs"
-* "Analyzing spreadsheets"
-* "Managing databases"
-* "Testing code"
-* "Writing documentation"
+- "Processing PDFs"
+- "Analyzing spreadsheets"
+- "Managing databases"
+- "Testing code"
+- "Writing documentation"
 
 **可接受的替代方案**：
 
-* 名词短语："PDF Processing"、"Spreadsheet Analysis"
-* 动作导向："Process PDFs"、"Analyze Spreadsheets"
+- 名词短语："PDF Processing"、"Spreadsheet Analysis"
+- 动作导向："Process PDFs"、"Analyze Spreadsheets"
 
 **避免**：
 
-* 模糊的名称："Helper"、"Utils"、"Tools"
-* 过于通用："Documents"、"Data"、"Files"
-* 技能集合中命名模式不一致
+- 模糊的名称："Helper"、"Utils"、"Tools"
+- 过于通用："Documents"、"Data"、"Files"
+- 技能集合中命名模式不一致
 
 一致的命名便于：
 
-* 在文档和对话中引用技能
-* 一眼就能理解技能的作用
-* 组织和搜索多个技能
-* 维护专业、连贯的技能库
+- 在文档和对话中引用技能
+- 一眼就能理解技能的作用
+- 组织和搜索多个技能
+- 维护专业、连贯的技能库
 
 ### 编写有效的描述
 
@@ -188,9 +188,9 @@ python scripts/migrate.py --verify --backup
 <Warning>
   **始终用第三人称写**。描述被注入系统提示中，不一致的人称视角会导致发现问题。
 
-  * **好的：** "Processes Excel files and generates reports"
-  * **避免：** "I can help you process Excel files"
-  * **避免：** "You can use this to process Excel files"
+- **好的：** "Processes Excel files and generates reports"
+- **避免：** "I can help you process Excel files"
+- **避免：** "You can use this to process Excel files"
 </Warning>
 
 **具体且包含关键术语**。同时包含技能做什么和何时使用的具体触发条件/上下文。
@@ -201,33 +201,33 @@ python scripts/migrate.py --verify --backup
 
 **PDF 处理技能：**
 
-```yaml  theme={null}
+```yaml theme={null}
 description: Extract text and tables from PDF files, fill forms, merge documents. Use when working with PDF files or when the user mentions PDFs, forms, or document extraction.
 ```
 
 **Excel 分析技能：**
 
-```yaml  theme={null}
+```yaml theme={null}
 description: Analyze Excel spreadsheets, create pivot tables, generate charts. Use when analyzing Excel files, spreadsheets, tabular data, or .xlsx files.
 ```
 
 **Git 提交助手技能：**
 
-```yaml  theme={null}
+```yaml theme={null}
 description: Generate descriptive commit messages by analyzing git diffs. Use when the user asks for help writing commit messages or reviewing staged changes.
 ```
 
 避免模糊的描述：
 
-```yaml  theme={null}
+```yaml theme={null}
 description: Helps with documents
 ```
 
-```yaml  theme={null}
+```yaml theme={null}
 description: Processes data
 ```
 
-```yaml  theme={null}
+```yaml theme={null}
 description: Does stuff with files
 ```
 
@@ -237,9 +237,9 @@ SKILL.md 作为概述，按需指向详细材料，就像入门指南中的目�
 
 **实用指导：**
 
-* SKILL.md 正文保持在 500 行以内以获得最佳性能
-* 接近此限制时将内容拆分到独立文件
-* 使用以下模式有效地组织指令、代码和资源
+- SKILL.md 正文保持在 500 行以内以获得最佳性能
+- 接近此限制时将内容拆分到独立文件
+- 使用以下模式有效地组织指令、代码和资源
 
 #### 可视化概览：从简单到复杂
 
@@ -267,7 +267,7 @@ pdf/
 
 #### 模式 1：高层指南加引用
 
-````markdown  theme={null}
+````markdown theme={null}
 ---
 name: PDF Processing
 description: Extracts text and tables from PDF files, fills forms, and merges documents. Use when working with PDF files or when the user mentions PDFs, forms, or document extraction.
@@ -278,6 +278,7 @@ description: Extracts text and tables from PDF files, fills forms, and merges do
 ## 快速开始
 
 用 pdfplumber 提取文本：
+
 ```python
 import pdfplumber
 with pdfplumber.open("file.pdf") as pdf:
@@ -332,7 +333,7 @@ grep -i "api usage" reference/product.md
 
 展示基本内容，链接到高级内容：
 
-```markdown  theme={null}
+```markdown theme={null}
 # DOCX 处理
 
 ## 创建文档
@@ -357,20 +358,23 @@ Claude 只在用户需要这些功能时才读取 REDLINING.md 或 OOXML.md。
 
 **差的示例：太深**：
 
-```markdown  theme={null}
+```markdown theme={null}
 # SKILL.md
+
 参见 [advanced.md](advanced.md)...
 
 # advanced.md
+
 参见 [details.md](details.md)...
 
 # details.md
+
 这里是实际信息...
 ```
 
 **好的示例：一层深度**：
 
-```markdown  theme={null}
+```markdown theme={null}
 # SKILL.md
 
 **基本用法**：[SKILL.md 中的指令]
@@ -385,10 +389,11 @@ Claude 只在用户需要这些功能时才读取 REDLINING.md 或 OOXML.md。
 
 **示例**：
 
-```markdown  theme={null}
+```markdown theme={null}
 # API 参考
 
 ## 目录
+
 - 认证和设置
 - 核心方法（创建、读取、更新、删除）
 - 高级功能（批量操作、webhooks）
@@ -396,9 +401,11 @@ Claude 只在用户需要这些功能时才读取 REDLINING.md 或 OOXML.md。
 - 代码示例
 
 ## 认证和设置
+
 ...
 
 ## 核心方法
+
 ...
 ```
 
@@ -414,7 +421,7 @@ Claude 可以读取完整文件或按需跳转到特定章节。
 
 **示例 1：研究综合工作流**（无代码的技能）：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 研究综合工作流
 
 复制此清单并跟踪你的进度：
@@ -443,6 +450,7 @@ Claude 可以读取完整文件或按需跳转到特定章节。
 **步骤 4：创建结构化摘要**
 
 按主题组织发现。包含：
+
 - 主要论点
 - 来自源的支持证据
 - 矛盾观点（如果有）
@@ -456,7 +464,7 @@ Claude 可以读取完整文件或按需跳转到特定章节。
 
 **示例 2：PDF 表单填写工作流**（有代码的技能）：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## PDF 表单填写工作流
 
 复制此清单并在完成时逐项勾选：
@@ -507,7 +515,7 @@ Claude 可以读取完整文件或按需跳转到特定章节。
 
 **示例 1：风格指南合规**（无代码的技能）：
 
-```markdown  theme={null}
+```markdown theme={null}
 ## 内容审查流程
 
 1. 按照 STYLE_GUIDE.md 中的指南起草内容
@@ -527,7 +535,7 @@ Claude 可以读取完整文件或按需跳转到特定章节。
 
 **示例 2：文档编辑流程**（有代码的技能）：
 
-```markdown  theme={null}
+```markdown theme={null}
 ## 文档编辑流程
 
 1. 对 `word/document.xml` 进行编辑
@@ -551,14 +559,14 @@ Claude 可以读取完整文件或按需跳转到特定章节。
 
 **差的示例：时间敏感**（会变得不正确）：
 
-```markdown  theme={null}
+```markdown theme={null}
 如果你在 2025 年 8 月之前做这件事，使用旧 API。
 2025 年 8 月之后，使用新 API。
 ```
 
 **好的示例**（使用"旧模式"章节）：
 
-```markdown  theme={null}
+```markdown theme={null}
 ## 当前方法
 
 使用 v2 API 端点：`api.example.com/v2/messages`
@@ -582,15 +590,15 @@ v1 API 使用：`api.example.com/v1/messages`
 
 **好的 - 一致**：
 
-* 始终用"API endpoint"
-* 始终用"field"
-* 始终用"extract"
+- 始终用"API endpoint"
+- 始终用"field"
+- 始终用"extract"
 
 **差的 - 不一致**：
 
-* 混用"API endpoint"、"URL"、"API route"、"path"
-* 混用"field"、"box"、"element"、"control"
-* 混用"extract"、"pull"、"get"、"retrieve"
+- 混用"API endpoint"、"URL"、"API route"、"path"
+- 混用"field"、"box"、"element"、"control"
+- 混用"extract"、"pull"、"get"、"retrieve"
 
 一致性帮助 Claude 理解和遵循指令。
 
@@ -602,7 +610,7 @@ v1 API 使用：`api.example.com/v1/messages`
 
 **严格要求时**（如 API 响应或数据格式）：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 报告结构
 
 始终使用这个精确的模板结构：
@@ -611,14 +619,17 @@ v1 API 使用：`api.example.com/v1/messages`
 # [分析标题]
 
 ## 摘要
+
 [关键发现的一段概述]
 
 ## 关键发现
+
 - 发现 1 及支持数据
 - 发现 2 及支持数据
 - 发现 3 及支持数据
 
 ## 建议
+
 1. 具体可操作的建议
 2. 具体可操作的建议
 ```
@@ -626,7 +637,7 @@ v1 API 使用：`api.example.com/v1/messages`
 
 **灵活指导时**（当适应性有用时）：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 报告结构
 
 这是一个合理的默认格式，但请根据分析情况自行判断：
@@ -635,12 +646,15 @@ v1 API 使用：`api.example.com/v1/messages`
 # [分析标题]
 
 ## 摘要
+
 [概述]
 
 ## 关键发现
+
 [根据你的发现调整章节]
 
 ## 建议
+
 [根据具体上下文定制]
 ```
 
@@ -651,7 +665,7 @@ v1 API 使用：`api.example.com/v1/messages`
 
 对于输出质量取决于看到示例的技能，提供输入/输出对，就像常规提示一样：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 提交信息格式
 
 按照这些示例生成提交信息：
@@ -659,6 +673,7 @@ v1 API 使用：`api.example.com/v1/messages`
 **示例 1：**
 输入：添加了使用 JWT token 的用户认证
 输出：
+
 ```
 feat(auth): implement JWT-based authentication
 
@@ -668,6 +683,7 @@ Add login endpoint and token validation middleware
 **示例 2：**
 输入：修复了报告中日期显示不正确的 bug
 输出：
+
 ```
 fix(reports): correct date formatting in timezone conversion
 
@@ -677,6 +693,7 @@ Use UTC timestamps consistently across report generation
 **示例 3：**
 输入：更新了依赖并重构了错误处理
 输出：
+
 ```
 chore: update dependencies and refactor error handling
 
@@ -693,7 +710,7 @@ chore: update dependencies and refactor error handling
 
 引导 Claude 通过决策点：
 
-```markdown  theme={null}
+```markdown theme={null}
 ## 文档修改工作流
 
 1. 确定修改类型：
@@ -735,7 +752,7 @@ chore: update dependencies and refactor error handling
 
 **评估结构**：
 
-```json  theme={null}
+```json theme={null}
 {
   "skills": ["pdf-processing"],
   "query": "从这个 PDF 文件中提取所有文本并保存到 output.txt",
@@ -782,9 +799,9 @@ chore: update dependencies and refactor error handling
 
 改进技能时继续同样的层级模式。你在以下之间交替：
 
-* **与 Claude A 合作**（帮助优化技能的专家）
-* **用 Claude B 测试**（使用技能执行真实工作的智能体）
-* **观察 Claude B 的行为**并将见解带回 Claude A
+- **与 Claude A 合作**（帮助优化技能的专家）
+- **用 Claude B 测试**（使用技能执行真实工作的智能体）
+- **观察 Claude B 的行为**并将见解带回 Claude A
 
 1. **在真实工作流中使用技能**：给 Claude B（加载了技能的）实际任务，而非测试场景
 
@@ -812,10 +829,10 @@ chore: update dependencies and refactor error handling
 
 迭代技能时，注意 Claude 在实践中实际如何使用它们。留意：
 
-* **意外的探索路径**：Claude 是否以你未预期的顺序读取文件？这可能表明你的结构不如你想的直观
-* **遗漏的连接**：Claude 是否未能跟随到重要文件的引用？你的链接可能需要更明确或更突出
-* **过度依赖某些章节**：如果 Claude 反复读取同一文件，考虑该内容是否应该放在主 SKILL.md 中
-* **被忽略的内容**：如果 Claude 从不访问某个捆绑文件，它可能不必要或在主指令中信号不明确
+- **意外的探索路径**：Claude 是否以你未预期的顺序读取文件？这可能表明你的结构不如你想的直观
+- **遗漏的连接**：Claude 是否未能跟随到重要文件的引用？你的链接可能需要更明确或更突出
+- **过度依赖某些章节**：如果 Claude 反复读取同一文件，考虑该内容是否应该放在主 SKILL.md 中
+- **被忽略的内容**：如果 Claude 从不访问某个捆绑文件，它可能不必要或在主指令中信号不明确
 
 基于这些观察而非假设来迭代。技能元数据中的"name"和"description"尤其关键。Claude 使用它们来决定是否为当前任务触发技能。确保它们清楚地描述技能做什么以及何时使用。
 
@@ -825,8 +842,8 @@ chore: update dependencies and refactor error handling
 
 始终在文件路径中使用正斜杠，即使在 Windows 上：
 
-* ✓ **好的**：`scripts/helper.py`、`reference/guide.md`
-* ✗ **避免**：`scripts\helper.py`、`reference\guide.md`
+- ✓ **好的**：`scripts/helper.py`、`reference/guide.md`
+- ✗ **避免**：`scripts\helper.py`、`reference\guide.md`
 
 Unix 风格的路径在所有平台上都能工作，而 Windows 风格的路径在 Unix 系统上会出错。
 
@@ -834,12 +851,13 @@ Unix 风格的路径在所有平台上都能工作，而 Windows 风格的路径
 
 除非必要，不要展示多种方案：
 
-````markdown  theme={null}
+````markdown theme={null}
 **差的示例：太多选择**（令人困惑）：
 "你可以使用 pypdf，或 pdfplumber，或 PyMuPDF，或 pdf2image，或……"
 
 **好的示例：提供默认方案**（有备用方案）：
 "使用 pdfplumber 进行文本提取：
+
 ```python
 import pdfplumber
 ```
@@ -857,7 +875,7 @@ import pdfplumber
 
 **好的示例：明确处理错误**：
 
-```python  theme={null}
+```python theme={null}
 def process_file(path):
     """处理文件，如果不存在则创建。"""
     try:
@@ -877,7 +895,7 @@ def process_file(path):
 
 **差的示例：甩给 Claude**：
 
-```python  theme={null}
+```python theme={null}
 def process_file(path):
     # 直接失败让 Claude 来处理
     return open(path).read()
@@ -887,7 +905,7 @@ def process_file(path):
 
 **好的示例：自文档化**：
 
-```python  theme={null}
+```python theme={null}
 # HTTP 请求通常在 30 秒内完成
 # 更长的超时考虑了慢速连接
 REQUEST_TIMEOUT = 30
@@ -899,7 +917,7 @@ MAX_RETRIES = 3
 
 **差的示例：魔法数字**：
 
-```python  theme={null}
+```python theme={null}
 TIMEOUT = 47  # 为什么是 47？
 RETRIES = 5   # 为什么是 5？
 ```
@@ -910,10 +928,10 @@ RETRIES = 5   # 为什么是 5？
 
 **实用脚本的好处**：
 
-* 比生成的代码更可靠
-* 节省 token（无需在上下文中包含代码）
-* 节省时间（无需代码生成）
-* 确保跨使用的一致性
+- 比生成的代码更可靠
+- 节省 token（无需在上下文中包含代码）
+- 节省时间（无需代码生成）
+- 确保跨使用的一致性
 
 <img src="https://mintcdn.com/anthropic-claude-docs/4Bny2bjzuGBK7o00/images/agent-skills-executable-scripts.png?fit=max&auto=format&n=4Bny2bjzuGBK7o00&q=85&s=4bbc45f2c2e0bee9f2f0d5da669bad00" alt="将可执行脚本与指令文件捆绑在一起" data-og-width="2048" width="2048" data-og-height="1154" height="1154" data-path="images/agent-skills-executable-scripts.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/anthropic-claude-docs/4Bny2bjzuGBK7o00/images/agent-skills-executable-scripts.png?w=280&fit=max&auto=format&n=4Bny2bjzuGBK7o00&q=85&s=9a04e6535a8467bfeea492e517de389f 280w, https://mintcdn.com/anthropic-claude-docs/4Bny2bjzuGBK7o00/images/agent-skills-executable-scripts.png?w=560&fit=max&auto=format&n=4Bny2bjzuGBK7o00&q=85&s=e49333ad90141af17c0d7651cca7216b 560w, https://mintcdn.com/anthropic-claude-docs/4Bny2bjzuGBK7o00/images/agent-skills-executable-scripts.png?w=840&fit=max&auto=format&n=4Bny2bjzuGBK7o00&q=85&s=954265a5df52223d6572b6214168c428 840w, https://mintcdn.com/anthropic-claude-docs/4Bny2bjzuGBK7o00/images/agent-skills-executable-scripts.png?w=1100&fit=max&auto=format&n=4Bny2bjzuGBK7o00&q=85&s=2ff7a2d8f2a83ee8af132b29f10150fd 1100w, https://mintcdn.com/anthropic-claude-docs/4Bny2bjzuGBK7o00/images/agent-skills-executable-scripts.png?w=1650&fit=max&auto=format&n=4Bny2bjzuGBK7o00&q=85&s=48ab96245e04077f4d15e9170e081cfb 1650w, https://mintcdn.com/anthropic-claude-docs/4Bny2bjzuGBK7o00/images/agent-skills-executable-scripts.png?w=2500&fit=max&auto=format&n=4Bny2bjzuGBK7o00&q=85&s=0301a6c8b3ee879497cc5b5483177c90 2500w" />
 
@@ -921,14 +939,14 @@ RETRIES = 5   # 为什么是 5？
 
 **重要区分**：在指令中明确说明 Claude 应该：
 
-* **执行脚本**（最常见）："运行 `analyze_form.py` 提取字段"
-* **作为参考阅读**（用于复杂逻辑）："参见 `analyze_form.py` 了解字段提取算法"
+- **执行脚本**（最常见）："运行 `analyze_form.py` 提取字段"
+- **作为参考阅读**（用于复杂逻辑）："参见 `analyze_form.py` 了解字段提取算法"
 
 对于大多数实用脚本，执行是首选因为它更可靠和高效。参见下方[运行时环境](#runtime-environment)章节了解脚本执行的工作原理。
 
 **示例**：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 实用脚本
 
 **analyze_form.py**：从 PDF 中提取所有表单字段
@@ -938,10 +956,11 @@ python scripts/analyze_form.py input.pdf > fields.json
 ```
 
 输出格式：
+
 ```json
 {
-  "field_name": {"type": "text", "x": 100, "y": 200},
-  "signature": {"type": "sig", "x": 150, "y": 500}
+  "field_name": { "type": "text", "x": 100, "y": 200 },
+  "signature": { "type": "sig", "x": 150, "y": 500 }
 }
 ```
 
@@ -963,10 +982,11 @@ python scripts/fill_form.py input.pdf fields.json output.pdf
 
 当输入可以渲染为图像时，让 Claude 分析它们：
 
-````markdown  theme={null}
+````markdown theme={null}
 ## 表单布局分析
 
 1. 将 PDF 转换为图像：
+
    ```bash
    python scripts/pdf_to_images.py form.pdf
    ```
@@ -991,10 +1011,10 @@ Claude 的视觉能力有助于理解布局和结构。
 
 **为什么这个模式有效：**
 
-* **及早发现错误**：验证在更改应用前发现问题
-* **机器可验证**：脚本提供客观验证
-* **可逆的规划**：Claude 可以在不触碰原件的情况下迭代计划
-* **清晰的调试**：错误消息指向具体问题
+- **及早发现错误**：验证在更改应用前发现问题
+- **机器可验证**：脚本提供客观验证
+- **可逆的规划**：Claude 可以在不触碰原件的情况下迭代计划
+- **清晰的调试**：错误消息指向具体问题
 
 **何时使用**：批量操作、破坏性更改、复杂验证规则、高风险操作。
 
@@ -1004,8 +1024,8 @@ Claude 的视觉能力有助于理解布局和结构。
 
 技能在代码执行环境中运行，有平台特定的限制：
 
-* **claude.ai**：可以从 npm 和 PyPI 安装包，可以从 GitHub 仓库拉取
-* **Anthropic API**：没有网络访问，没有运行时包安装
+- **claude.ai**：可以从 npm 和 PyPI 安装包，可以从 GitHub 仓库拉取
+- **Anthropic API**：没有网络访问，没有运行时包安装
 
 在 SKILL.md 中列出所需的包，并在[代码执行工具文档](/en/docs/agents-and-tools/tool-use/code-execution-tool)中验证它们是否可用。
 
@@ -1022,17 +1042,17 @@ Claude 的视觉能力有助于理解布局和结构。
 3. **脚本高效执行**：实用脚本可以通过 bash 执行而不将其完整内容加载到上下文中。只有脚本的输出消耗 token
 4. **大文件无上下文惩罚**：参考文件、数据或文档在实际读取之前不消耗上下文 token
 
-* **文件路径很重要**：Claude 像文件系统一样导航你的技能目录。使用正斜杠（`reference/guide.md`），而非反斜杠
-* **描述性文件命名**：使用表明内容的名称：`form_validation_rules.md`，而非 `doc2.md`
-* **为发现而组织**：按领域或功能组织目录结构
-  * 好的：`reference/finance.md`、`reference/sales.md`
-  * 差的：`docs/file1.md`、`docs/file2.md`
-* **捆绑全面的资源**：包含完整的 API 文档、大量示例、大型数据集；在访问之前没有上下文惩罚
-* **确定性操作优先使用脚本**：编写 `validate_form.py` 而非让 Claude 生成验证代码
-* **明确执行意图**：
-  * "运行 `analyze_form.py` 提取字段"（执行）
-  * "参见 `analyze_form.py` 了解提取算法"（作为参考阅读）
-* **测试文件访问模式**：通过真实请求测试验证 Claude 能够导航你的目录结构
+- **文件路径很重要**：Claude 像文件系统一样导航你的技能目录。使用正斜杠（`reference/guide.md`），而非反斜杠
+- **描述性文件命名**：使用表明内容的名称：`form_validation_rules.md`，而非 `doc2.md`
+- **为发现而组织**：按领域或功能组织目录结构
+  - 好的：`reference/finance.md`、`reference/sales.md`
+  - 差的：`docs/file1.md`、`docs/file2.md`
+- **捆绑全面的资源**：包含完整的 API 文档、大量示例、大型数据集；在访问之前没有上下文惩罚
+- **确定性操作优先使用脚本**：编写 `validate_form.py` 而非让 Claude 生成验证代码
+- **明确执行意图**：
+  - "运行 `analyze_form.py` 提取字段"（执行）
+  - "参见 `analyze_form.py` 了解提取算法"（作为参考阅读）
+- **测试文件访问模式**：通过真实请求测试验证 Claude 能够导航你的目录结构
 
 **示例：**
 
@@ -1057,15 +1077,15 @@ bigquery-skill/
 
 **示例**：
 
-```markdown  theme={null}
+```markdown theme={null}
 使用 BigQuery:bigquery_schema 工具检索表 schema。
 使用 GitHub:create_issue 工具创建 issue。
 ```
 
 其中：
 
-* `BigQuery` 和 `GitHub` 是 MCP 服务器名称
-* `bigquery_schema` 和 `create_issue` 是这些服务器中的工具名称
+- `BigQuery` 和 `GitHub` 是 MCP 服务器名称
+- `bigquery_schema` 和 `create_issue` 是这些服务器中的工具名称
 
 没有服务器前缀，Claude 可能无法定位工具，尤其是当有多个 MCP 服务器可用时。
 
@@ -1073,7 +1093,7 @@ bigquery-skill/
 
 不要假设包已可用：
 
-````markdown  theme={null}
+`````markdown theme={null}
 **差的示例：假设已安装**：
 "使用 pdf 库处理文件。"
 
@@ -1081,11 +1101,15 @@ bigquery-skill/
 "安装所需包：`pip install pypdf`
 
 然后使用它：
-```python
+
+````python
 from pypdf import PdfReader
 reader = PdfReader("file.pdf")
 ```"
 ````
+`````
+
+```
 
 ## 技术说明
 
@@ -1103,34 +1127,34 @@ SKILL.md 的 frontmatter 只包含 `name`（最多 64 字符）和 `description`
 
 ### 核心质量
 
-* [ ] 描述具体且包含关键术语
-* [ ] 描述同时包含技能做什么和何时使用
-* [ ] SKILL.md 正文在 500 行以内
-* [ ] 额外细节在独立文件中（如果需要）
-* [ ] 无时间敏感信息（或在"旧模式"章节中）
-* [ ] 全文术语一致
-* [ ] 示例具体，非抽象
-* [ ] 文件引用一层深度
-* [ ] 适当使用渐进式披露
-* [ ] 工作流有清晰的步骤
+- [ ] 描述具体且包含关键术语
+- [ ] 描述同时包含技能做什么和何时使用
+- [ ] SKILL.md 正文在 500 行以内
+- [ ] 额外细节在独立文件中（如果需要）
+- [ ] 无时间敏感信息（或在"旧模式"章节中）
+- [ ] 全文术语一致
+- [ ] 示例具体，非抽象
+- [ ] 文件引用一层深度
+- [ ] 适当使用渐进式披露
+- [ ] 工作流有清晰的步骤
 
 ### 代码和脚本
 
-* [ ] 脚本解决问题而非甩给 Claude
-* [ ] 错误处理明确且有帮助
-* [ ] 无"巫术常量"（所有值有理由）
-* [ ] 所需包在指令中列出且已验证可用
-* [ ] 脚本有清晰的文档
-* [ ] 无 Windows 风格路径（全部使用正斜杠）
-* [ ] 关键操作有验证/确认步骤
-* [ ] 质量关键任务包含反馈循环
+- [ ] 脚本解决问题而非甩给 Claude
+- [ ] 错误处理明确且有帮助
+- [ ] 无"巫术常量"（所有值有理由）
+- [ ] 所需包在指令中列出且已验证可用
+- [ ] 脚本有清晰的文档
+- [ ] 无 Windows 风格路径（全部使用正斜杠）
+- [ ] 关键操作有验证/确认步骤
+- [ ] 质量关键任务包含反馈循环
 
 ### 测试
 
-* [ ] 至少创建三个评估
-* [ ] 用 Haiku、Sonnet 和 Opus 测试过
-* [ ] 用真实使用场景测试过
-* [ ] 整合了团队反馈（如适用）
+- [ ] 至少创建三个评估
+- [ ] 用 Haiku、Sonnet 和 Opus 测试过
+- [ ] 用真实使用场景测试过
+- [ ] 整合了团队反馈（如适用）
 
 ## 后续步骤
 
@@ -1147,3 +1171,4 @@ SKILL.md 的 frontmatter 只包含 `name`（最多 64 字符）和 `description`
     以编程方式上传和使用技能
   </Card>
 </CardGroup>
+```

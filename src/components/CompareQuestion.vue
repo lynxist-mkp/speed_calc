@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import Katex from "@/components/Katex.vue";
+import Katex from '@/components/Katex.vue'
 
 interface Props {
-  leftTex: string;
-  rightTex: string;
-  selected: ">" | "<" | null;
-  context?: string;
-  standardText?: string | null;
+  leftTex: string
+  rightTex: string
+  selected: '>' | '<' | null
+  context?: string
+  standardText?: string | null
 }
 
-defineProps<Props>();
+defineProps<Props>()
 </script>
 
 <template>

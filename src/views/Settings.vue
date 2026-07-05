@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   listTimeStandards,
   updateTimeStandard,
@@ -8,64 +8,92 @@ import {
   deleteTimeStandard,
   clearAllSessions,
   type TimeStandardRow,
-} from "@/db/index";
-import { typeLabel } from "@/constants/typeLabels";
-import { useSettingsStore } from "@/stores/settings";
-import type { KeyboardLayout } from "@/utils/keymap";
-import KeymapGuideModal from "@/components/KeymapGuideModal.vue";
+} from '@/db/index'
+import { typeLabel } from '@/constants/typeLabels'
+import { useSettingsStore } from '@/stores/settings'
+import type { KeyboardLayout } from '@/utils/keymap'
+import KeymapGuideModal from '@/components/KeymapGuideModal.vue'
 
-const settingsStore = useSettingsStore();
-const keyboardLayout = ref<KeyboardLayout>("qwerty");
-const guideVisible = ref(false);
+const settingsStore = useSettingsStore()
+const keyboardLayout = ref<KeyboardLayout>('qwerty')
+const guideVisible = ref(false)
 
 async function onLayoutChange(val: KeyboardLayout) {
-  keyboardLayout.value = val;
-  await settingsStore.saveGlobal({ keyboardInputLayout: val });
-  ElMessage.success(val === "norman" ? "已切换到 Norman 布局" : "已切换到 QWERTY 布局");
+  keyboardLayout.value = val
+  await settingsStore.saveGlobal({ keyboardInputLayout: val })
+  ElMessage.success(val === 'norman' ? '已切换到 Norman 布局' : '已切换到 QWERTY 布局')
 }
 
 // 精简键位预览：物理键盘统一按 QWERTY 标签显示（映射按物理位置）
 const previewRows = [
-  { nums: ["7", "8", "9"], keys: ["U", "I", "O"] },
-  { nums: ["4", "5", "6"], keys: ["J", "K", "L"] },
-  { nums: ["1", "2", "3"], keys: ["M", ",", "."] },
-];
+  { nums: ['7', '8', '9'], keys: ['U', 'I', 'O'] },
+  { nums: ['4', '5', '6'], keys: ['J', 'K', 'L'] },
+  { nums: ['1', '2', '3'], keys: ['M', ',', '.'] },
+]
 
-const standards = ref<TimeStandardRow[]>([]);
-const loading = ref(true);
-const editing = ref<Record<number, { pass: string; good: string; excellent: string }>>({});
+const standards = ref<TimeStandardRow[]>([])
+const loading = ref(true)
+const editing = ref<Record<number, { pass: string; good: string; excellent: string }>>({})
 
 // 分组定义：题型 → 分类
 const TYPE_CATEGORIES: { name: string; types: string[] }[] = [
-  { name: "基础运算", types: [
-    "basic_addsub", "addsub_2d", "round_100", "add_3d", "sub_3d", "addsub_3d",
-    "add_multi", "addsub_mix", "mul_2x1", "mul_3x1", "mul_2x11", "mul_2x15",
-    "mul_2x2", "div_3x1", "div_3x2", "mul_est", "div_5x3", "div_3x4",
-  ]},
-  { name: "资料分析填空", types: [
-    "estimate_prev", "estimate_growth", "baihua_frac", "baihua_frac_rev",
-    "frac_calc_lt", "frac_calc_gt", "annual_growth_rate", "base_period_ratio", "annual_avg",
-  ]},
-  { name: "资料分析比较", types: ["compare_growth", "compare_base", "compare_frac"] },
-  { name: "综合", types: ["composite"] },
-  { name: "自定义", types: ["custom_standard", "custom_power"] },
-];
+  {
+    name: '基础运算',
+    types: [
+      'basic_addsub',
+      'addsub_2d',
+      'round_100',
+      'add_3d',
+      'sub_3d',
+      'addsub_3d',
+      'add_multi',
+      'addsub_mix',
+      'mul_2x1',
+      'mul_3x1',
+      'mul_2x11',
+      'mul_2x15',
+      'mul_2x2',
+      'div_3x1',
+      'div_3x2',
+      'mul_est',
+      'div_5x3',
+      'div_3x4',
+    ],
+  },
+  {
+    name: '资料分析填空',
+    types: [
+      'estimate_prev',
+      'estimate_growth',
+      'baihua_frac',
+      'baihua_frac_rev',
+      'frac_calc_lt',
+      'frac_calc_gt',
+      'annual_growth_rate',
+      'base_period_ratio',
+      'annual_avg',
+    ],
+  },
+  { name: '资料分析比较', types: ['compare_growth', 'compare_base', 'compare_frac'] },
+  { name: '综合', types: ['composite'] },
+  { name: '自定义', types: ['custom_standard', 'custom_power'] },
+]
 
 // 按分类 + 题型分组
 interface TypeGroup {
-  type: string;
-  label: string;
-  rows: TimeStandardRow[];
+  type: string
+  label: string
+  rows: TimeStandardRow[]
 }
 interface CategoryGroup {
-  name: string;
-  types: TypeGroup[];
+  name: string
+  types: TypeGroup[]
 }
 const groupedStandards = computed<CategoryGroup[]>(() => {
-  const byType = new Map<string, TimeStandardRow[]>();
+  const byType = new Map<string, TimeStandardRow[]>()
   for (const s of standards.value) {
-    if (!byType.has(s.questionType)) byType.set(s.questionType, []);
-    byType.get(s.questionType)!.push(s);
+    if (!byType.has(s.questionType)) byType.set(s.questionType, [])
+    byType.get(s.questionType)!.push(s)
   }
   return TYPE_CATEGORIES.map((cat) => ({
     name: cat.name,
@@ -76,85 +104,85 @@ const groupedStandards = computed<CategoryGroup[]>(() => {
         label: typeLabel(t),
         rows: byType.get(t)!.sort((a, b) => a.questionCount - b.questionCount),
       })),
-  }));
-});
+  }))
+})
 
 // 展开状态：按题型 key
-const expandedTypes = ref<Set<string>>(new Set());
+const expandedTypes = ref<Set<string>>(new Set())
 function toggleType(type: string) {
   if (expandedTypes.value.has(type)) {
-    expandedTypes.value.delete(type);
+    expandedTypes.value.delete(type)
   } else {
-    expandedTypes.value.add(type);
+    expandedTypes.value.add(type)
   }
 }
 
 const newStandard = ref({
-  questionType: "basic_addsub",
+  questionType: 'basic_addsub',
   questionCount: 10,
   passS: 28,
   goodS: 22,
   excellentS: 18,
-});
+})
 
 async function loadStandards() {
-  loading.value = true;
+  loading.value = true
   try {
-    standards.value = await listTimeStandards();
-    editing.value = {};
+    standards.value = await listTimeStandards()
+    editing.value = {}
     for (const s of standards.value) {
       editing.value[s.id] = {
         pass: String(s.passS),
         good: String(s.goodS),
         excellent: String(s.excellentS),
-      };
+      }
     }
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 async function saveStandard(id: number) {
-  const e = editing.value[id];
-  if (!e) return;
-  const pass = Number(e.pass);
-  const good = Number(e.good);
-  const excellent = Number(e.excellent);
+  const e = editing.value[id]
+  if (!e) return
+  const pass = Number(e.pass)
+  const good = Number(e.good)
+  const excellent = Number(e.excellent)
   if ([pass, good, excellent].some((n) => !Number.isFinite(n) || n <= 0)) {
-    ElMessage.warning("秒数必须为正数");
-    return;
+    ElMessage.warning('秒数必须为正数')
+    return
   }
-  await updateTimeStandard(id, { passS: pass, goodS: good, excellentS: excellent });
-  ElMessage.success("已更新");
-  await loadStandards();
+  await updateTimeStandard(id, { passS: pass, goodS: good, excellentS: excellent })
+  ElMessage.success('已更新')
+  await loadStandards()
 }
 
 async function addStandard() {
-  const { questionType, questionCount, passS, goodS, excellentS } = newStandard.value;
+  const { questionType, questionCount, passS, goodS, excellentS } = newStandard.value
   if (!questionType.trim()) {
-    ElMessage.warning("题型不能为空");
-    return;
+    ElMessage.warning('题型不能为空')
+    return
   }
   if ([passS, goodS, excellentS].some((n) => !Number.isFinite(n) || n <= 0)) {
-    ElMessage.warning("秒数必须为正数");
-    return;
+    ElMessage.warning('秒数必须为正数')
+    return
   }
-  await insertTimeStandard({ questionType, questionCount, passS, goodS, excellentS });
-  ElMessage.success("已添加");
-  expandedTypes.value.add(questionType);
-  await loadStandards();
+  await insertTimeStandard({ questionType, questionCount, passS, goodS, excellentS })
+  ElMessage.success('已添加')
+  expandedTypes.value.add(questionType)
+  await loadStandards()
 }
 
 async function removeStandard(id: number) {
   try {
-    await ElMessageBox.confirm("确认删除该时间标准？", "删除", {
-      confirmButtonText: "删除",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-    await deleteTimeStandard(id);
-    ElMessage.success("已删除");
-    await loadStandards();
+    await ElMessageBox.confirm('确认删除该时间标准？', '删除', {
+      confirmButtonText: '删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await deleteTimeStandard(id)
+    ElMessage.success('已删除')
+    await loadStandards()
   } catch {
     // 用户取消
   }
@@ -162,22 +190,22 @@ async function removeStandard(id: number) {
 
 async function onClearHistory() {
   try {
-    await ElMessageBox.confirm("确认清除所有练习记录？此操作不可恢复。", "清除历史", {
-      confirmButtonText: "清除",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
-    await clearAllSessions();
-    ElMessage.success("已清除所有练习记录");
+    await ElMessageBox.confirm('确认清除所有练习记录？此操作不可恢复。', '清除历史', {
+      confirmButtonText: '清除',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await clearAllSessions()
+    ElMessage.success('已清除所有练习记录')
   } catch {
     // 用户取消
   }
 }
 
 onMounted(async () => {
-  await loadStandards();
-  keyboardLayout.value = settingsStore.global.keyboardInputLayout;
-});
+  await loadStandards()
+  keyboardLayout.value = settingsStore.global.keyboardInputLayout
+})
 </script>
 
 <template>
@@ -204,11 +232,9 @@ onMounted(async () => {
               <button class="std-card-header" @click="toggleType(tg.type)">
                 <span class="std-card-label">{{ tg.label }}</span>
                 <span class="std-card-summary">
-                  <span
-                    v-for="r in tg.rows"
-                    :key="r.id"
-                    class="std-chip"
-                  >{{ r.questionCount }}题 · {{ r.passS }}/{{ r.goodS }}/{{ r.excellentS }}s</span>
+                  <span v-for="r in tg.rows" :key="r.id" class="std-chip"
+                    >{{ r.questionCount }}题 · {{ r.passS }}/{{ r.goodS }}/{{ r.excellentS }}s</span
+                  >
                 </span>
                 <span class="std-card-arrow" :class="{ open: expandedTypes.has(tg.type) }">›</span>
               </button>
@@ -219,27 +245,36 @@ onMounted(async () => {
                     <span class="std-edit-label">合格</span>
                     <input
                       :value="editing[r.id]?.pass"
-                      @input="editing[r.id] && (editing[r.id].pass = ($event.target as HTMLInputElement).value)"
                       class="num-input"
                       type="number"
+                      @input="
+                        editing[r.id] &&
+                        (editing[r.id].pass = ($event.target as HTMLInputElement).value)
+                      "
                     />
                   </label>
                   <label class="std-edit-field">
                     <span class="std-edit-label">良好</span>
                     <input
                       :value="editing[r.id]?.good"
-                      @input="editing[r.id] && (editing[r.id].good = ($event.target as HTMLInputElement).value)"
                       class="num-input"
                       type="number"
+                      @input="
+                        editing[r.id] &&
+                        (editing[r.id].good = ($event.target as HTMLInputElement).value)
+                      "
                     />
                   </label>
                   <label class="std-edit-field">
                     <span class="std-edit-label">优秀</span>
                     <input
                       :value="editing[r.id]?.excellent"
-                      @input="editing[r.id] && (editing[r.id].excellent = ($event.target as HTMLInputElement).value)"
                       class="num-input"
                       type="number"
+                      @input="
+                        editing[r.id] &&
+                        (editing[r.id].excellent = ($event.target as HTMLInputElement).value)
+                      "
                     />
                   </label>
                   <span class="std-edit-unit">秒</span>
@@ -257,10 +292,30 @@ onMounted(async () => {
         <h4 class="add-title">新增时间标准</h4>
         <div class="add-form">
           <input v-model="newStandard.questionType" class="text-input" placeholder="题型" />
-          <input v-model.number="newStandard.questionCount" class="num-input" type="number" placeholder="题量" />
-          <input v-model.number="newStandard.passS" class="num-input" type="number" placeholder="合格" />
-          <input v-model.number="newStandard.goodS" class="num-input" type="number" placeholder="良好" />
-          <input v-model.number="newStandard.excellentS" class="num-input" type="number" placeholder="优秀" />
+          <input
+            v-model.number="newStandard.questionCount"
+            class="num-input"
+            type="number"
+            placeholder="题量"
+          />
+          <input
+            v-model.number="newStandard.passS"
+            class="num-input"
+            type="number"
+            placeholder="合格"
+          />
+          <input
+            v-model.number="newStandard.goodS"
+            class="num-input"
+            type="number"
+            placeholder="良好"
+          />
+          <input
+            v-model.number="newStandard.excellentS"
+            class="num-input"
+            type="number"
+            placeholder="优秀"
+          />
           <button class="op-btn add" @click="addStandard">添加</button>
         </div>
       </div>
@@ -300,9 +355,9 @@ onMounted(async () => {
         <div class="preview-title">右手主键盘区 → 数字映射</div>
         <div class="preview-rows">
           <div v-for="(row, i) in previewRows" :key="i" class="preview-row">
-            <span class="preview-num">{{ row.nums.join(" ") }}</span>
+            <span class="preview-num">{{ row.nums.join(' ') }}</span>
             <span class="preview-arrow">←</span>
-            <span class="preview-key">{{ row.keys.join(" ") }}</span>
+            <span class="preview-key">{{ row.keys.join(' ') }}</span>
           </div>
         </div>
         <div class="preview-bottom">
@@ -552,7 +607,9 @@ onMounted(async () => {
     background: var(--app-color-primary);
     color: #fff;
     border-color: var(--app-color-primary);
-    &:hover { background: var(--app-color-primary-hover); }
+    &:hover {
+      background: var(--app-color-primary-hover);
+    }
   }
 }
 
@@ -604,7 +661,7 @@ onMounted(async () => {
   cursor: pointer;
   transition: all 0.15s;
 
-  input[type="radio"] {
+  input[type='radio'] {
     cursor: pointer;
   }
 

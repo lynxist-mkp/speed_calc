@@ -2,14 +2,14 @@
 // 设置行组件 - label + slot + 可选展开区
 // 用于 PracticeSettings/DataAnalysisSettings 替换 row+el-dialog
 interface Props {
-  label: string;
-  expandable?: boolean;
-  expanded?: boolean;
+  label: string
+  expandable?: boolean
+  expanded?: boolean
 }
 withDefaults(defineProps<Props>(), {
   expandable: false,
   expanded: false,
-});
+})
 </script>
 
 <template>

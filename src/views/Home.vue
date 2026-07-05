@@ -1,20 +1,52 @@
 <script setup lang="ts">
 // Home - 主页
 // L0：四大入口卡片占位（呼应原版四大入口，后续 Level 接入实际功能）
-import { useRouter } from "vue-router";
-import { Edit, DataAnalysis, MagicStick, Grid } from "@element-plus/icons-vue";
+import { useRouter } from 'vue-router'
+import { Edit, DataAnalysis, MagicStick, Grid } from '@element-plus/icons-vue'
 
-const router = useRouter();
+const router = useRouter()
 
 const entries = [
-  { key: "basic", title: "基础计算练习", desc: "训练最基本的加减乘除，打好数资基础", icon: Edit, available: true, level: "L1", route: "/practice" },
-  { key: "data", title: "资料分析专项", desc: "提供实际做题中常用公式的专项练习", icon: DataAnalysis, available: true, level: "L2-L3", route: "/practice/data-analysis" },
-  { key: "think", title: "思维能力训练", desc: "在潜移默化中提升思维能力或反应能力", icon: MagicStick, available: false, level: "保留入口", route: "" },
-  { key: "reason", title: "数字推理训练", desc: "通过大量训练提高数字推理的敏感性", icon: Grid, available: false, level: "保留入口", route: "" },
-] as const;
+  {
+    key: 'basic',
+    title: '基础计算练习',
+    desc: '训练最基本的加减乘除，打好数资基础',
+    icon: Edit,
+    available: true,
+    level: 'L1',
+    route: '/practice',
+  },
+  {
+    key: 'data',
+    title: '资料分析专项',
+    desc: '提供实际做题中常用公式的专项练习',
+    icon: DataAnalysis,
+    available: true,
+    level: 'L2-L3',
+    route: '/practice/data-analysis',
+  },
+  {
+    key: 'think',
+    title: '思维能力训练',
+    desc: '在潜移默化中提升思维能力或反应能力',
+    icon: MagicStick,
+    available: false,
+    level: '保留入口',
+    route: '',
+  },
+  {
+    key: 'reason',
+    title: '数字推理训练',
+    desc: '通过大量训练提高数字推理的敏感性',
+    icon: Grid,
+    available: false,
+    level: '保留入口',
+    route: '',
+  },
+] as const
 
 function goEntry(e: { route: string }) {
-  if (e.route) router.push(e.route);
+  if (e.route) router.push(e.route)
 }
 </script>
 
@@ -85,7 +117,9 @@ function goEntry(e: { route: string }) {
   align-items: center;
   gap: 16px;
   cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
 
   &:hover:not(.is-disabled) {
     transform: translateY(-2px);

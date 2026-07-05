@@ -41,12 +41,29 @@ CREATE TABLE materials ( id INTEGER PRIMARY KEY, paper_id INTEGER REFERENCES pap
 
 ```typescript
 interface Question {
-  id: number; qno: number; module: ModuleType; subtype?: string;
-  stem: string; options: Option[]; answer?: string; explanation?: string;
-  images?: string[];
+  id: number
+  qno: number
+  module: ModuleType
+  subtype?: string
+  stem: string
+  options: Option[]
+  answer?: string
+  explanation?: string
+  images?: string[]
 }
-interface Option { label: string; text: string; image?: string; }
-enum ModuleType { POLITICAL, COMMON, VERBAL, QUANTITATIVE, JUDGMENT, DATA }
+interface Option {
+  label: string
+  text: string
+  image?: string
+}
+enum ModuleType {
+  POLITICAL,
+  COMMON,
+  VERBAL,
+  QUANTITATIVE,
+  JUDGMENT,
+  DATA,
+}
 ```
 
 > L6 真题题目的完整字段见 references/gkzenti-dom.md。
