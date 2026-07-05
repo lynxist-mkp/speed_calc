@@ -190,6 +190,30 @@ export async function clearAllSessions(): Promise<void> {
   await db.execute(`DELETE FROM sessions`);
 }
 
+// 按 session id 查询答题记录（用于历史详情抽屉）
+export interface RecordRow {
+  id: number;
+  qIndex: number;
+  question: string;
+  userAnswer: string;
+  trueAnswer: string;
+  isCorrect: number; // 0/1
+  tolerance: number;
+  timeSpentMs: number;
+}
+
+export async function listRecordsBySession(sessionId: number): Promise<RecordRow[]> {
+  const db = await getDb();
+  const rows = await db.select<RecordRow[]>(
+    `SELECT id, q_index as qIndex, question, user_answer as userAnswer,
+            true_answer as trueAnswer, is_correct as isCorrect,
+            tolerance, time_spent_ms as timeSpentMs
+     FROM records WHERE session_id = $1 ORDER BY q_index ASC`,
+    [sessionId]
+  );
+  return rows;
+}
+
 // 按题型聚合正确率（用于雷达图）
 export interface TypeAccuracy {
   type: string;

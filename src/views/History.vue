@@ -9,6 +9,7 @@ import {
 } from "@/db/index";
 import { typeLabel } from "@/constants/typeLabels";
 import SegmentedControl from "@/components/SegmentedControl.vue";
+import SessionDetailDrawer from "@/components/SessionDetailDrawer.vue";
 
 const PAGE_SIZE = 10;
 const sessions = ref<SessionRow[]>([]);
@@ -17,6 +18,19 @@ const page = ref(1);
 const typeFilter = ref<string>("all");
 const availableTypes = ref<string[]>([]);
 const loading = ref(true);
+
+// 详情抽屉
+const drawerVisible = ref(false);
+const selectedSession = ref<SessionRow | null>(null);
+
+function openDetail(s: SessionRow) {
+  selectedSession.value = s;
+  drawerVisible.value = true;
+}
+
+function closeDetail() {
+  drawerVisible.value = false;
+}
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)));
 
@@ -133,7 +147,17 @@ onMounted(async () => {
     <div v-if="loading" class="empty">加载中…</div>
     <div v-else-if="sessions.length === 0" class="empty">暂无记录</div>
     <div v-else class="session-list">
-      <div v-for="s in sessions" :key="s.id" class="session-card glass-card">
+      <div
+        v-for="s in sessions"
+        :key="s.id"
+        class="session-card glass-card"
+        role="button"
+        tabindex="0"
+        aria-label="查看本次答题详情"
+        @click="openDetail(s)"
+        @keydown.enter="openDetail(s)"
+        @keydown.space.prevent="openDetail(s)"
+      >
         <div class="card-row">
           <span class="date">{{ formatDate(s.created_at) }}</span>
           <span class="type">{{ s.subtype || typeLabel(s.type) }}</span>
@@ -143,7 +167,10 @@ onMounted(async () => {
           <span class="stat">用时 {{ formatDuration(s.duration_ms) }}</span>
           <span class="acc">{{ accuracy(s) }}%</span>
         </div>
-        <div class="comment" :class="commentClass(accuracy(s))">{{ comment(accuracy(s)) }}</div>
+        <div class="card-footer">
+          <span class="comment" :class="commentClass(accuracy(s))">{{ comment(accuracy(s)) }}</span>
+          <span class="view-hint">点击查看详情 →</span>
+        </div>
       </div>
     </div>
 
@@ -152,6 +179,13 @@ onMounted(async () => {
       <span class="page-info">{{ page }} / {{ totalPages }}</span>
       <button class="page-btn" aria-label="下一页" :disabled="page === totalPages" @click="nextPage">下一页 ›</button>
     </div>
+
+    <!-- 详情抽屉 -->
+    <SessionDetailDrawer
+      :visible="drawerVisible"
+      :session="selectedSession"
+      @close="closeDetail"
+    />
   </div>
 </template>
 
@@ -219,6 +253,20 @@ onMounted(async () => {
 .session-card {
   padding: 16px;
   border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+  outline: none;
+
+  &:hover {
+    border-color: var(--app-color-primary);
+  }
+  &:focus-visible {
+    border-color: var(--app-color-primary);
+    box-shadow: 0 0 0 2px rgba(95, 175, 111, 0.3);
+  }
+  &:active {
+    transform: scale(0.99);
+  }
 }
 
 .card-row {
@@ -250,12 +298,24 @@ onMounted(async () => {
 }
 
 .comment {
-  margin-top: 8px;
   font-size: 13px;
   &.excellent { color: #5faf6f; }
   &.good { color: #b58900; }
   &.pass { color: #268bd2; }
   &.fail { color: #dc6c6c; }
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.view-hint {
+  font-size: 11px;
+  color: var(--app-text-secondary);
+  opacity: 0.7;
 }
 
 .pagination {

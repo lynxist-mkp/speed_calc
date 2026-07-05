@@ -170,14 +170,8 @@ export const usePracticeStore = defineStore("practice", () => {
       elapsedMs.value = 0;
       error.value = null;
       config.value = cfg;
-      const id = await insertSession({
-        type: cfg.type,
-        subtype: cfg.subtype,
-        difficulty: cfg.difficulty ?? "normal",
-        total: cfg.count,
-        nback: cfg.nback ?? 0,
-      });
-      sessionId.value = id;
+      // 延迟到 finish() 才落库，避免未完成练习留下脏数据
+      sessionId.value = null;
       timeStandard.value = await getTimeStandard(cfg.type, cfg.count);
       questionStartedAt.value = performance.now();
       phase.value = "running";
@@ -226,25 +220,6 @@ export const usePracticeStore = defineStore("practice", () => {
     }
   }
 
-  async function insertRecordToDb(record: AnswerRecord): Promise<void> {
-    try {
-      if (sessionId.value !== null) {
-        await insertRecord({
-          sessionId: sessionId.value,
-          qIndex: record.qIndex,
-          question: record.question,
-          userAnswer: record.userAnswer,
-          trueAnswer: record.trueAnswer,
-          isCorrect: record.isCorrect,
-          tolerance: record.tolerance ?? 0,
-          timeSpentMs: record.timeSpentMs,
-        });
-      }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : String(e);
-    }
-  }
-
   async function submit() {
     const q = currentQuestion.value;
     if (q === null) return;
@@ -266,7 +241,6 @@ export const usePracticeStore = defineStore("practice", () => {
         timeSpentMs,
       };
       records.value.push(record);
-      await insertRecordToDb(record);
       compareChoice.value = null;
       if (currentIndex.value + 1 >= questions.value.length) {
         await finish();
@@ -321,7 +295,6 @@ export const usePracticeStore = defineStore("practice", () => {
       const record = buildCurrentRecord(currentAnswer.value);
       judgeRecord(record);
       records.value.push(record);
-      await insertRecordToDb(record);
       advance();
       if (isLast) await finish();
       return;
@@ -347,7 +320,6 @@ export const usePracticeStore = defineStore("practice", () => {
     target.userAnswer = currentAnswer.value;
     judgeRecord(target);
     records.value.push(target);
-    await insertRecordToDb(target);
     // 当前题入 pending（等待后续题回忆，或最后 N 题不判分）
     pendingRecords.value.push(buildCurrentRecord(""));
     advance();
@@ -361,8 +333,30 @@ export const usePracticeStore = defineStore("practice", () => {
   async function finish() {
     stopTimer();
     try {
-      if (sessionId.value !== null) {
-        await updateSession(sessionId.value, {
+      if (config.value !== null) {
+        // 延迟落库：finish 时才创建 session + 写入所有 records
+        // 避免未完成练习（退出/重开/关 app）留下脏数据
+        const id = await insertSession({
+          type: config.value.type,
+          subtype: config.value.subtype,
+          difficulty: config.value.difficulty ?? "normal",
+          total: config.value.count,
+          nback: config.value.nback ?? 0,
+        });
+        sessionId.value = id;
+        for (const r of records.value) {
+          await insertRecord({
+            sessionId: id,
+            qIndex: r.qIndex,
+            question: r.question,
+            userAnswer: r.userAnswer,
+            trueAnswer: r.trueAnswer,
+            isCorrect: r.isCorrect,
+            tolerance: r.tolerance ?? 0,
+            timeSpentMs: r.timeSpentMs,
+          });
+        }
+        await updateSession(id, {
           correct: correctCount.value,
           durationMs: elapsedMs.value,
         });

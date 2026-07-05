@@ -68,11 +68,12 @@ describe("usePracticeStore", () => {
     vi.clearAllMocks();
   });
 
-  it("init 后进入 running 态并生成题目", async () => {
+  it("init 后进入 running 态并生成题目（不预建 session）", async () => {
     const store = usePracticeStore();
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 10 });
     expect(store.phase).toBe("running");
-    expect(store.sessionId).toBe(42);
+    // 延迟落库：init 时不创建 session，sessionId 为 null
+    expect(store.sessionId).toBeNull();
     expect(store.questions).toHaveLength(10);
     expect(store.currentIndex).toBe(0);
     expect(store.currentAnswer).toBe("");
@@ -145,21 +146,41 @@ describe("usePracticeStore", () => {
     expect(store.records).toHaveLength(2);
   });
 
-  it("restart 清状态并重新 init（新 sessionId）", async () => {
+  it("restart 清状态并重新 init（未完成不落库）", async () => {
     const { insertSession } = await import("@/db/index");
     const mockInsert = insertSession as ReturnType<typeof vi.fn>;
-    mockInsert.mockReturnValueOnce(Promise.resolve(42));
-    mockInsert.mockReturnValueOnce(Promise.resolve(43));
     const store = usePracticeStore();
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 10 });
     store.inputChar("1");
     await store.submit();
+    // 未 finish 就 restart：不应有任何 DB 写入
+    expect(mockInsert).not.toHaveBeenCalled();
     await store.restart();
-    expect(store.sessionId).toBe(43); // 新 session id
+    expect(store.sessionId).toBeNull(); // 仍为 null
     expect(store.currentIndex).toBe(0);
     expect(store.currentAnswer).toBe("");
     expect(store.records).toHaveLength(0);
-    expect(mockInsert).toHaveBeenCalledTimes(2);
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("finish 时才落库（insertSession + insertRecord + updateSession）", async () => {
+    const { insertSession, insertRecord, updateSession } = await import("@/db/index");
+    const mockInsert = insertSession as ReturnType<typeof vi.fn>;
+    const mockInsertRec = insertRecord as ReturnType<typeof vi.fn>;
+    const mockUpdate = updateSession as ReturnType<typeof vi.fn>;
+    mockInsert.mockResolvedValueOnce(99);
+    const store = usePracticeStore();
+    await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 2 });
+    store.inputChar(String(store.questions[0].answer));
+    await store.submit();
+    store.inputChar(String(store.questions[1].answer));
+    await store.submit();
+    // finish 后才落库
+    expect(store.phase).toBe("finished");
+    expect(mockInsert).toHaveBeenCalledTimes(1);
+    expect(mockInsertRec).toHaveBeenCalledTimes(2);
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+    expect(store.sessionId).toBe(99);
   });
 
   it("正确数统计正确", async () => {
@@ -190,9 +211,9 @@ describe("usePracticeStore", () => {
   });
 
   it("init 失败时设置 error 并回到 idle", async () => {
-    const { insertSession } = await import("@/db/index");
-    const mockInsert = insertSession as ReturnType<typeof vi.fn>;
-    mockInsert.mockRejectedValueOnce(new Error("DB down"));
+    const { getTimeStandard } = await import("@/db/index");
+    const mockGetStd = getTimeStandard as ReturnType<typeof vi.fn>;
+    mockGetStd.mockRejectedValueOnce(new Error("DB down"));
     const store = usePracticeStore();
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 10 });
     expect(store.error).toBe("DB down");
@@ -439,7 +460,7 @@ describe("N-back 延迟回忆模式", () => {
 
   // mock 答案循环：题0=46, 题1=134, 题2=78, 题3=46, 题4=134, 题5=78
 
-  it("nback=0：立即判分入库（行为不变）", async () => {
+  it("nback=0：立即判分（延迟落库，submit 不写 DB）", async () => {
     const store = usePracticeStore();
     await store.init({ type: "basic_addsub", subtype: "两位数加减", count: 3, nback: 0 });
 
@@ -450,7 +471,8 @@ describe("N-back 延迟回忆模式", () => {
     expect(store.records[0].qIndex).toBe(0);
     expect(store.records[0].userAnswer).toBe("46");
     expect(store.pendingRecords).toHaveLength(0);
-    expect(insertRecord).toHaveBeenCalledTimes(1);
+    // 延迟落库：submit 时不写 DB
+    expect(insertRecord).not.toHaveBeenCalled();
   });
 
   it("nback=1 count=3：实际生成 4 题，判分 3 题（题 0/1/2），题 3 不判分", async () => {
