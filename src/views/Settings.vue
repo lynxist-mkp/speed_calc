@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import {
   listTimeStandards,
@@ -12,9 +12,11 @@ import {
 import { typeLabel } from "@/constants/typeLabels";
 import { useSettingsStore } from "@/stores/settings";
 import type { KeyboardLayout } from "@/utils/keymap";
+import KeymapGuideModal from "@/components/KeymapGuideModal.vue";
 
 const settingsStore = useSettingsStore();
 const keyboardLayout = ref<KeyboardLayout>("qwerty");
+const guideVisible = ref(false);
 
 async function onLayoutChange(val: KeyboardLayout) {
   keyboardLayout.value = val;
@@ -22,9 +24,70 @@ async function onLayoutChange(val: KeyboardLayout) {
   ElMessage.success(val === "norman" ? "已切换到 Norman 布局" : "已切换到 QWERTY 布局");
 }
 
+// 精简键位预览：物理键盘统一按 QWERTY 标签显示（映射按物理位置）
+const previewRows = [
+  { nums: ["7", "8", "9"], keys: ["U", "I", "O"] },
+  { nums: ["4", "5", "6"], keys: ["J", "K", "L"] },
+  { nums: ["1", "2", "3"], keys: ["M", ",", "."] },
+];
+
 const standards = ref<TimeStandardRow[]>([]);
 const loading = ref(true);
 const editing = ref<Record<number, { pass: string; good: string; excellent: string }>>({});
+
+// 分组定义：题型 → 分类
+const TYPE_CATEGORIES: { name: string; types: string[] }[] = [
+  { name: "基础运算", types: [
+    "basic_addsub", "addsub_2d", "round_100", "add_3d", "sub_3d", "addsub_3d",
+    "add_multi", "addsub_mix", "mul_2x1", "mul_3x1", "mul_2x11", "mul_2x15",
+    "mul_2x2", "div_3x1", "div_3x2", "mul_est", "div_5x3", "div_3x4",
+  ]},
+  { name: "资料分析填空", types: [
+    "estimate_prev", "estimate_growth", "baihua_frac", "baihua_frac_rev",
+    "frac_calc_lt", "frac_calc_gt", "annual_growth_rate", "base_period_ratio", "annual_avg",
+  ]},
+  { name: "资料分析比较", types: ["compare_growth", "compare_base", "compare_frac"] },
+  { name: "综合", types: ["composite"] },
+  { name: "自定义", types: ["custom_standard", "custom_power"] },
+];
+
+// 按分类 + 题型分组
+interface TypeGroup {
+  type: string;
+  label: string;
+  rows: TimeStandardRow[];
+}
+interface CategoryGroup {
+  name: string;
+  types: TypeGroup[];
+}
+const groupedStandards = computed<CategoryGroup[]>(() => {
+  const byType = new Map<string, TimeStandardRow[]>();
+  for (const s of standards.value) {
+    if (!byType.has(s.questionType)) byType.set(s.questionType, []);
+    byType.get(s.questionType)!.push(s);
+  }
+  return TYPE_CATEGORIES.map((cat) => ({
+    name: cat.name,
+    types: cat.types
+      .filter((t) => byType.has(t))
+      .map((t) => ({
+        type: t,
+        label: typeLabel(t),
+        rows: byType.get(t)!.sort((a, b) => a.questionCount - b.questionCount),
+      })),
+  }));
+});
+
+// 展开状态：按题型 key
+const expandedTypes = ref<Set<string>>(new Set());
+function toggleType(type: string) {
+  if (expandedTypes.value.has(type)) {
+    expandedTypes.value.delete(type);
+  } else {
+    expandedTypes.value.add(type);
+  }
+}
 
 const newStandard = ref({
   questionType: "basic_addsub",
@@ -78,6 +141,7 @@ async function addStandard() {
   }
   await insertTimeStandard({ questionType, questionCount, passS, goodS, excellentS });
   ElMessage.success("已添加");
+  expandedTypes.value.add(questionType);
   await loadStandards();
 }
 
@@ -123,57 +187,69 @@ onMounted(async () => {
     <!-- 时间标准编辑 -->
     <section class="block glass-card">
       <h3 class="block-title">时间标准</h3>
-      <p class="block-desc">不同题型 × 题量对应的合格/良好/优秀秒数</p>
+      <p class="block-desc">不同题型 × 题量对应的合格/良好/优秀秒数，点击题型卡片展开编辑</p>
 
       <div v-if="loading" class="empty">加载中…</div>
       <div v-else-if="standards.length === 0" class="empty">暂无时间标准</div>
-      <div v-else class="table-wrap">
-        <table class="std-table">
-          <thead>
-            <tr>
-              <th>题型</th>
-              <th>题量</th>
-              <th>合格(秒)</th>
-              <th>良好(秒)</th>
-              <th>优秀(秒)</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="s in standards" :key="s.id">
-              <td>{{ typeLabel(s.questionType) }}</td>
-              <td>{{ s.questionCount }}</td>
-              <td>
-                <input
-                  :value="editing[s.id]?.pass"
-                  @input="editing[s.id] && (editing[s.id].pass = ($event.target as HTMLInputElement).value)"
-                  class="num-input"
-                  type="number"
-                />
-              </td>
-              <td>
-                <input
-                  :value="editing[s.id]?.good"
-                  @input="editing[s.id] && (editing[s.id].good = ($event.target as HTMLInputElement).value)"
-                  class="num-input"
-                  type="number"
-                />
-              </td>
-              <td>
-                <input
-                  :value="editing[s.id]?.excellent"
-                  @input="editing[s.id] && (editing[s.id].excellent = ($event.target as HTMLInputElement).value)"
-                  class="num-input"
-                  type="number"
-                />
-              </td>
-              <td class="op-cell">
-                <button class="op-btn save" @click="saveStandard(s.id)">保存</button>
-                <button class="op-btn del" @click="removeStandard(s.id)">删除</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div v-else class="std-groups">
+        <div v-for="cat in groupedStandards" :key="cat.name" class="std-category">
+          <h4 class="cat-title">{{ cat.name }}</h4>
+          <div class="cat-grid">
+            <div
+              v-for="tg in cat.types"
+              :key="tg.type"
+              class="std-card"
+              :class="{ expanded: expandedTypes.has(tg.type) }"
+            >
+              <button class="std-card-header" @click="toggleType(tg.type)">
+                <span class="std-card-label">{{ tg.label }}</span>
+                <span class="std-card-summary">
+                  <span
+                    v-for="r in tg.rows"
+                    :key="r.id"
+                    class="std-chip"
+                  >{{ r.questionCount }}题 · {{ r.passS }}/{{ r.goodS }}/{{ r.excellentS }}s</span>
+                </span>
+                <span class="std-card-arrow" :class="{ open: expandedTypes.has(tg.type) }">›</span>
+              </button>
+              <div v-if="expandedTypes.has(tg.type)" class="std-card-body">
+                <div v-for="r in tg.rows" :key="r.id" class="std-edit-row">
+                  <span class="std-edit-count">{{ r.questionCount }}题</span>
+                  <label class="std-edit-field">
+                    <span class="std-edit-label">合格</span>
+                    <input
+                      :value="editing[r.id]?.pass"
+                      @input="editing[r.id] && (editing[r.id].pass = ($event.target as HTMLInputElement).value)"
+                      class="num-input"
+                      type="number"
+                    />
+                  </label>
+                  <label class="std-edit-field">
+                    <span class="std-edit-label">良好</span>
+                    <input
+                      :value="editing[r.id]?.good"
+                      @input="editing[r.id] && (editing[r.id].good = ($event.target as HTMLInputElement).value)"
+                      class="num-input"
+                      type="number"
+                    />
+                  </label>
+                  <label class="std-edit-field">
+                    <span class="std-edit-label">优秀</span>
+                    <input
+                      :value="editing[r.id]?.excellent"
+                      @input="editing[r.id] && (editing[r.id].excellent = ($event.target as HTMLInputElement).value)"
+                      class="num-input"
+                      type="number"
+                    />
+                  </label>
+                  <span class="std-edit-unit">秒</span>
+                  <button class="op-btn save" @click="saveStandard(r.id)">保存</button>
+                  <button class="op-btn del" @click="removeStandard(r.id)">删除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 新增 -->
@@ -218,6 +294,24 @@ onMounted(async () => {
           <span class="layout-desc">通过 Karabiner-Elements 启用的 Norman 布局</span>
         </label>
       </div>
+
+      <!-- 精简键位预览 -->
+      <div class="keymap-preview">
+        <div class="preview-title">右手主键盘区 → 数字映射</div>
+        <div class="preview-rows">
+          <div v-for="(row, i) in previewRows" :key="i" class="preview-row">
+            <span class="preview-num">{{ row.nums.join(" ") }}</span>
+            <span class="preview-arrow">←</span>
+            <span class="preview-key">{{ row.keys.join(" ") }}</span>
+          </div>
+        </div>
+        <div class="preview-bottom">
+          <span class="preview-num">. 0 ↵</span>
+          <span class="preview-arrow">←</span>
+          <span class="preview-key">/ Space Enter</span>
+        </div>
+        <button class="view-guide-btn" @click="guideVisible = true">查看完整指引 →</button>
+      </div>
     </section>
 
     <!-- 数据管理 -->
@@ -233,6 +327,14 @@ onMounted(async () => {
       <p class="about-text">行测小助手 · 本地版</p>
       <p class="about-sub">灵感源自网友红领巾的行测小助手，独立实现</p>
     </section>
+
+    <!-- 键盘输入指引弹窗 -->
+    <KeymapGuideModal
+      :visible="guideVisible"
+      :layout="keyboardLayout"
+      @close="guideVisible = false"
+      @go-settings="guideVisible = false"
+    />
   </div>
 </template>
 
@@ -272,26 +374,134 @@ onMounted(async () => {
   padding: 20px;
 }
 
-.table-wrap {
-  overflow-x: auto;
+// 时间标准分组卡片
+.std-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.std-table {
-  width: 100%;
-  border-collapse: collapse;
+.std-category {
+  // 分类容器
+}
+
+.cat-title {
   font-size: 13px;
+  font-weight: 600;
+  color: var(--app-color-info);
+  margin: 0 0 8px;
+  letter-spacing: 0.5px;
+}
 
-  th, td {
-    padding: 8px 6px;
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    color: var(--app-text-primary);
-  }
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 8px;
+}
 
-  th {
-    color: var(--app-text-bright);
-    font-weight: 600;
+.std-card {
+  background: var(--app-bg-surface);
+  border: 1px solid var(--app-glass-border);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+
+  &.expanded {
+    border-color: var(--app-color-primary);
   }
+}
+
+.std-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+.std-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text-bright);
+  flex-shrink: 0;
+}
+
+.std-card-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.std-chip {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(38, 139, 210, 0.12);
+  color: var(--app-color-info);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.std-card-arrow {
+  font-size: 16px;
+  color: var(--app-text-secondary);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+  &.open {
+    transform: rotate(90deg);
+  }
+}
+
+.std-card-body {
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--app-glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.std-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(147, 161, 161, 0.08);
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.std-edit-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text-primary);
+  min-width: 40px;
+}
+
+.std-edit-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.std-edit-label {
+  font-size: 10px;
+  color: var(--app-text-secondary);
+}
+
+.std-edit-unit {
+  font-size: 11px;
+  color: var(--app-text-muted);
 }
 
 .num-input {
@@ -418,6 +628,71 @@ onMounted(async () => {
 .layout-desc {
   font-size: 12px;
   color: var(--app-text-secondary);
+}
+
+.keymap-preview {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 8px;
+  background: rgba(0, 43, 54, 0.5);
+  border: 1px solid rgba(147, 161, 161, 0.15);
+}
+
+.preview-title {
+  font-size: 12px;
+  color: var(--app-text-secondary);
+  margin-bottom: 10px;
+}
+
+.preview-rows {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.preview-row,
+.preview-bottom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--app-font-mono);
+  font-size: 13px;
+}
+
+.preview-num {
+  color: var(--app-color-primary);
+  font-weight: 600;
+  min-width: 56px;
+  letter-spacing: 2px;
+}
+
+.preview-arrow {
+  color: var(--app-text-muted);
+}
+
+.preview-key {
+  color: var(--app-text-secondary);
+  letter-spacing: 2px;
+}
+
+.preview-bottom {
+  margin-bottom: 12px;
+}
+
+.view-guide-btn {
+  margin-top: 4px;
+  padding: 6px 12px;
+  border: 1px solid var(--app-glass-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--app-color-primary);
+  font-size: 12px;
+  cursor: pointer;
+  &:hover {
+    background: rgba(95, 175, 111, 0.12);
+    border-color: var(--app-color-primary);
+  }
 }
 
 .about-text {
